@@ -1,0 +1,181 @@
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../main/config/ehcache.xsd">
+
+    <!-- Sets the path to the directory where cache .data files are created.
+
+         If the path is a Java System Property it is replaced by
+         its value in the running VM. Subdirectories can be specified below the property e.g. java.io.tmpdir/one
+
+         The following properties are translated:
+         user.home - User's home directory
+         user.dir - User's current working directory
+         java.io.tmpdir - Default temp file path -->
+    <diskStore path="java.io.tmpdir"/>
+
+
+
+    <!--Default Cache configuration. These will applied to caches programmatically created through
+    the CacheManager.
+
+    The following attributes are required:
+
+    maxElementsInMemory            - Sets the maximum number of objects that will be created in memory
+    eternal                        - Sets whether elements are eternal. If eternal,  timeouts are ignored and the
+                                     element is never expired.
+    overflowToDisk                 - Sets whether elements can overflow to disk when the in-memory cache
+                                     has reached the maxInMemory limit.
+
+    The following attributes are optional:
+    timeToIdleSeconds              - Sets the time to idle for an element before it expires.
+                                     i.e. The maximum amount of time between accesses before an element expires
+                                     Is only used if the element is not eternal.
+                                     Optional attribute. A value of 0 means that an Element can idle for infinity.
+                                     The default value is 0.
+    timeToLiveSeconds              - Sets the time to live for an element before it expires.
+                                     i.e. The maximum time between creation time and when an element expires.
+                                     Is only used if the element is not eternal.
+                                     Optional attribute. A value of 0 means that and Element can live for infinity.
+                                     The default value is 0.
+    diskPersistent                 - Whether the disk store persists between restarts of the Virtual Machine.
+                                     The default value is false.
+    diskExpiryThreadIntervalSeconds- The number of seconds between runs of the disk expiry thread. The default value
+                                     is 120 seconds.
+    -->
+
+    <defaultCache
+            maxElementsInMemory="10"
+            eternal="false"
+            timeToIdleSeconds="5"
+            timeToLiveSeconds="10"
+            overflowToDisk="true"
+            />
+
+    <!--Predefined caches.  Add your cache configuration settings here.
+            If you do not have a configuration for your cache a WARNING will be issued when the
+            CacheManager starts
+
+            The following attributes are required for defaultCache:
+
+        name                           - Sets the name of the cache. This is used to identify the cache.
+                                         It must be unique.
+        maxElementsInMemory            - Sets the maximum number of objects that will be created in memory
+        eternal                        - Sets whether elements are eternal. If eternal,  timeouts are ignored and the
+                                         element is never expired.
+        overflowToDisk                 - Sets whether elements can overflow to disk when the in-memory cache
+                                         has reached the maxInMemory limit.
+
+        The following attributes are optional:
+        timeToIdleSeconds              - Sets the time to idle for an element before it expires.
+                                         i.e. The maximum amount of time between accesses before an element expires
+                                         Is only used if the element is not eternal.
+                                         Optional attribute. A value of 0 means that an Element can idle for infinity.
+                                         The default value is 0.
+        timeToLiveSeconds              - Sets the time to live for an element before it expires.
+                                         i.e. The maximum time between creation time and when an element expires.
+                                         Is only used if the element is not eternal.
+                                         Optional attribute. A value of 0 means that and Element can live for infinity.
+                                         The default value is 0.
+        diskPersistent                 - Whether the disk store persists between restarts of the Virtual Machine.
+                                         The default value is false.
+        diskExpiryThreadIntervalSeconds- The number of seconds between runs of the disk expiry thread. The default value
+                                         is 120 seconds.
+        -->
+
+    <!-- Sample cache named sampleCache1 -->
+    <cache name="sampleCache1"
+           maxElementsInMemory="10"
+           eternal="false"
+           timeToIdleSeconds="1"
+           timeToLiveSeconds="1"
+           overflowToDisk="true"
+           memoryStoreEvictionPolicy="LRU"
+           diskExpiryThreadIntervalSeconds="1"
+            />
+
+    <!-- Sample cache named sampleCache2. -->
+    <cache name="sampleCache2"
+           maxElementsInMemory="10"
+           eternal="false"
+           timeToLiveSeconds="1"
+           overflowToDisk="false">
+        <cacheEventListenerFactory class="net.sf.ehcache.event.CountingCacheEventListenerFactory"/>
+    </cache>
+
+
+    <!-- Sample cache named sampleCache3. Is eternal -->
+    <cache name="sampleCache3"
+           maxElementsInMemory="10"
+           eternal="false"
+           timeToLiveSeconds="1"
+           overflowToDisk="false"
+           memoryStoreEvictionPolicy="FIFO">
+        <cacheEventListenerFactory class="net.sf.ehcache.event.CountingCacheEventListenerFactory"/>
+    </cache>
+
+
+    <!-- Sample cache named sampleCache4. Is eternal -->
+    <cache name="sampleCache4"
+           maxElementsInMemory="10"
+           eternal="false"
+           timeToLiveSeconds="1"
+           overflowToDisk="false"
+           memoryStoreEvictionPolicy="LFU">
+        <cacheEventListenerFactory class="net.sf.ehcache.event.CountingCacheEventListenerFactory"/>
+    </cache>
+
+
+    <!-- Sample cache named sampleCacheNoIdle, which does not specify the optional idle time -->
+    <cache name="sampleCacheNoIdle"
+           maxElementsInMemory="1000"
+           eternal="false"
+           timeToLiveSeconds="5"
+           overflowToDisk="false"
+            />
+
+    <!-- Sample cache named sampleCacheNotEternalButNoIdleOrExpiry -->
+    <cache name="sampleCacheNotEternalButNoIdleOrExpiry"
+           maxElementsInMemory="1000"
+           eternal="false"
+           overflowToDisk="false"
+            />
+
+    <!-- A cache with short idle and live expiries, suitable for tests -->
+    <cache name="sampleIdlingExpiringCache"
+           maxElementsInMemory="1"
+           eternal="false"
+           timeToIdleSeconds="2"
+           timeToLiveSeconds="5"
+           overflowToDisk="true"
+            />
+
+    <!-- A cache which overflows to disk. The disk store is persistent
+         between cache and VM restarts. The disk expiry thread interval is set to 10 minutes, overriding
+         the default of 2 minutes. -->
+    <cache name="persistentLongExpiryIntervalCache"
+           maxElementsInMemory="500"
+           eternal="false"
+           timeToIdleSeconds="300"
+           timeToLiveSeconds="600"
+           overflowToDisk="true"
+           diskPersistent="true"
+           diskExpiryThreadIntervalSeconds="600"
+            />
+
+    <!-- Page Caches -->
+
+    <cache name="CachedLogin"
+           maxElementsInMemory="10"
+           eternal="false"
+           timeToIdleSeconds="10000"
+           timeToLiveSeconds="10000"
+           overflowToDisk="true"
+            />
+
+    <cache name="FooterPageCache"
+           maxElementsInMemory="10"
+           eternal="false"
+           timeToIdleSeconds="10000"
+           timeToLiveSeconds="10000"
+           overflowToDisk="true"
+            />
+
+</ehcache>

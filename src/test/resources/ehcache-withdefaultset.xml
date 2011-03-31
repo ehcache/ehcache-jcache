@@ -1,0 +1,164 @@
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../main/config/ehcache.xsd">
+
+    <!--
+        Sets the path to the directory where cache data and index files are created.
+
+        If the path is a Java System Property it is replaced by its value in the running VM. Subdirectories can be specified below the property e.g. java.io.tmpdir/one
+
+        The following properties are parsed and translated at runtime:
+        user.home - User's home directory
+        user.dir - User's current working directory
+        java.io.tmpdir - Default temp file path
+
+        e.g. java.io.tmpdir on Unix would be /tmp
+             java.io.tmpdir/application_cache on Unix would be /tmp/application_cache
+         -->
+    <diskStore path="java.io.tmpdir"/>
+
+
+    <!--
+        Specifies a CacheManagerEventListenerFactory which will be used to create a CacheManagerEventListener
+         and register it with the CacheManager.
+
+        A CacheManagerEventListener listens to for the following CacheManager events:
+        - Cache added
+        - Cache removed
+
+        The attributes of cacheManagerEventListenerFactory are:
+        - class - a fully qualified factory class name
+        - properties - comma separated properties having meaning only to the factory.
+    -->
+    <!--<cacheManagerEventListenerFactory class="net.sf.ehcache.event.NullCacheManagerEventListenerFactory"-->
+    <!--properties=""/>-->
+
+
+    <!--
+        (Enable for distributed operation)
+
+        Specifies a CacheManagerPeerProviderFactory which will be used to create a CacheManagerPeerProvider, which
+        discovers other CacheManagers in the cluster.
+
+         The attributes of cacheManagerPeerProviderFactory are:
+        - class - a fully qualified factory class name
+        - properties - comma separated properties having meaning only to the factory.
+
+        Ehcache comes with a built-in RMI-based distribution system with two means of discovery of CacheManager peers
+        participating in the cluster:
+         - automatic, using a multicast group. This one automatically discovers peers and detects changes such as
+           peers entering and leaving the group
+         - manual, using manual rmiURL configuration. A hardcoded list of peers is provided at configuration time.
+
+        Configuring Automatic Discovery:
+        Automatic discovery is configured as per the following example:
+        <cacheManagerPeerProviderFactory class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"
+                              properties="peerDiscovery=automatic, multicastGroupAddress=230.0.0.1, multicastGroupPort=4446"/>
+
+        Valid properties are:
+        - peerDiscovery (mandatory) - specify "automatic"
+        - multicastGroupAddress (mandatory) - specify a valid multicast group address
+        - multicastGroupPort (mandatory) - specify a dedicated port for the multicast hearbeat traffic
+
+        Configuring Manual Discovery:
+        Manual discovery is configured as per the following example:
+        <cacheManagerPeerProviderFactory class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"
+                              properties="peerDiscovery=manual,
+                              rmiUrls=//server1:40000/sampleCache1|//server2:40000/sampleCache1|//server1:40000/sampleCache2|//server2:40000/sampleCache2"/>
+
+        Valid properties are:
+        - peerDiscovery (mandatory) - specify "manual"
+        - rmiUrls (mandatory) - specify a pipe separated list of rmiUrls, in the form //hostname:port
+
+        The hostname is the hostname of the remote CacheManager peer. The port is the listening port of the RMICacheManagerPeerListener
+        of the remote CacheManager peer.
+    -->
+    <cacheManagerPeerProviderFactory class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"
+                                     properties="peerDiscovery=automatic, multicastGroupAddress=230.0.0.1, multicastGroupPort=4446, timeToLive=0"/>
+
+
+    <!--
+        (Enable for distributed operation)
+
+        Specifies a CacheManagerPeerListenerFactory which will be used to create a CacheManagerPeerListener, which
+        listens for messages from cache replicators participating in the cluster.
+
+         The attributes of cacheManagerPeerListenerFactory are:
+        - class - a fully qualified factory class name
+        - properties - comma separated properties having meaning only to the factory.
+
+        Ehcache comes with a built-in RMI-based distribution system. The listener component is RMICacheManagerPeerListener
+        which is configured using RMICacheManagerPeerListenerFactory. It is configured as per the following example:
+
+        <cacheManagerPeerListenerFactory class="net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory"
+                              properties="hostName=localhost, port=40001, socketTimeoutMillis=2000"/>
+
+        Valid properties are:
+        - hostName (optional) - the hostName of the host the listener is running on. Specify where the host is multihomed
+        and you want to control the interface over which cluster messages are received.
+        - port (mandatory) - the port the listener listens on.
+        - socketTimeoutMillis - the number of seconds client sockets will wait when sending messages to this listener
+        until they give up. By default this is 120s.
+
+        In this example, hostName has been left blank, as has socketTimeoutMillis. They will default to
+            the default NIC IP address and 2000ms respectively.
+
+    -->
+    <cacheManagerPeerListenerFactory class="net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory"
+                                     properties="hostName=, port=, socketTimeoutMillis="/>
+
+
+    <!--Default Cache configuration. These will applied to caches programmatically created through
+    the CacheManager.
+
+    The following attributes are required:
+
+    maxElementsInMemory            - Sets the maximum number of objects that will be created in memory
+    eternal                        - Sets whether elements are eternal. If eternal,  timeouts are ignored and the
+                                     element is never expired.
+    overflowToDisk                 - Sets whether elements can overflow to disk when the in-memory cache
+                                     has reached the maxInMemory limit.
+
+    The following attributes are optional:
+    timeToIdleSeconds              - Sets the time to idle for an element before it expires.
+                                     i.e. The maximum amount of time between accesses before an element expires
+                                     Is only used if the element is not eternal.
+                                     Optional attribute. A value of 0 means that an Element can idle for infinity.
+                                     The default value is 0.
+    timeToLiveSeconds              - Sets the time to live for an element before it expires.
+                                     i.e. The maximum time between creation time and when an element expires.
+                                     Is only used if the element is not eternal.
+                                     Optional attribute. A value of 0 means that and Element can live for infinity.
+                                     The default value is 0.
+    diskPersistent                 - Whether the disk store persists between restarts of the Virtual Machine.
+                                     The default value is false.
+    diskExpiryThreadIntervalSeconds- The number of seconds between runs of the disk expiry thread. The default value
+                                     is 120 seconds.
+    memoryStoreEvictionPolicy      - Policy would be enforced upon reaching the maxElementsInMemory limit. Default
+                                     policy is Least Recently Used (specified as LRU). Other policies available -
+                                     First In First Out (specified as FIFO) and Less Frequently Used
+                                     (specified as LFU)
+    cacheEventListenerClassNames   - A comma separated list of CacheEventListeners. The fully qualified class name of
+                                     the class which implements CacheEventListener is required.
+                                     Registered listeners will be notified of cache events such as Element puts, removes and expiries
+                                     and Cache status changes. The default if unspecified is an empty notifications list
+                                     which does nothing.
+    -->
+
+    <defaultCache
+            maxElementsInMemory="10"
+            eternal="false"
+            timeToIdleSeconds="5"
+            timeToLiveSeconds="10"
+            overflowToDisk="true"
+            />
+
+    <!--Illegal name-->
+    <cache name="default"
+           maxElementsInMemory="1000"
+           eternal="true"
+           overflowToDisk="false"
+           memoryStoreEvictionPolicy="FIFO"
+            />
+
+
+
+</ehcache>

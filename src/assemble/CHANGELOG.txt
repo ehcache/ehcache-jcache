@@ -1,0 +1,30 @@
+$Id: CHANGELOG.txt,v 1.31 2006/03/07 00:05:56 gregluck Exp $
+
+<release version="1.2" date="2009-12-11" desc="Initial release of separate jcache module">
+    <!-- Features and Enhancements -->
+    <action dev="Greg Luck" type="add">
+       Change logging to SLF4J
+    </action>
+    <action dev="Greg Luck" type="update">
+       Change ehcache dependency to 1.7.1 and higher
+    </action>
+</release>
+
+
+
+<release version="1.1" date="2009-1-28" desc="Initial release of separate jcache module">
+
+    <!-- Features and Enhancements -->
+    <action dev="Greg Luck" type="add">
+        Initial release of the standalone module.
+    </action>
+    <action dev="Greg Luck" type="update">
+        net.sf.jsr107cache was updated to remove checked exceptions from CacheLoader, so as to make the standalone
+         implementation possible.
+    </action>
+    <action dev="Greg Luck" type="add">
+        The jsr107 CacheManager concept is broken. This version adds a new JCacheManager, which works like the
+    </action>
+
+</release>
+

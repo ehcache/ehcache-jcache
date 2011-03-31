@@ -1,0 +1,48 @@
+<!-- xml added for dead-lock POC -->
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../main/config/ehcache.xsd">
+    
+    <diskStore path="java.io.tmpdir"/>
+
+    <defaultCache timeToLiveSeconds="10"
+                  maxElementsInMemory="100" memoryStoreEvictionPolicy="LRU" overflowToDisk="false" eternal="false" />
+
+    <cache name="ACache"
+           eternal="true"
+           maxElementsInMemory="50"
+           overflowToDisk="false">
+        <cacheLoaderFactory class="net.sf.ehcache.loader.ComponentALoader" properties="createDeadLock=true"/>
+    </cache>
+
+    <cache name="BCache"
+           eternal="true"
+           maxElementsInMemory="100"
+           overflowToDisk="false">
+        <cacheLoaderFactory class="net.sf.ehcache.loader.ComponentBLoader"/>
+    </cache>
+
+    <cache name="NullLoaderFirstCache"
+           eternal="true"
+           maxElementsInMemory="100"
+           overflowToDisk="false">
+        <cacheLoaderFactory class="net.sf.ehcache.loader.NullCountingCacheLoaderFactory"/>
+        <cacheLoaderFactory class="net.sf.ehcache.loader.CountingCacheLoaderFactory"/>
+    </cache>
+
+    <cache name="NullLoaderTwiceCache"
+           eternal="true"
+           maxElementsInMemory="100"
+           overflowToDisk="false">
+        <cacheLoaderFactory class="net.sf.ehcache.loader.NullCountingCacheLoaderFactory"/>
+        <cacheLoaderFactory class="net.sf.ehcache.loader.NullCountingCacheLoaderFactory"/>
+    </cache>
+
+    <cache name="NullLoaderLastCache"
+           eternal="true"
+           maxElementsInMemory="100"
+           overflowToDisk="false">
+        <cacheLoaderFactory class="net.sf.ehcache.loader.CountingCacheLoaderFactory"/>
+        <cacheLoaderFactory class="net.sf.ehcache.loader.NullCountingCacheLoaderFactory"/>
+    </cache>
+
+
+</ehcache>

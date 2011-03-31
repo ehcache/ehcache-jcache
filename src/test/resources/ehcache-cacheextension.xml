@@ -1,0 +1,41 @@
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="../../main/config/ehcache.xsd">
+
+    <diskStore path="java.io.tmpdir"/>
+
+    <cacheManagerPeerProviderFactory class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"
+                                     properties="peerDiscovery=automatic, multicastGroupAddress=230.0.0.1, multicastGroupPort=4446, timeToLive=0"/>
+
+
+    <cacheManagerPeerListenerFactory class="net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory"
+                                     properties="hostName=, port=, socketTimeoutMillis="/>
+
+
+    <defaultCache
+            maxElementsInMemory="10"
+            eternal="false"
+            timeToIdleSeconds="5"
+            timeToLiveSeconds="10"
+            overflowToDisk="true"
+            >
+        <cacheExtensionFactory
+                class="net.sf.ehcache.extension.TestCacheExtensionFactory"
+                properties="propertyA=defaultValue"/>
+    </defaultCache>
+
+
+    <!--
+    A cache which has a CacheExtension. The tests rely on their only being one of these configured
+    -->
+    <cache name="testCacheExtensionCache"
+           maxElementsInMemory="10"
+           eternal="false"
+           timeToIdleSeconds="100"
+           timeToLiveSeconds="100"
+           overflowToDisk="false">
+        <cacheExtensionFactory
+                class="net.sf.ehcache.extension.TestCacheExtensionFactory"
+                properties="propertyA=valueA"/>
+    </cache>
+
+</ehcache>
