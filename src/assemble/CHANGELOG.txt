@@ -19,7 +19,7 @@ $Id: CHANGELOG.txt,v 1.31 2006/03/07 00:05:56 gregluck Exp $
         Initial release of the standalone module.
     </action>
     <action dev="Greg Luck" type="update">
-        net.sf.jsr107cache was updated to remove checked exceptions from CacheLoader, so as to make the standalone
+        javax.cache was updated to remove checked exceptions from CacheLoader, so as to make the standalone
          implementation possible.
     </action>
     <action dev="Greg Luck" type="add">

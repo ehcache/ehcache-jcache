@@ -21,7 +21,7 @@ import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.CacheException;
 
-import net.sf.jsr107cache.CacheListener;
+import javax.cache.CacheListener;
 
 /**
  * This adaptor permits JCACHE {@link CacheListener}s to be registered as Ehcache {@link CacheEventListener}s.

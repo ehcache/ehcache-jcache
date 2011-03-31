@@ -19,10 +19,10 @@ package net.sf.ehcache.jcache;
 
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
-import net.sf.jsr107cache.Cache;
-import net.sf.jsr107cache.CacheException;
-import net.sf.jsr107cache.CacheFactory;
-import net.sf.jsr107cache.CacheManager;
+import javax.cache.Cache;
+import javax.cache.CacheException;
+import javax.cache.CacheFactory;
+import javax.cache.CacheManager;
 import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -77,8 +77,8 @@ public class CacheManagerTest {
 
 
     /**
-     * CacheManager requires a resource called net.sf.jsr107cache.CacheFactory containing the fully
-     * qualified class name of a cache factory be at /META-INF/services/net.sf.jsr107cache.CacheFactory.
+     * CacheManager requires a resource called javax.cache.CacheFactory containing the fully
+     * qualified class name of a cache factory be at /META-INF/services/javax.cache.CacheFactory.
      *
      * @throws CacheException
      */
@@ -92,8 +92,8 @@ public class CacheManagerTest {
 
 
     /**
-     * CacheManager requires a resource called net.sf.jsr107cache.CacheFactory containing the fully
-     * qualified class name of a cache factory be at /META-INF/services/net.sf.jsr107cache.CacheFactory.
+     * CacheManager requires a resource called javax.cache.CacheFactory containing the fully
+     * qualified class name of a cache factory be at /META-INF/services/javax.cache.CacheFactory.
      * <p/>
      * Create a cache using found factory
      *

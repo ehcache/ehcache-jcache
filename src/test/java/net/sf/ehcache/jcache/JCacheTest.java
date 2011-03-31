@@ -43,11 +43,11 @@ import net.sf.ehcache.exceptionhandler.CountingExceptionHandler;
 import net.sf.ehcache.loader.CacheLoader;
 import net.sf.ehcache.loader.CountingCacheLoader;
 import net.sf.ehcache.loader.ExceptionThrowingLoader;
-import net.sf.jsr107cache.Cache;
-import net.sf.jsr107cache.CacheEntry;
-import net.sf.jsr107cache.CacheException;
-import net.sf.jsr107cache.CacheManager;
-import net.sf.jsr107cache.CacheStatistics;
+import javax.cache.Cache;
+import javax.cache.CacheEntry;
+import javax.cache.CacheException;
+import javax.cache.CacheManager;
+import javax.cache.CacheStatistics;
 
 import org.junit.After;
 import org.junit.Before;

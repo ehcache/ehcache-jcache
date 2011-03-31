@@ -19,7 +19,7 @@ package net.sf.ehcache.jcache;
 
 import net.sf.ehcache.Statistics;
 
-import net.sf.jsr107cache.CacheStatistics;
+import javax.cache.CacheStatistics;
 import java.io.Serializable;
 
 /**

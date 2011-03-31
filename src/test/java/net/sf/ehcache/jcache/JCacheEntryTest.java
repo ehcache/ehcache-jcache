@@ -19,10 +19,10 @@ package net.sf.ehcache.jcache;
 
 import net.sf.ehcache.AbstractCacheTest;
 import net.sf.ehcache.Element;
-import net.sf.jsr107cache.Cache;
-import net.sf.jsr107cache.CacheEntry;
-import net.sf.jsr107cache.CacheException;
-import net.sf.jsr107cache.CacheManager;
+import javax.cache.Cache;
+import javax.cache.CacheEntry;
+import javax.cache.CacheException;
+import javax.cache.CacheManager;
 import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

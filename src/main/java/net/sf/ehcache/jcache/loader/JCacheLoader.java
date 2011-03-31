@@ -30,7 +30,7 @@ import java.util.Map;
  * @author Greg Luck
  * @version $Id$
  */
-public interface JCacheLoader extends net.sf.jsr107cache.CacheLoader, net.sf.ehcache.loader.CacheLoader {
+public interface JCacheLoader extends javax.cache.CacheLoader, net.sf.ehcache.loader.CacheLoader {
 
 
     /**

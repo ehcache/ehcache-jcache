@@ -19,7 +19,7 @@ package net.sf.ehcache.loader;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Status;
 import net.sf.ehcache.jcache.loader.JCacheLoader;
-import net.sf.jsr107cache.CacheException;
+import javax.cache.CacheException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +57,7 @@ public class CountingCacheLoader implements JCacheLoader {
      *
      * @param key the key identifying the object being loaded
      * @return The object that is to be stored in the cache.
-     * @throws net.sf.jsr107cache.CacheException
+     * @throws javax.cache.CacheException
      *
      */
     public Object load(Object key) {
@@ -77,7 +77,7 @@ public class CountingCacheLoader implements JCacheLoader {
      *
      * @param keys a Collection of keys identifying the objects to be loaded
      * @return A Map of objects that are to be stored in the cache.
-     * @throws net.sf.jsr107cache.CacheException
+     * @throws javax.cache.CacheException
      *
      */
 
@@ -113,7 +113,7 @@ public class CountingCacheLoader implements JCacheLoader {
      * @param key
      * @param argument
      * @return
-     * @throws net.sf.jsr107cache.CacheException
+     * @throws javax.cache.CacheException
      *
      */
     public Object load(Object key, Object argument) {
@@ -134,7 +134,7 @@ public class CountingCacheLoader implements JCacheLoader {
      * @param keys
      * @param argument
      * @return
-     * @throws net.sf.jsr107cache.CacheException
+     * @throws javax.cache.CacheException
      *
      */
     public Map loadAll(Collection keys, Object argument) {

@@ -16,7 +16,7 @@
 
 package net.sf.ehcache.jcache;
 
-import net.sf.jsr107cache.CacheListener;
+import javax.cache.CacheListener;
 
 import java.util.ArrayList;
 import java.util.Collections;

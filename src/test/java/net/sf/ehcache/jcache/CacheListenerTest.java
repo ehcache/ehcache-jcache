@@ -18,7 +18,7 @@ package net.sf.ehcache.jcache;
 
 import net.sf.ehcache.AbstractCacheTest;
 import net.sf.ehcache.CacheException;
-import net.sf.jsr107cache.Cache;
+import javax.cache.Cache;
 import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -73,8 +73,8 @@ public class CacheListenerTest extends AbstractCacheTest {
      * <cacheEventListenerFactory class="net.sf.ehcache.event.NullCacheEventListenerFactory"/>
      * </cache>
      */
-    protected Cache getTest1Cache() throws net.sf.jsr107cache.CacheException {
-        Cache cache = net.sf.jsr107cache.CacheManager.getInstance().getCache("listenerTest1");
+    protected Cache getTest1Cache() throws javax.cache.CacheException {
+        Cache cache = javax.cache.CacheManager.getInstance().getCache("listenerTest1");
         if (cache == null) {
             //sampleCache1
             Map env = new HashMap();
@@ -89,21 +89,21 @@ public class CacheListenerTest extends AbstractCacheTest {
             env.put("diskPersistent", "false");
             env.put("diskExpiryThreadIntervalSeconds", "120");
             env.put("cacheLoaderFactoryClassName", "net.sf.ehcache.loader.CountingCacheLoaderFactory");
-            cache = net.sf.jsr107cache.CacheManager.getInstance().getCacheFactory().createCache(env);
-            net.sf.jsr107cache.CacheManager.getInstance().registerCache("listenerTest1", cache);
+            cache = javax.cache.CacheManager.getInstance().getCacheFactory().createCache(env);
+            javax.cache.CacheManager.getInstance().registerCache("listenerTest1", cache);
         }
-        return net.sf.jsr107cache.CacheManager.getInstance().getCache("listenerTest1");
+        return javax.cache.CacheManager.getInstance().getCache("listenerTest1");
     }
 
     /**
      * Tests operations not normally called.
      *
-     * @throws net.sf.jsr107cache.CacheException
+     * @throws javax.cache.CacheException
      *
      * @throws CloneNotSupportedException
      */
     @Test
-    public void testSundryOperations() throws net.sf.jsr107cache.CacheException, CloneNotSupportedException {
+    public void testSundryOperations() throws javax.cache.CacheException, CloneNotSupportedException {
 
         Cache cache = getTest1Cache();
         cache.put("1", new Date());
@@ -125,7 +125,7 @@ public class CacheListenerTest extends AbstractCacheTest {
      * Tests the put listener.
      */
     @Test
-    public void testPutNotifications() throws net.sf.jsr107cache.CacheException {
+    public void testPutNotifications() throws javax.cache.CacheException {
 
         Cache cache = getTest1Cache();
         cache.put("1", new Date());
@@ -160,7 +160,7 @@ public class CacheListenerTest extends AbstractCacheTest {
      * Tests the remove notifier
      */
     @Test
-    public void testRemoveNotifications() throws net.sf.jsr107cache.CacheException {
+    public void testRemoveNotifications() throws javax.cache.CacheException {
 
         Serializable key = "1";
         Serializable value = new Date();
@@ -193,7 +193,7 @@ public class CacheListenerTest extends AbstractCacheTest {
      * Tests the expiry notifier. These are mapped to evictions in the JCache adaptor.
      */
     @Test
-    public void testExpiryNotifications() throws InterruptedException, net.sf.jsr107cache.CacheException {
+    public void testExpiryNotifications() throws InterruptedException, javax.cache.CacheException {
 
         Serializable key = "1";
         Serializable value = new Date();
@@ -293,7 +293,7 @@ public class CacheListenerTest extends AbstractCacheTest {
      * Listener notification is required for correct operation of cluster invalidation.
      */
     @Test
-    public void testRemoveNotificationWhereElementDidNotExist() throws net.sf.jsr107cache.CacheException {
+    public void testRemoveNotificationWhereElementDidNotExist() throws javax.cache.CacheException {
 
         Serializable key = "1";
 

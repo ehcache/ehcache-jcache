@@ -21,10 +21,10 @@ import net.sf.ehcache.Element;
 import net.sf.ehcache.event.CacheEventListener;
 import net.sf.ehcache.jcache.loader.JCacheLoader;
 import net.sf.ehcache.loader.CacheLoader;
-import net.sf.jsr107cache.CacheEntry;
-import net.sf.jsr107cache.CacheException;
-import net.sf.jsr107cache.CacheListener;
-import net.sf.jsr107cache.CacheStatistics;
+import javax.cache.CacheEntry;
+import javax.cache.CacheException;
+import javax.cache.CacheListener;
+import javax.cache.CacheStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +64,7 @@ import java.util.Set;
  * @version $Id: JCache.java 796 2008-10-09 02:39:03Z gregluck $
  * @since 1.3
  */
-public class JCache implements net.sf.jsr107cache.Cache {
+public class JCache implements javax.cache.Cache {
 
     private static final Logger LOG = LoggerFactory.getLogger(JCache.class);
 
@@ -101,7 +101,7 @@ public class JCache implements net.sf.jsr107cache.Cache {
      * @see "class description for recommended usage"
      * @since 1.3
      */
-    public JCache(Ehcache cache, net.sf.jsr107cache.CacheLoader cacheLoader) {
+    public JCache(Ehcache cache, javax.cache.CacheLoader cacheLoader) {
         this.cache = cache;
         setCacheLoaderNullCheck((JCacheLoader) cacheLoader);
     }
@@ -347,7 +347,7 @@ public class JCache implements net.sf.jsr107cache.Cache {
      * @param keys           the collection of the keys whose associated values to be loaded into this cache by using the associated
      *                       cacheloader if this cache doesn't contain them.
      * @param loaderArgument this can be anything at all. It only needs to make sense to the loader
-     * @throws net.sf.jsr107cache.CacheException
+     * @throws javax.cache.CacheException
      *          if something goes wrong with the load
      */
     public void loadAll(final Collection keys, final Object loaderArgument) throws CacheException {

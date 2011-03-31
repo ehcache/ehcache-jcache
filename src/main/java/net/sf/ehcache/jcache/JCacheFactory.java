@@ -20,10 +20,10 @@ import net.sf.ehcache.jcache.loader.JCacheLoaderFactory;
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 import net.sf.ehcache.util.ClassLoaderUtil;
 import net.sf.ehcache.util.PropertyUtil;
-import net.sf.jsr107cache.Cache;
-import net.sf.jsr107cache.CacheException;
-import net.sf.jsr107cache.CacheFactory;
-import net.sf.jsr107cache.CacheLoader;
+import javax.cache.Cache;
+import javax.cache.CacheException;
+import javax.cache.CacheFactory;
+import javax.cache.CacheLoader;
 
 import java.util.Map;
 import java.util.Properties;

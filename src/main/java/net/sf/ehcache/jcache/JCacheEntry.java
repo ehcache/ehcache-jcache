@@ -17,7 +17,7 @@
 package net.sf.ehcache.jcache;
 
 import net.sf.ehcache.Element;
-import net.sf.jsr107cache.CacheEntry;
+import javax.cache.CacheEntry;
 
 /**
  * An implementation of CacheEntry.
