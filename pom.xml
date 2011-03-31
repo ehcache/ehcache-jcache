@@ -22,7 +22,7 @@
         </dependency>
         <dependency>
             <groupId>javax.cache</groupId>
-            <artifactId>jsr107</artifactId>
+            <artifactId>jsr107-api</artifactId>
             <version>0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
