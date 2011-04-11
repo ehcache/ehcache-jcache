@@ -39,6 +39,11 @@ Mailing list
 
 Please join the Ehcache mailing list if you're interested in using or developing the software: <http://ehcache.org/mail-lists.html>
 
+IRC
+---
+
+We will be using the `#jsr107` channel on Freenode for chat.
+
 
 Issue tracker
 -------------
