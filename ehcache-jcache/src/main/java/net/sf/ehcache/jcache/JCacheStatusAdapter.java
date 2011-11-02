@@ -13,6 +13,9 @@ public class JCacheStatusAdapter {
         if (status.intValue() == net.sf.ehcache.Status.STATUS_UNINITIALISED.intValue()) {
             return Status.UNINITIALISED;
         }
+        if (status.intValue() == net.sf.ehcache.Status.STATUS_SHUTDOWN.intValue()) {
+            return Status.STOPPED;
+        }
         return Status.UNINITIALISED;
     }
 }
