@@ -273,7 +273,7 @@ public class JCache<K, V> implements Cache<K, V> {
     @Override
     public V getAndPut(K key, V value) throws CacheException {
         checkStatusStarted();
-        if (key == null) {
+        if (key == null || value == null) {
             throw new NullPointerException("Key cannot be null");
         }
         try {
@@ -467,7 +467,8 @@ public class JCache<K, V> implements Cache<K, V> {
      */
     @Override
     public boolean replace(K key, V oldValue, V newValue) throws CacheException {
-        throw new UnsupportedOperationException("replace is not implemented in net.sf.ehcache.jcache.JCache");
+        checkStatusStarted();
+        return ehcache.replace(new Element(key, oldValue), new Element(key, newValue));
     }
 
     /**
@@ -497,7 +498,8 @@ public class JCache<K, V> implements Cache<K, V> {
      */
     @Override
     public boolean replace(K key, V value) throws CacheException {
-        throw new UnsupportedOperationException("replace is not implemented in net.sf.ehcache.jcache.JCache");
+        checkStatusStarted();
+        return (ehcache.replace(new Element(key,value)) != null);
     }
 
     /**
@@ -525,7 +527,8 @@ public class JCache<K, V> implements Cache<K, V> {
      */
     @Override
     public V getAndReplace(K key, V value) throws CacheException {
-        throw new UnsupportedOperationException("getAndReplace is not implemented in net.sf.ehcache.jcache.JCache");
+        checkStatusStarted();
+        return (V)(ehcache.replace(new Element(key,value)).getValue());
     }
 
     /**
@@ -539,7 +542,10 @@ public class JCache<K, V> implements Cache<K, V> {
      */
     @Override
     public void removeAll(Collection<? extends K> keys) throws CacheException {
-        throw new UnsupportedOperationException("removeAll is not implemented in net.sf.ehcache.jcache.JCache");
+        checkStatusStarted();
+        for (K key : keys) {
+            remove(key);
+        }
     }
 
     /**
@@ -554,7 +560,8 @@ public class JCache<K, V> implements Cache<K, V> {
      */
     @Override
     public void removeAll() throws CacheException {
-        throw new UnsupportedOperationException("removeAll is not implemented in net.sf.ehcache.jcache.JCache");
+        checkStatusStarted();
+        ehcache.removeAll();
     }
 
     /**
@@ -636,7 +643,13 @@ public class JCache<K, V> implements Cache<K, V> {
      */
     @Override
     public <T> T unwrap(Class<T> cls) {
-        throw new UnsupportedOperationException("unwrap is not implemented in net.sf.ehcache.jcache.JCache");
+        if (this.getClass().isAssignableFrom(cls)) {
+            return (T) this;
+        }
+        if (ehcache.getClass().isAssignableFrom(cls)) {
+            return (T) ehcache;
+        }
+        throw new IllegalArgumentException("Can't cast the the specified class");
     }
 
     /**
