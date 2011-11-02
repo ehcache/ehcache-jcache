@@ -718,6 +718,9 @@ public class JCache<K, V> implements Cache<K, V> {
     @Override
     public void stop() throws CacheException {
         checkStatusStarted();
+        if (cacheManager == null ) {
+           throw new IllegalStateException("Cache Manager is null. Can't stop the cache");
+        }
         cacheManager.removeCache(this.getName());
     }
 
