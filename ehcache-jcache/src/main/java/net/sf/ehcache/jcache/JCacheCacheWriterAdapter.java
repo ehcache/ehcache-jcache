@@ -11,11 +11,15 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class JCacheCacheWriterAdapter implements CacheWriter {
+public class JCacheCacheWriterAdapter<K,V> implements CacheWriter {
     private javax.cache.CacheWriter jsr107CacheWriter;
 
     public JCacheCacheWriterAdapter(javax.cache.CacheWriter jsr107CacheWriter) {
         this.jsr107CacheWriter = jsr107CacheWriter;
+    }
+
+    public javax.cache.CacheWriter getJCacheCacheWriter() {
+        return jsr107CacheWriter;
     }
 
     /**

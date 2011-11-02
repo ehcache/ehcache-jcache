@@ -42,6 +42,9 @@ public class JCache<K, V> implements Cache<K, V> {
      */
     private net.sf.ehcache.Cache ehcache;
     private CacheManager cacheManager;
+    private JCacheCacheLoaderAdapter cacheLoaderAdapter;
+    private JCacheCacheWriterAdapter cacheWriterAdapter;
+    
     private JCacheConfiguration configuration;
 
     public net.sf.ehcache.Cache getEhcache() {
@@ -60,7 +63,7 @@ public class JCache<K, V> implements Cache<K, V> {
      */
     public JCache(net.sf.ehcache.Cache ehcache, String cacheManagerName, ClassLoader classLoader) {
         this.ehcache = ehcache;
-        this.cacheManager = cacheManager;
+        this.configuration = new JCacheConfiguration(ehcache.getCacheConfiguration());
     }
 
     private void checkStatusStarted() {
@@ -570,7 +573,7 @@ public class JCache<K, V> implements Cache<K, V> {
      */
     @Override
     public CacheConfiguration getConfiguration() {
-        throw new UnsupportedOperationException("getConfiguration is not implemented in net.sf.ehcache.jcache.JCache");
+        return configuration;
     }
 
     /**
@@ -691,6 +694,14 @@ public class JCache<K, V> implements Cache<K, V> {
     public Iterator<Entry<K, V>> iterator() {
         throw new UnsupportedOperationException("iterator is not implemented in net.sf.ehcache.jcache.JCache");
     }
+    
+    protected JCacheCacheLoaderAdapter<K,V> getCacheLoaderAdapter() {
+        return this.cacheLoaderAdapter;
+    }
+    
+    protected JCacheCacheWriterAdapter<K,V> getCacheWriterAdapter() {
+        return this.cacheWriterAdapter;
+    }
 
     /**
      * Callable used for cache loader.
@@ -712,8 +723,9 @@ public class JCache<K, V> implements Cache<K, V> {
         public V call() throws Exception {
             //Entry<K, V> entry = cacheLoader.load(key);
             //cache.put(entry.getKey(), entry.getValue());
-            Element element = cache.ehcache.getWithLoader(key, (net.sf.ehcache.loader.CacheLoader) cache.ehcache.getRegisteredCacheExtensions().iterator().next(), null);
-            return (V) element.getValue();
+            return (V) cache.getCacheLoaderAdapter().load(key);
+            //Element element = cache.ehcache.getWithLoader(key, (net.sf.ehcache.loader.CacheLoader) cache.ehcache.getRegisteredCacheExtensions().iterator().next(), null);
+            //return (V) element.getValue();
         }
     }
 
@@ -748,16 +760,16 @@ public class JCache<K, V> implements Cache<K, V> {
         private String cacheName;
         private ClassLoader classLoader;
         
-        private net.sf.ehcache.config.CacheConfiguration cacheConfiguration;
+        private JCacheConfiguration cacheConfiguration;
         private CacheLoader<K, V> cacheLoader;
         private CacheWriter<K, V> cacheWriter;
 
         private final CopyOnWriteArraySet<ListenerRegistration<K, V>> listeners = new CopyOnWriteArraySet<ListenerRegistration<K, V>>();
         private final JCacheConfiguration.Builder configurationBuilder = new JCacheConfiguration.Builder();
-        private boolean writeThrough;
-        private boolean readThrough;
-        private boolean storeByValue;
-        private boolean enableStats;
+//        private boolean writeThrough;
+//        private boolean readThrough;
+//        private boolean storeByValue;
+//        private boolean enableStats;
         private String cacheManagerName;
 
 
@@ -765,7 +777,6 @@ public class JCache<K, V> implements Cache<K, V> {
 
         public Builder(String cacheName, String cacheManagerName, ClassLoader classLoader) {
             this.cacheName = cacheName;
-            cacheConfiguration = new net.sf.ehcache.config.CacheConfiguration();
             this.cacheManagerName = cacheManagerName;
             this.classLoader = classLoader;
         }
@@ -777,27 +788,34 @@ public class JCache<K, V> implements Cache<K, V> {
             if (cacheName == null) {
                 throw new InvalidConfigurationException("cache name can't be null");
             }
-            if (readThrough && (cacheLoader == null)) {
+            cacheConfiguration = configurationBuilder.build();
+            if (cacheConfiguration.isReadThrough() && (cacheLoader == null)) {
                 throw new InvalidConfigurationException("cacheLoader can't be null on a readThrough cache");
             }
-            if (writeThrough && (cacheWriter == null)) {
+            if (cacheConfiguration.isWriteThrough() && (cacheWriter == null)) {
                 throw new InvalidConfigurationException("cacheWriter can't be null on a writeThrough cache");
             }
 
 
-            cacheConfiguration.setName(cacheName);
-            cacheConfiguration.setCopyOnWrite(this.storeByValue);
-            cacheConfiguration.setStatistics(enableStats);
+            cacheConfiguration.getCacheConfiguration().setName(cacheName);
+            cacheConfiguration.getCacheConfiguration().setCopyOnWrite(cacheConfiguration.getCacheConfiguration().isCopyOnWrite());
+            cacheConfiguration.getCacheConfiguration().setStatistics(cacheConfiguration.isStatisticsEnabled());
 
-            // probably not best for default, but for now its good
-            cacheConfiguration.setDiskPersistent(false);
+            // not best for default, but for now its good
+            cacheConfiguration.getCacheConfiguration().setDiskPersistent(false);
 
-            net.sf.ehcache.Cache cache = new net.sf.ehcache.Cache(cacheConfiguration);
+            net.sf.ehcache.Cache cache = new net.sf.ehcache.Cache(cacheConfiguration.getCacheConfiguration());
+            JCache<K,V> jcache = new JCache<K, V>(cache, this.cacheManagerName, this.classLoader);
+            
             if (cacheLoader != null) {
-                cache.registerCacheLoader(new JCacheCacheLoaderAdapter(cacheLoader));
+                jcache.cacheLoaderAdapter = (new JCacheCacheLoaderAdapter(cacheLoader));
+                // needed for the loadAll
+                jcache.ehcache.registerCacheLoader(jcache.cacheLoaderAdapter);
             }
             if (cacheWriter != null) {
-                cache.registerCacheWriter(new JCacheCacheWriterAdapter(cacheWriter));
+                jcache.cacheWriterAdapter = (new JCacheCacheWriterAdapter(cacheWriter));
+                // needed for the writeAll
+                jcache.ehcache.registerCacheWriter(jcache.cacheWriterAdapter);
             }
             
             return new JCache<K, V>(cache, this.cacheManagerName, this.classLoader);

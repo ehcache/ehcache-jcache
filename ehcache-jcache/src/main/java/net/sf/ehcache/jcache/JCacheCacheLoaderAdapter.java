@@ -14,11 +14,15 @@ import java.util.Map;
 * Time: 1:26 PM
 * To change this template use File | Settings | File Templates.
 */
-public class JCacheCacheLoaderAdapter implements net.sf.ehcache.loader.CacheLoader {
+public class JCacheCacheLoaderAdapter<K,V> implements net.sf.ehcache.loader.CacheLoader {
     private javax.cache.CacheLoader cacheLoader;
 
     public JCacheCacheLoaderAdapter(CacheLoader cacheLoader) {
         this.cacheLoader = cacheLoader;
+    }
+
+    public CacheLoader getJCacheCacheLoader() {
+        return cacheLoader;
     }
 
     public void setCacheLoader(CacheLoader cacheLoader) {

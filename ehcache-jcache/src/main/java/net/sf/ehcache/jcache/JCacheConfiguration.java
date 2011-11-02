@@ -2,10 +2,7 @@ package net.sf.ehcache.jcache;
 
 
 import net.sf.ehcache.config.CacheConfiguration;
-import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 
-import javax.cache.CacheLoader;
-import javax.cache.CacheWriter;
 import javax.cache.Caching;
 import javax.cache.InvalidConfigurationException;
 import javax.cache.OptionalFeature;
@@ -19,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Set of
  */
-public class JCacheConfiguration extends CacheConfiguration implements javax.cache.CacheConfiguration {
+public class JCacheConfiguration implements javax.cache.CacheConfiguration {
 
     private final AtomicBoolean readThrough;
     private final AtomicBoolean writeThrough;
@@ -27,7 +24,10 @@ public class JCacheConfiguration extends CacheConfiguration implements javax.cac
     private volatile IsolationLevel isolationLevel;
     private volatile Mode transactionMode;
     private final Duration[] timeToLive;
-    private volatile JCache jcache;
+    private final CacheConfiguration cacheConfiguration = new CacheConfiguration();
+    
+    private static final boolean DEFAULT_READ_THROUGH = false;
+    private static final boolean DEFAULT_WRITE_THROUGH = false;
 
 
     private JCacheConfiguration(boolean readThrough,
@@ -39,14 +39,22 @@ public class JCacheConfiguration extends CacheConfiguration implements javax.cac
         this.readThrough = new AtomicBoolean(readThrough);
         this.writeThrough = new AtomicBoolean(writeThrough);
         if (storeByValue) {
-            this.copyOnRead(true);
-            this.copyOnWrite(true);
+            cacheConfiguration.copyOnRead(true);
+            cacheConfiguration.copyOnWrite(true);
         }
-        this.statistics(statisticsEnabled);
+        cacheConfiguration.statistics(statisticsEnabled);
         this.isolationLevel = isolationLevel;
         this.transactionMode = transactionMode;
         this.timeToLive = timeToLive;
     }
+    
+    public JCacheConfiguration(CacheConfiguration ehCacheConfiguration) {
+        this.readThrough = new AtomicBoolean(DEFAULT_READ_THROUGH);
+        this.writeThrough = new AtomicBoolean(DEFAULT_WRITE_THROUGH);
+        timeToLive = Builder.defaultTimeToLive();
+    }
+    
+    
 
     /**
      * Whether the cache is a read-through cache. A CacheLoader should be configured for read through caches
@@ -99,7 +107,7 @@ public class JCacheConfiguration extends CacheConfiguration implements javax.cac
      */
     @Override
     public boolean isStoreByValue() {
-        return (isCopyOnRead() && isCopyOnWrite());
+        return (cacheConfiguration.isCopyOnRead() && cacheConfiguration.isCopyOnWrite());
     }
 
     /**
@@ -107,7 +115,7 @@ public class JCacheConfiguration extends CacheConfiguration implements javax.cac
      */
     @Override
     public boolean isStatisticsEnabled() {
-        return getStatistics();
+        return cacheConfiguration.getStatistics();
     }
 
     /**
@@ -115,7 +123,7 @@ public class JCacheConfiguration extends CacheConfiguration implements javax.cac
      */
     @Override
     public void setStatisticsEnabled(boolean enableStatistics) {
-        statistics(enableStatistics);
+        cacheConfiguration.statistics(enableStatistics);
     }
 
     /**
@@ -136,14 +144,7 @@ public class JCacheConfiguration extends CacheConfiguration implements javax.cac
         return transactionMode;
     }
 
-    /**
-     * Set the backing cache to expose more configuration.
-     *
-     * @param jcache the backing cache.
-     */
-    void setJCache(JCache jcache) {
-        this.jcache = jcache;
-    }
+
 //
 //        /**
 //         * Gets the registered {@link javax.cache.CacheLoader}, if any.
@@ -168,20 +169,20 @@ public class JCacheConfiguration extends CacheConfiguration implements javax.cac
     @Override
     public void setExpiry(ExpiryType type, Duration duration) {
         if (type == ExpiryType.ACCESSED) {
-            this.setTimeToIdleSeconds(duration.getTimeUnit().toSeconds(duration.getTimeToLive()));
+            cacheConfiguration.setTimeToIdleSeconds(duration.getTimeUnit().toSeconds(duration.getTimeToLive()));
         }
         if (type == ExpiryType.MODIFIED) {
-            this.setTimeToLiveSeconds(duration.getTimeUnit().toSeconds(duration.getTimeToLive()));
+            cacheConfiguration.setTimeToLiveSeconds(duration.getTimeUnit().toSeconds(duration.getTimeToLive()));
         }
     }
 
     @Override
     public Duration getExpiry(ExpiryType type) {
         if (type == ExpiryType.ACCESSED) {
-            return new Duration(TimeUnit.SECONDS, this.getTimeToIdleSeconds());
+            return new Duration(TimeUnit.SECONDS, cacheConfiguration.getTimeToIdleSeconds());
         }
         if (type == ExpiryType.MODIFIED) {
-            return new Duration(TimeUnit.SECONDS, this.getTimeToLiveSeconds());
+            return new Duration(TimeUnit.SECONDS, cacheConfiguration.getTimeToLiveSeconds());
         }
         return null;
     }
@@ -194,7 +195,6 @@ public class JCacheConfiguration extends CacheConfiguration implements javax.cac
         JCacheConfiguration that = (JCacheConfiguration) o;
 
         if (isolationLevel != that.isolationLevel) return false;
-        if (jcache != null ? !jcache.equals(that.jcache) : that.jcache != null) return false;
         if (readThrough != null ? !readThrough.equals(that.readThrough) : that.readThrough != null) return false;
         if (!Arrays.equals(timeToLive, that.timeToLive)) return false;
         if (transactionMode != that.transactionMode) return false;
@@ -210,8 +210,11 @@ public class JCacheConfiguration extends CacheConfiguration implements javax.cac
         result = 31 * result + (isolationLevel != null ? isolationLevel.hashCode() : 0);
         result = 31 * result + (transactionMode != null ? transactionMode.hashCode() : 0);
         result = 31 * result + (timeToLive != null ? Arrays.hashCode(timeToLive) : 0);
-        result = 31 * result + (jcache != null ? jcache.hashCode() : 0);
         return result;
+    }
+
+    public CacheConfiguration getCacheConfiguration() {
+        return cacheConfiguration;
     }
 
     /**
@@ -240,10 +243,7 @@ public class JCacheConfiguration extends CacheConfiguration implements javax.cac
          * Constructor
          */
         public Builder() {
-            timeToLive = new Duration[ExpiryType.values().length];
-            for (int i = 0; i < timeToLive.length; i++) {
-                timeToLive[i] = DEFAULT_TIME_TO_LIVE;
-            }
+            timeToLive = defaultTimeToLive();
         }
 
         /**
@@ -336,6 +336,14 @@ public class JCacheConfiguration extends CacheConfiguration implements javax.cac
         public JCacheConfiguration build() {
             return new JCacheConfiguration(readThrough, writeThrough, storeByValue, statisticsEnabled,
                     isolationLevel, transactionMode, timeToLive);
+        }
+
+        protected static Duration[] defaultTimeToLive() {
+            Duration[] ttl = new Duration[ExpiryType.values().length];
+            for (int i = 0; i < ttl.length; i++) {
+                ttl[i] = DEFAULT_TIME_TO_LIVE;
+            }
+            return ttl;
         }
     }
 }

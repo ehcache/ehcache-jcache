@@ -264,6 +264,10 @@ public class JCacheManager implements javax.cache.CacheManager {
     }
 
     private void addInternal(JCache cache) {
+        // remove the cache if it already exists
+        if (ehcacheManager.getCache(cache.getName()) != null) {
+            ehcacheManager.removeCache(cache.getName());
+        }
         ehcacheManager.addCache(cache.getEhcache());
     }
 
