@@ -190,7 +190,13 @@ public class JCache<K, V> implements Cache<K, V> {
 
     private void checkKey(Object key) {
         if (key == null) {
-            throw new NullPointerException("key");
+            throw new NullPointerException("key can't be null");
+        }
+    }
+
+    private void checkValue(Object value) {
+        if (value == null) {
+            throw new NullPointerException("value can't be null");
         }
     }
 
@@ -243,8 +249,7 @@ public class JCache<K, V> implements Cache<K, V> {
         checkStatusStarted();
         if (!(configuration.isStatisticsEnabled())) {
             return null;
-        }
-        else {
+        } else {
             return new JCacheStatistics(this, ehcache.getLiveCacheStatistics());
         }
     }
@@ -271,6 +276,9 @@ public class JCache<K, V> implements Cache<K, V> {
      */
     @Override
     public void put(K key, V value) throws CacheException {
+        checkStatusStarted();
+        checkKey(key);
+        checkValue(value);
         ehcache.put(new Element(key, value));
     }
 
@@ -709,6 +717,7 @@ public class JCache<K, V> implements Cache<K, V> {
      */
     @Override
     public void stop() throws CacheException {
+        checkStatusStarted();
         cacheManager.removeCache(this.getName());
     }
 
