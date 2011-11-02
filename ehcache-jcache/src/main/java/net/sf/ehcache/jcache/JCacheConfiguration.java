@@ -15,7 +15,11 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public final class JCacheConfiguration extends CacheConfiguration implements javax.cache.CacheConfiguration {
+
+/**
+ * Set of
+ */
+public class JCacheConfiguration extends CacheConfiguration implements javax.cache.CacheConfiguration {
 
     private final AtomicBoolean readThrough;
     private final AtomicBoolean writeThrough;

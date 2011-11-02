@@ -586,7 +586,7 @@ public class JCache<K, V> implements Cache<K, V> {
      * @throws NullPointerException if any of the arguments are null.
      */
     @Override
-    public boolean registerCacheEntryListener(CacheEntryListener<K, V> kvCacheEntryListener, NotificationScope scope, boolean synchronous) {
+    public boolean registerCacheEntryListener(CacheEntryListener<K, V> cacheEntryListener, NotificationScope scope, boolean synchronous) {
         throw new UnsupportedOperationException("registerCacheEntryListener is not implemented in net.sf.ehcache.jcache.JCache");
     }
 
@@ -745,7 +745,6 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     public static class Builder<K, V> implements CacheBuilder<K, V> {
-        private String name;
         private String cacheName;
         private ClassLoader classLoader;
         
@@ -765,7 +764,7 @@ public class JCache<K, V> implements Cache<K, V> {
         //private final JCache.Builder<K, V> cacheBuilder;
 
         public Builder(String cacheName, String cacheManagerName, ClassLoader classLoader) {
-            this.name = cacheName;
+            this.cacheName = cacheName;
             cacheConfiguration = new net.sf.ehcache.config.CacheConfiguration();
             this.cacheManagerName = cacheManagerName;
             this.classLoader = classLoader;
@@ -775,6 +774,9 @@ public class JCache<K, V> implements Cache<K, V> {
 
         @Override
         public JCache<K, V> build() {
+            if (cacheName == null) {
+                throw new InvalidConfigurationException("cache name can't be null");
+            }
             if (readThrough && (cacheLoader == null)) {
                 throw new InvalidConfigurationException("cacheLoader can't be null on a readThrough cache");
             }

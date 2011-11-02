@@ -194,6 +194,9 @@ public class JCacheManager implements javax.cache.CacheManager {
         private final JCache.Builder<K, V> cacheBuilder;
 
         public JCacheBuilder(String cacheName) {
+            if (cacheName == null) {
+                throw new NullPointerException("Cache name cannot be null");
+            }
             cacheBuilder = new JCache.Builder<K, V>(cacheName, ehcacheManager.getName(), classLoader);
         }
 
