@@ -44,7 +44,7 @@ public class JCache<K, V> implements Cache<K, V> {
     private CacheManager cacheManager;
     private JCacheCacheLoaderAdapter cacheLoaderAdapter;
     private JCacheCacheWriterAdapter cacheWriterAdapter;
-    
+
     private JCacheConfiguration configuration;
 
     public net.sf.ehcache.Cache getEhcache() {
@@ -86,8 +86,28 @@ public class JCache<K, V> implements Cache<K, V> {
     @Override
     public V get(Object key) throws CacheException {
         checkKey(key);
-        return (V) ehcache.get(key).getValue();
+        V value = (V) ehcache.get(key).getValue();
+        if (value == null) {
+            if (cacheLoaderAdapter != null && configuration.isReadThrough()) {
+                return getFromLoader(key);
+            } else {
+                return null;
+            }
+        }
+        return value;
     }
+
+    private V getFromLoader(Object key) {
+        Cache.Entry<K, V> entry = (Entry<K, V>) cacheLoaderAdapter.load(key);
+        if (entry != null) {
+            ehcache.put(new Element(entry.getKey(), entry.getValue()));
+            return entry.getValue();
+        } else {
+            return null;
+        }
+
+    }
+
 
     /**
      * The getAll method will return, from the cache, a {@link java.util.Map} of the objects
@@ -499,7 +519,7 @@ public class JCache<K, V> implements Cache<K, V> {
     @Override
     public boolean replace(K key, V value) throws CacheException {
         checkStatusStarted();
-        return (ehcache.replace(new Element(key,value)) != null);
+        return (ehcache.replace(new Element(key, value)) != null);
     }
 
     /**
@@ -528,7 +548,7 @@ public class JCache<K, V> implements Cache<K, V> {
     @Override
     public V getAndReplace(K key, V value) throws CacheException {
         checkStatusStarted();
-        return (V)(ehcache.replace(new Element(key,value)).getValue());
+        return (V) (ehcache.replace(new Element(key, value)).getValue());
     }
 
     /**
@@ -707,12 +727,12 @@ public class JCache<K, V> implements Cache<K, V> {
     public Iterator<Entry<K, V>> iterator() {
         throw new UnsupportedOperationException("iterator is not implemented in net.sf.ehcache.jcache.JCache");
     }
-    
-    protected JCacheCacheLoaderAdapter<K,V> getCacheLoaderAdapter() {
+
+    protected JCacheCacheLoaderAdapter<K, V> getCacheLoaderAdapter() {
         return this.cacheLoaderAdapter;
     }
-    
-    protected JCacheCacheWriterAdapter<K,V> getCacheWriterAdapter() {
+
+    protected JCacheCacheWriterAdapter<K, V> getCacheWriterAdapter() {
         return this.cacheWriterAdapter;
     }
 
@@ -772,14 +792,14 @@ public class JCache<K, V> implements Cache<K, V> {
     public static class Builder<K, V> implements CacheBuilder<K, V> {
         private String cacheName;
         private ClassLoader classLoader;
-        
+
         private JCacheConfiguration cacheConfiguration;
         private CacheLoader<K, V> cacheLoader;
         private CacheWriter<K, V> cacheWriter;
 
         private final CopyOnWriteArraySet<ListenerRegistration<K, V>> listeners = new CopyOnWriteArraySet<ListenerRegistration<K, V>>();
         private final JCacheConfiguration.Builder configurationBuilder = new JCacheConfiguration.Builder();
-//        private boolean writeThrough;
+        //        private boolean writeThrough;
 //        private boolean readThrough;
 //        private boolean storeByValue;
 //        private boolean enableStats;
@@ -793,7 +813,6 @@ public class JCache<K, V> implements Cache<K, V> {
             this.cacheManagerName = cacheManagerName;
             this.classLoader = classLoader;
         }
-
 
 
         @Override
@@ -818,8 +837,8 @@ public class JCache<K, V> implements Cache<K, V> {
             cacheConfiguration.getCacheConfiguration().setDiskPersistent(false);
 
             net.sf.ehcache.Cache cache = new net.sf.ehcache.Cache(cacheConfiguration.getCacheConfiguration());
-            JCache<K,V> jcache = new JCache<K, V>(cache, this.cacheManagerName, this.classLoader);
-            
+            JCache<K, V> jcache = new JCache<K, V>(cache, this.cacheManagerName, this.classLoader);
+
             if (cacheLoader != null) {
                 jcache.cacheLoaderAdapter = (new JCacheCacheLoaderAdapter(cacheLoader));
                 // needed for the loadAll
@@ -830,7 +849,7 @@ public class JCache<K, V> implements Cache<K, V> {
                 // needed for the writeAll
                 jcache.ehcache.registerCacheWriter(jcache.cacheWriterAdapter);
             }
-            
+
             return new JCache<K, V>(cache, this.cacheManagerName, this.classLoader);
         }
 
@@ -909,22 +928,22 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-       * A struct :)
-       *
-       * @param <K>
-       * @param <V>
-       */
-      private static final class ListenerRegistration<K, V> {
-          private final CacheEntryListener<K, V> cacheEntryListener;
-          private final NotificationScope scope;
-          private final boolean synchronous;
+     * A struct :)
+     *
+     * @param <K>
+     * @param <V>
+     */
+    private static final class ListenerRegistration<K, V> {
+        private final CacheEntryListener<K, V> cacheEntryListener;
+        private final NotificationScope scope;
+        private final boolean synchronous;
 
-          private ListenerRegistration(CacheEntryListener<K, V> cacheEntryListener, NotificationScope scope, boolean synchronous) {
-              this.cacheEntryListener = cacheEntryListener;
-              this.scope = scope;
-              this.synchronous = synchronous;
-          }
-      }
+        private ListenerRegistration(CacheEntryListener<K, V> cacheEntryListener, NotificationScope scope, boolean synchronous) {
+            this.cacheEntryListener = cacheEntryListener;
+            this.scope = scope;
+            this.synchronous = synchronous;
+        }
+    }
 
 
 }
