@@ -240,7 +240,13 @@ public class JCache<K, V> implements Cache<K, V> {
      */
     @Override
     public CacheStatistics getStatistics() {
-        return new JCacheStatistics(this, ehcache.getLiveCacheStatistics());
+        checkStatusStarted();
+        if (!(configuration.isStatisticsEnabled())) {
+            return null;
+        }
+        else {
+            return new JCacheStatistics(this, ehcache.getLiveCacheStatistics());
+        }
     }
 
     /**
