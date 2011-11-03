@@ -3,7 +3,6 @@ package net.sf.ehcache.jcache;
 
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.config.CacheConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +11,6 @@ import javax.cache.CacheBuilder;
 import javax.cache.CacheLoader;
 import javax.cache.CacheWriter;
 import javax.cache.Caching;
-import javax.cache.InvalidConfigurationException;
 import javax.cache.OptionalFeature;
 import javax.cache.Status;
 import javax.cache.event.CacheEntryListener;
@@ -58,6 +56,8 @@ public class JCacheManager implements javax.cache.CacheManager {
         ehcacheManager.setName(name);
     }
 
+    //todo:  figure out how to let it load up configured caches via the file system and a named cache but not
+    // cause it to fail the TCK if the ehcache-name.xml stuff doesn't work
     protected CacheManager configureEhCacheManager(String name) {
         String configName;
         // if (name.equals(Caching.DEFAULT_CACHE_MANAGER_NAME)) {
