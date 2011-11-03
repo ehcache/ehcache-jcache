@@ -1,5 +1,6 @@
 package net.sf.ehcache.jcache;
 
+import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,14 +41,14 @@ public class JCache<K, V> implements Cache<K, V> {
     /**
      * An Ehcache backing instance
      */
-    private net.sf.ehcache.Cache ehcache;
+    private Ehcache ehcache;
     private CacheManager cacheManager;
     private JCacheCacheLoaderAdapter cacheLoaderAdapter;
     private JCacheCacheWriterAdapter cacheWriterAdapter;
 
     private JCacheConfiguration configuration;
 
-    public net.sf.ehcache.Cache getEhcache() {
+    public Ehcache getEhcache() {
         return ehcache;
     }
 
@@ -57,12 +58,15 @@ public class JCache<K, V> implements Cache<K, V> {
      * JCache is an adaptor for an Ehcache, and therefore requires an Ehcache in its constructor.
      * <p/>
      *
+     *
+     *
      * @param ehcache An ehcache
      * @see "class description for recommended usage"
      * @since 1.4
      */
-    public JCache(net.sf.ehcache.Cache ehcache, String cacheManagerName, ClassLoader classLoader) {
+    public JCache(Ehcache ehcache, CacheManager cacheManager, ClassLoader classLoader) {
         this.ehcache = ehcache;
+        this.cacheManager = cacheManager;
         this.configuration = new JCacheConfiguration(ehcache.getCacheConfiguration());
     }
 
@@ -821,14 +825,14 @@ public class JCache<K, V> implements Cache<K, V> {
 //        private boolean readThrough;
 //        private boolean storeByValue;
 //        private boolean enableStats;
-        private String cacheManagerName;
+        private CacheManager cacheManager;
 
 
         //private final JCache.Builder<K, V> cacheBuilder;
 
-        public Builder(String cacheName, String cacheManagerName, ClassLoader classLoader) {
+        public Builder(String cacheName, CacheManager cacheManager, ClassLoader classLoader) {
             this.cacheName = cacheName;
-            this.cacheManagerName = cacheManagerName;
+            this.cacheManager = cacheManager;
             this.classLoader = classLoader;
         }
 
@@ -855,7 +859,7 @@ public class JCache<K, V> implements Cache<K, V> {
             cacheConfiguration.getCacheConfiguration().setDiskPersistent(false);
 
             net.sf.ehcache.Cache cache = new net.sf.ehcache.Cache(cacheConfiguration.getCacheConfiguration());
-            JCache<K, V> jcache = new JCache<K, V>(cache, this.cacheManagerName, this.classLoader);
+            JCache<K, V> jcache = new JCache<K, V>(cache, this.cacheManager, this.classLoader);
 
             if (cacheLoader != null) {
                 jcache.cacheLoaderAdapter = (new JCacheCacheLoaderAdapter(cacheLoader));
@@ -868,7 +872,7 @@ public class JCache<K, V> implements Cache<K, V> {
                 jcache.ehcache.registerCacheWriter(jcache.cacheWriterAdapter);
             }
 
-            return new JCache<K, V>(cache, this.cacheManagerName, this.classLoader);
+            return new JCache<K, V>(cache, this.cacheManager, this.classLoader);
         }
 
         /**

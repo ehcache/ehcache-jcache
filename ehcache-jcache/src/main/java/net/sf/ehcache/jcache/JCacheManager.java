@@ -2,6 +2,7 @@ package net.sf.ehcache.jcache;
 
 
 import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.config.CacheConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,12 +94,26 @@ public class JCacheManager implements javax.cache.CacheManager {
 
     @Override
     public <K, V> CacheBuilder<K, V> createCacheBuilder(String cacheName) {
-        return new JCacheBuilder<K, V>(cacheName);
+        return new JCacheBuilder<K, V>(cacheName, this);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public <K, V> Cache<K, V> getCache(String s) {
-        return new JCache<K, V>(ehcacheManager.getCache(s), this.getName(), this.classLoader);
+    public <K, V> Cache<K, V> getCache(String cacheName) {
+        if (status != Status.STARTED) {
+            throw new IllegalStateException("CacheManager must be started before retrieving a cache");
+        }
+        synchronized (caches) {
+            Ehcache ehcache = ehcacheManager.getEhcache(cacheName);
+            if (ehcache == null) {
+                return null;
+            }
+            final JCache<K, V> cache = new JCache<K, V>(ehcache, this, this.classLoader);
+            caches.put(cacheName, cache);
+            return cache;
+        }
     }
 
     /**
@@ -193,11 +208,11 @@ public class JCacheManager implements javax.cache.CacheManager {
     private class JCacheBuilder<K, V> implements CacheBuilder<K, V> {
         private final JCache.Builder<K, V> cacheBuilder;
 
-        public JCacheBuilder(String cacheName) {
+        public JCacheBuilder(String cacheName, JCacheManager jCacheManager) {
             if (cacheName == null) {
                 throw new NullPointerException("Cache name cannot be null");
             }
-            cacheBuilder = new JCache.Builder<K, V>(cacheName, ehcacheManager.getName(), classLoader);
+            cacheBuilder = new JCache.Builder<K, V>(cacheName, jCacheManager, classLoader);
         }
 
         @Override
@@ -264,12 +279,20 @@ public class JCacheManager implements javax.cache.CacheManager {
     }
 
     private void addInternal(JCache cache) {
-        // remove the cache if it already exists
-        if (ehcacheManager.getCache(cache.getName()) != null) {
-            ehcacheManager.removeCache(cache.getName());
-        }
-        ehcacheManager.addCache(cache.getEhcache());
-    }
 
+        synchronized (caches) {
+            if (caches.containsKey(cache.getName())) {
+                ehcacheManager.removeCache(cache.getName());
+            }    
+            // remove the cache if it already exists
+            if (ehcacheManager.getCache(cache.getName()) != null) {
+                ehcacheManager.removeCache(cache.getName());
+            }
+            caches.remove(cache.getName());
+            caches.put(cache.getName(), cache);
+            ehcacheManager.addCache(cache.getEhcache());
+        }
+
+    }
 
 }
