@@ -88,6 +88,7 @@ public class JCache<K, V> implements Cache<K, V> {
      */
     @Override
     public V get(Object key) throws CacheException {
+        checkStatusStarted();
         checkKey(key);
         Element cacheElement = ehcache.get(key);
         if (cacheElement == null) {
@@ -755,6 +756,7 @@ public class JCache<K, V> implements Cache<K, V> {
     
     private class EhcacheIterator implements Iterator<Entry<K, V>> {
            private final Iterator keyIterator;
+           private K lastKey = null;
            
            public EhcacheIterator(Iterator keyIterator) {
                this.keyIterator = keyIterator;
@@ -772,6 +774,7 @@ public class JCache<K, V> implements Cache<K, V> {
             */
            public Entry<K,V> next() {
                final K key = (K) keyIterator.next();
+               lastKey = key;
                return new JCacheEntry<K, V>(ehcache.get(key));
            }
    
@@ -779,7 +782,11 @@ public class JCache<K, V> implements Cache<K, V> {
             * @inheritdoc
             */
            public void remove() {
-               throw new UnsupportedOperationException("remove() is not supported by this iterator");
+               if (lastKey == null) {
+                   throw new IllegalStateException();
+               }
+               ehcache.remove(lastKey);
+               lastKey = null;
            }
        }
     
