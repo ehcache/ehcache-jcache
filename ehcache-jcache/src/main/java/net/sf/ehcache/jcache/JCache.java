@@ -507,6 +507,10 @@ public class JCache<K, V> implements Cache<K, V> {
     @Override
     public boolean replace(K key, V oldValue, V newValue) throws CacheException {
         checkStatusStarted();
+        checkKey(key);
+        checkValue(oldValue);
+        checkValue(newValue);
+
         return ehcache.replace(new Element(key, oldValue), new Element(key, newValue));
     }
 
