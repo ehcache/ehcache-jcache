@@ -159,7 +159,7 @@ public class JCache<K, V> implements Cache<K, V> {
     public boolean containsKey(Object key) throws CacheException {
         checkStatusStarted();
         checkKey(key);
-        return ehcache.get(key) != null;
+        return ehcache.isKeyInCache(key);
     }
 
     /**
