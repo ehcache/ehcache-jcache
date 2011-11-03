@@ -7,9 +7,6 @@ public class JCacheStatusAdapter {
         if (status.intValue() == net.sf.ehcache.Status.STATUS_ALIVE.intValue()) {
             return Status.STARTED;
         }
-        if (status.intValue() == net.sf.ehcache.Status.STATUS_ALIVE.intValue()) {
-            return Status.UNINITIALISED;
-        }
         if (status.intValue() == net.sf.ehcache.Status.STATUS_UNINITIALISED.intValue()) {
             return Status.UNINITIALISED;
         }
