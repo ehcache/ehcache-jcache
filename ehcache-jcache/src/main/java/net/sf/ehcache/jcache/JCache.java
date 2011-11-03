@@ -89,15 +89,15 @@ public class JCache<K, V> implements Cache<K, V> {
     @Override
     public V get(Object key) throws CacheException {
         checkKey(key);
-        V value = (V) ehcache.get(key).getValue();
-        if (value == null) {
-            if (cacheLoaderAdapter != null && configuration.isReadThrough()) {
+        Element cacheElement = ehcache.get(key);
+        if (cacheElement == null) {
+            if (cacheLoaderAdapter != null /* && configuration.isReadThrough() */) {
                 return getFromLoader(key);
             } else {
                 return null;
             }
         }
-        return value;
+        return (V) cacheElement.getValue();
     }
 
     private V getFromLoader(Object key) {
@@ -749,8 +749,40 @@ public class JCache<K, V> implements Cache<K, V> {
      */
     @Override
     public Iterator<Entry<K, V>> iterator() {
-        throw new UnsupportedOperationException("iterator is not implemented in net.sf.ehcache.jcache.JCache");
+        checkStatusStarted();
+        return new EhcacheIterator(ehcache.getKeys().iterator());
     }
+    
+    private class EhcacheIterator implements Iterator<Entry<K, V>> {
+           private final Iterator keyIterator;
+           
+           public EhcacheIterator(Iterator keyIterator) {
+               this.keyIterator = keyIterator;
+           }
+           
+           /**
+            * @inheritdoc
+            */
+           public boolean hasNext() {
+               return keyIterator.hasNext();
+           }
+   
+           /**
+            * @inheritdoc
+            */
+           public Entry<K,V> next() {
+               final K key = (K) keyIterator.next();
+               return new JCacheEntry<K, V>(ehcache.get(key));
+           }
+   
+           /**
+            * @inheritdoc
+            */
+           public void remove() {
+               throw new UnsupportedOperationException("remove() is not supported by this iterator");
+           }
+       }
+    
 
     protected JCacheCacheLoaderAdapter<K, V> getCacheLoaderAdapter() {
         return this.cacheLoaderAdapter;
@@ -874,7 +906,7 @@ public class JCache<K, V> implements Cache<K, V> {
                 jcache.ehcache.registerCacheWriter(jcache.cacheWriterAdapter);
             }
 
-            return new JCache<K, V>(cache, this.cacheManager, this.classLoader);
+            return jcache;
         }
 
         /**
