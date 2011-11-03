@@ -30,6 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 
 
 public class JCache<K, V> implements Cache<K, V> {
@@ -57,8 +58,6 @@ public class JCache<K, V> implements Cache<K, V> {
      * <p/>
      * JCache is an adaptor for an Ehcache, and therefore requires an Ehcache in its constructor.
      * <p/>
-     *
-     *
      *
      * @param ehcache An ehcache
      * @see "class description for recommended usage"
@@ -722,10 +721,13 @@ public class JCache<K, V> implements Cache<K, V> {
     @Override
     public void stop() throws CacheException {
         checkStatusStarted();
-        if (cacheManager == null ) {
-           throw new IllegalStateException("Cache Manager is null. Can't stop the cache");
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            throw new CacheException(e);
         }
-        cacheManager.removeCache(this.getName());
+        ehcache.dispose();
     }
 
     /**
