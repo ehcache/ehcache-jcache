@@ -169,6 +169,9 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
 
     @Override
     public void setExpiry(ExpiryType type, Duration duration) {
+        if (type == null) {
+            throw new NullPointerException("ExpiryType can't be null");
+        }
         if (type == ExpiryType.ACCESSED) {
             cacheConfiguration.setTimeToIdleSeconds(duration.getTimeUnit().toSeconds(duration.getTimeToLive()));
         }
