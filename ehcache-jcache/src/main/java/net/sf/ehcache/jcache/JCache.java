@@ -317,7 +317,7 @@ public class JCache<K, V> implements Cache<K, V> {
         try {
             Element old = ehcache.get(key);
             put(key, value);
-            return (V) old.getValue();
+            return old != null ? (V) old.getValue() : null;
         } catch (Exception e) {
             throw new CacheException("Unable to getAndPut.", e);
         }
@@ -566,7 +566,8 @@ public class JCache<K, V> implements Cache<K, V> {
     @Override
     public V getAndReplace(K key, V value) throws CacheException {
         checkStatusStarted();
-        return (V) (ehcache.replace(new Element(key, value)).getValue());
+        Element replaced = ehcache.replace(new Element(key, value));
+        return replaced != null ? (V) replaced.getValue() : null;
     }
 
     /**
