@@ -100,7 +100,7 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
      */
     @Override
     public void setWriteThrough(boolean writeThrough) {
-        setWriteThrough(writeThrough);
+        this.writeThrough.set(writeThrough);
     }
 
     /**
