@@ -438,6 +438,7 @@ public class JCache<K, V> implements Cache<K, V> {
     public boolean remove(Object key, V oldValue) throws CacheException {
         checkStatusStarted();
         checkKey(key);
+        checkValue(oldValue);
 
         if (containsKey(key) && get(key).equals(oldValue)) {
             return remove(key);
