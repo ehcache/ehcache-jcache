@@ -571,6 +571,8 @@ public class JCache<K, V> implements Cache<K, V> {
     @Override
     public V getAndReplace(K key, V value) throws CacheException {
         checkStatusStarted();
+        checkKey(key);
+        checkValue(value);
         Element replaced = ehcache.replace(new Element(key, value));
         return replaced != null ? (V) replaced.getValue() : null;
     }
@@ -825,7 +827,11 @@ public class JCache<K, V> implements Cache<K, V> {
         public V call() throws Exception {
             //Entry<K, V> entry = cacheLoader.load(key);
             //cache.put(entry.getKey(), entry.getValue());
-            return (V) cache.getCacheLoaderAdapter().load(key);
+            V v = (V) cache.getCacheLoaderAdapter().load(key);
+            if (v == null) {
+                throw new NullPointerException("Can't load null values");
+            }
+            return v;
             //Element element = cache.ehcache.getWithLoader(key, (net.sf.ehcache.loader.CacheLoader) cache.ehcache.getRegisteredCacheExtensions().iterator().next(), null);
             //return (V) element.getValue();
         }
@@ -854,6 +860,9 @@ public class JCache<K, V> implements Cache<K, V> {
             //Entry<K, V> entry = cacheLoader.load(key);
             //cache.put(entry.getKey(), entry.getValue());
             Map<K, V> map = cache.ehcache.getAllWithLoader(keys, null);
+            if (map.values().contains(null)) {
+                throw new NullPointerException("Loader can't load null values");
+            }
             return map;
         }
     }
