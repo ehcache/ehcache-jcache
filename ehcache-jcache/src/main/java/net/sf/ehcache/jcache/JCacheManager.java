@@ -32,7 +32,6 @@ public class JCacheManager implements javax.cache.CacheManager {
     private final HashSet<Class<?>> immutableClasses = new HashSet<Class<?>>();
 
     private final ClassLoader classLoader;
-    private volatile Status status;
     private final CacheManager ehcacheManager;
 
     public CacheManager getEhcacheManager() {
@@ -102,7 +101,7 @@ public class JCacheManager implements javax.cache.CacheManager {
      */
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName) {
-        if (status != Status.STARTED) {
+        if (getStatus() != Status.STARTED) {
             throw new IllegalStateException("CacheManager must be started before retrieving a cache");
         }
         synchronized (caches) {
@@ -141,7 +140,7 @@ public class JCacheManager implements javax.cache.CacheManager {
      */
     @Override
     public boolean removeCache(String cacheName) {
-        if (status != Status.STARTED) {
+        if (getStatus() != Status.STARTED) {
             throw new IllegalStateException();
         }
         if (cacheName == null) {
@@ -185,14 +184,16 @@ public class JCacheManager implements javax.cache.CacheManager {
      */
     @Override
     public void shutdown() {
-        if (status != Status.STARTED) {
+        if (getStatus() != Status.STARTED) {
             throw new IllegalStateException();
         }
         synchronized (immutableClasses) {
             immutableClasses.clear();
         }
-        ehcacheManager.shutdown();
-        status = Status.STOPPED;
+        synchronized (caches) {
+            ehcacheManager.shutdown();
+            caches.clear();
+        }
     }
 
     @Override
