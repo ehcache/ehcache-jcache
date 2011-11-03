@@ -46,7 +46,6 @@ public class JCacheManager implements javax.cache.CacheManager {
      * @param classLoader
      */
     public JCacheManager(String name, ClassLoader classLoader) {
-        status = Status.UNINITIALISED;
         if (classLoader == null) {
             throw new NullPointerException("No classLoader specified");
         }
@@ -57,8 +56,6 @@ public class JCacheManager implements javax.cache.CacheManager {
 
         ehcacheManager = configureEhCacheManager(name);
         ehcacheManager.setName(name);
-
-        status = Status.STARTED;
     }
 
     protected CacheManager configureEhCacheManager(String name) {
@@ -105,13 +102,18 @@ public class JCacheManager implements javax.cache.CacheManager {
             throw new IllegalStateException("CacheManager must be started before retrieving a cache");
         }
         synchronized (caches) {
-            Ehcache ehcache = ehcacheManager.getEhcache(cacheName);
-            if (ehcache == null) {
-                return null;
+            if (caches.containsKey(cacheName)) {
+                return (Cache<K, V>) caches.get(cacheName);
             }
-            final JCache<K, V> cache = new JCache<K, V>(ehcache, this, this.classLoader);
-            caches.put(cacheName, cache);
-            return cache;
+            else {
+                Ehcache ehcache = ehcacheManager.getEhcache(cacheName);
+                if (ehcache == null) {
+                    return null;
+                }
+                final JCache<K, V> cache = new JCache<K, V>(ehcache, this, this.classLoader);
+                caches.put(cacheName, cache);
+                return cache;
+            }
         }
     }
 
