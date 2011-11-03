@@ -616,7 +616,7 @@ public class JCache<K, V> implements Cache<K, V> {
      * @return the {@link javax.cache.CacheConfiguration} of this cache
      */
     @Override
-    public CacheConfiguration getConfiguration() {
+    public JCacheConfiguration getConfiguration() {
         return configuration;
     }
 
