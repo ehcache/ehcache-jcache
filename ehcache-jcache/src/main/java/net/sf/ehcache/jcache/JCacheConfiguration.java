@@ -197,10 +197,10 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
 
         if (!cacheConfigurationEquals(cacheConfiguration, that.getCacheConfiguration())) return false;
         if (isolationLevel != that.isolationLevel) return false;
-        if (!readThrough.equals(that.readThrough)) return false;
+        if (readThrough.get() != that.readThrough.get()) return false;
         if (!Arrays.equals(timeToLive, that.timeToLive)) return false;
         if (transactionMode != that.transactionMode) return false;
-        if (!writeThrough.equals(that.writeThrough)) return false;
+        if (writeThrough.get() != that.writeThrough.get()) return false;
 
         return true;
     }
