@@ -2,6 +2,7 @@ package net.sf.ehcache.jcache;
 
 
 import net.sf.ehcache.config.CacheConfiguration;
+import net.sf.ehcache.config.generator.ConfigurationUtil;
 
 import javax.cache.Caching;
 import javax.cache.InvalidConfigurationException;
@@ -194,22 +195,34 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
 
         JCacheConfiguration that = (JCacheConfiguration) o;
 
+        if (!cacheConfigurationEquals(cacheConfiguration, that.getCacheConfiguration())) return false;
         if (isolationLevel != that.isolationLevel) return false;
-        if (readThrough != null ? !readThrough.equals(that.readThrough) : that.readThrough != null) return false;
+        if (!readThrough.equals(that.readThrough)) return false;
         if (!Arrays.equals(timeToLive, that.timeToLive)) return false;
         if (transactionMode != that.transactionMode) return false;
-        if (writeThrough != null ? !writeThrough.equals(that.writeThrough) : that.writeThrough != null) return false;
+        if (!writeThrough.equals(that.writeThrough)) return false;
 
         return true;
     }
 
+    protected boolean cacheConfigurationEquals(CacheConfiguration a, CacheConfiguration b) {
+        // CacheConfiguration doesn't override equals - so we are using this workaround for now
+        return ConfigurationUtil.generateCacheConfigurationText(a)
+                .equals(ConfigurationUtil.generateCacheConfigurationText(b));
+    }
+
+    protected int cacheConfigurationHashCode(CacheConfiguration a) {
+        return ConfigurationUtil.generateCacheConfigurationText(a).hashCode();
+    }
+
     @Override
     public int hashCode() {
-        int result = readThrough != null ? readThrough.hashCode() : 0;
-        result = 31 * result + (writeThrough != null ? writeThrough.hashCode() : 0);
+        int result = readThrough.hashCode();
+        result = 31 * result + writeThrough.hashCode();
         result = 31 * result + (isolationLevel != null ? isolationLevel.hashCode() : 0);
         result = 31 * result + (transactionMode != null ? transactionMode.hashCode() : 0);
-        result = 31 * result + (timeToLive != null ? Arrays.hashCode(timeToLive) : 0);
+        result = 31 * result + Arrays.hashCode(timeToLive);
+        result = 31 * result + cacheConfigurationHashCode(this.cacheConfiguration);
         return result;
     }
 
