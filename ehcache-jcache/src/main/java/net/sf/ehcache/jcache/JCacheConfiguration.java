@@ -24,9 +24,13 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
 
     private volatile IsolationLevel isolationLevel;
     private volatile Mode transactionMode;
+
+    // we could, in theory, just set the values on the underlying CacheConfiguration but then the units
+    // will be lost and we wont pass the TCK
     private final Duration[] timeToLive;
+
     private final CacheConfiguration cacheConfiguration = new CacheConfiguration();
-    
+
     private static final boolean DEFAULT_READ_THROUGH = false;
     private static final boolean DEFAULT_WRITE_THROUGH = false;
 
@@ -48,14 +52,13 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
         this.transactionMode = transactionMode;
         this.timeToLive = timeToLive;
     }
-    
+
     public JCacheConfiguration(CacheConfiguration ehCacheConfiguration) {
         this.readThrough = new AtomicBoolean(DEFAULT_READ_THROUGH);
         this.writeThrough = new AtomicBoolean(DEFAULT_WRITE_THROUGH);
         timeToLive = Builder.defaultTimeToLive();
     }
-    
-    
+
 
     /**
      * Whether the cache is a read-through cache. A CacheLoader should be configured for read through caches
@@ -172,23 +175,35 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
         if (type == null) {
             throw new NullPointerException("ExpiryType can't be null");
         }
+        this.timeToLive[type.ordinal()] = duration;
         if (type == ExpiryType.ACCESSED) {
             cacheConfiguration.setTimeToIdleSeconds(duration.getTimeUnit().toSeconds(duration.getTimeToLive()));
         }
         if (type == ExpiryType.MODIFIED) {
             cacheConfiguration.setTimeToLiveSeconds(duration.getTimeUnit().toSeconds(duration.getTimeToLive()));
         }
+        this.timeToLive[type.ordinal()] = duration;
     }
 
+    // since the ehcache configuration could be adjusted out from under this, test if it is still the same
     @Override
     public Duration getExpiry(ExpiryType type) {
+        TimeUnit timeUnit = this.timeToLive[type.ordinal()].getTimeUnit();
         if (type == ExpiryType.ACCESSED) {
-            return new Duration(TimeUnit.SECONDS, cacheConfiguration.getTimeToIdleSeconds());
+            if (timeUnit.toSeconds(timeToLive[type.ordinal()].getTimeToLive()) != cacheConfiguration.getTimeToIdleSeconds()) {
+                timeToLive[type.ordinal()] = new Duration(TimeUnit.SECONDS, cacheConfiguration.getTimeToIdleSeconds());
+            }
         }
         if (type == ExpiryType.MODIFIED) {
-            return new Duration(TimeUnit.SECONDS, cacheConfiguration.getTimeToLiveSeconds());
+            if (timeUnit.toSeconds(timeToLive[type.ordinal()].getTimeToLive()) != cacheConfiguration.getTimeToLiveSeconds()) {
+                timeToLive[type.ordinal()] = new Duration(TimeUnit.SECONDS, cacheConfiguration.getTimeToLiveSeconds());
+            }
         }
-        return null;
+        if (timeToLive[type.ordinal()].getTimeToLive() == 0) {
+            return Duration.ETERNAL;
+        } else {
+            return this.timeToLive[type.ordinal()];
+        }
     }
 
     @Override
@@ -208,8 +223,8 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
         return true;
     }
 
+    // CacheConfiguration doesn't override equals - so we are using this workaround for now
     protected boolean cacheConfigurationEquals(CacheConfiguration a, CacheConfiguration b) {
-        // CacheConfiguration doesn't override equals - so we are using this workaround for now
         return ConfigurationUtil.generateCacheConfigurationText(a)
                 .equals(ConfigurationUtil.generateCacheConfigurationText(b));
     }
