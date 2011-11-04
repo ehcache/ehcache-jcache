@@ -226,9 +226,14 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
 
         JCacheConfiguration that = (JCacheConfiguration) o;
 
-        if (!cacheConfigurationEquals(cacheConfiguration, that.getCacheConfiguration())) return false;
+        // TODO: Ehcache's CacheConfiguration needs to override equals
+        //if (!cacheConfigurationEquals(cacheConfiguration, that.getCacheConfiguration())) return false;
         if (isolationLevel != that.isolationLevel) return false;
-        if (readThrough.get() != that.readThrough.get()) return false;
+        if (this.isStatisticsEnabled() != that.isStatisticsEnabled()) return false;
+        if (this.isStoreByValue() != that.isStoreByValue()) return false;
+        if (this.isTransactionEnabled() != that.isTransactionEnabled()) return false;
+        if (this.isReadThrough() != that.isReadThrough()) return false;
+        if (this.isWriteThrough() != that.isWriteThrough()) return false;
         if (!Arrays.equals(timeToLive, that.timeToLive)) return false;
         if (transactionMode != that.transactionMode) return false;
         if (writeThrough.get() != that.writeThrough.get()) return false;
@@ -236,7 +241,8 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
         return true;
     }
 
-    // CacheConfiguration doesn't override equals - so we are using this workaround for now
+    // CacheConfiguration doesn't override equals - so this method needs to have a way to compare them.
+    // doing the toString of their configs wont work though since it dumps their names into that config and un
     protected boolean cacheConfigurationEquals(CacheConfiguration a, CacheConfiguration b) {
         return ConfigurationUtil.generateCacheConfigurationText(a)
                 .equals(ConfigurationUtil.generateCacheConfigurationText(b));
@@ -250,10 +256,15 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
     public int hashCode() {
         int result = readThrough.hashCode();
         result = 31 * result + writeThrough.hashCode();
+        result = 31 * result + (this.isStatisticsEnabled() ? 1 : 0);
+        result = 31 * result + (this.isStoreByValue() ? 1 : 0);
+        result = 31 * result + (this.isTransactionEnabled() ? 1 : 0);
         result = 31 * result + (isolationLevel != null ? isolationLevel.hashCode() : 0);
         result = 31 * result + (transactionMode != null ? transactionMode.hashCode() : 0);
+        result = 31 * result + (isolationLevel != null ? isolationLevel.hashCode() : 0);
         result = 31 * result + Arrays.hashCode(timeToLive);
-        result = 31 * result + cacheConfigurationHashCode(this.cacheConfiguration);
+        // TODO: EHCache's CacheConfiguration needs to override hashCode
+        //result = 31 * result + cacheConfigurationHashCode(this.cacheConfiguration);
         return result;
     }
 
