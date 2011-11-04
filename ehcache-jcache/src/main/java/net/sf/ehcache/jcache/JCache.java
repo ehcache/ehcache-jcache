@@ -545,6 +545,8 @@ public class JCache<K, V> implements Cache<K, V> {
     @Override
     public boolean replace(K key, V value) throws CacheException {
         checkStatusStarted();
+        checkKey(key);
+        checkValue(value);
         return (ehcache.replace(new Element(key, value)) != null);
     }
 
@@ -930,6 +932,7 @@ public class JCache<K, V> implements Cache<K, V> {
 
             net.sf.ehcache.Cache cache = new net.sf.ehcache.Cache(cacheConfiguration.getCacheConfiguration());
             JCache<K, V> jcache = new JCache<K, V>(cache, this.cacheManager, this.classLoader);
+            jcache.configuration = cacheConfiguration;
 
             if (cacheLoader != null) {
                 jcache.cacheLoaderAdapter = (new JCacheCacheLoaderAdapter(cacheLoader));
