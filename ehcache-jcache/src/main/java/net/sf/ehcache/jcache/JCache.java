@@ -837,11 +837,13 @@ public class JCache<K, V> implements Cache<K, V> {
             }
             // the adapter is convenient to pass of to the underlying Ehcache - but we want to speak native JSR107
             // to the CacheLoader here so we retrieve the adapted loader and hit it directly for this load method.
-            V v = (V) cache.getCacheLoaderAdapter().getJCacheCacheLoader().load(key).getValue();
-            if (v == null) {
+            Cache.Entry<K,V> loadedEntry = (Cache.Entry<K,V>)cache.getCacheLoaderAdapter().getJCacheCacheLoader().load(key);
+            V loadedValue = loadedEntry.getValue();
+            if (loadedValue == null) {
                 throw new NullPointerException("Can't load null values");
             }
-            return v;
+            cache.put(loadedEntry.getKey(), loadedEntry.getValue());
+            return loadedValue;
             //Element element = cache.ehcache.getWithLoader(key, (net.sf.ehcache.loader.CacheLoader) cache.ehcache.getRegisteredCacheExtensions().iterator().next(), null);
             //return (V) element.getValue();
         }
