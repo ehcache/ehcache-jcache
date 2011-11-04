@@ -43,10 +43,10 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
                                 Duration[] timeToLive) {
         this.readThrough = new AtomicBoolean(readThrough);
         this.writeThrough = new AtomicBoolean(writeThrough);
-        if (storeByValue) {
-            cacheConfiguration.copyOnRead(true);
-            cacheConfiguration.copyOnWrite(true);
-        }
+
+        cacheConfiguration.setCopyOnRead(storeByValue);
+        cacheConfiguration.setCopyOnWrite(storeByValue);
+
         cacheConfiguration.statistics(statisticsEnabled);
         this.isolationLevel = isolationLevel;
         this.transactionMode = transactionMode;
@@ -109,9 +109,10 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
     /**
      * {@inheritDoc}
      */
+    // TODO: is this the best analog to the isStoryByValue?
     @Override
     public boolean isStoreByValue() {
-        return (cacheConfiguration.isCopyOnRead() && cacheConfiguration.isCopyOnWrite());
+        return (!(cacheConfiguration.isCopyOnRead() && cacheConfiguration.isCopyOnWrite()));
     }
 
     /**
