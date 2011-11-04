@@ -239,7 +239,7 @@ public class JCache<K, V> implements Cache<K, V> {
         if (cacheLoaderAdapter == null) {
             return null;
         }
-        FutureTask<Map<K, V>> task = new FutureTask<Map<K, V>>(new JCacheLoaderLoadAllCallable<K, V>(this, keys));
+        FutureTask<Map<K, V>> task = new FutureTask<Map<K, V>>(new JCacheLoaderLoadAllCallable<K, V>(this, cacheLoaderAdapter.getJCacheCacheLoader(), keys));
         executorService.submit(task);
         return task;
     }
@@ -764,43 +764,43 @@ public class JCache<K, V> implements Cache<K, V> {
         checkStatusStarted();
         return new EhcacheIterator(ehcache.getKeys().iterator());
     }
-    
+
     private class EhcacheIterator implements Iterator<Entry<K, V>> {
-           private final Iterator keyIterator;
-           private K lastKey = null;
-           
-           public EhcacheIterator(Iterator keyIterator) {
-               this.keyIterator = keyIterator;
-           }
-           
-           /**
-            * @inheritdoc
-            */
-           public boolean hasNext() {
-               return keyIterator.hasNext();
-           }
-   
-           /**
-            * @inheritdoc
-            */
-           public Entry<K,V> next() {
-               final K key = (K) keyIterator.next();
-               lastKey = key;
-               return new JCacheEntry<K, V>(ehcache.get(key));
-           }
-   
-           /**
-            * @inheritdoc
-            */
-           public void remove() {
-               if (lastKey == null) {
-                   throw new IllegalStateException();
-               }
-               ehcache.remove(lastKey);
-               lastKey = null;
-           }
-       }
-    
+        private final Iterator keyIterator;
+        private K lastKey = null;
+
+        public EhcacheIterator(Iterator keyIterator) {
+            this.keyIterator = keyIterator;
+        }
+
+        /**
+         * @inheritdoc
+         */
+        public boolean hasNext() {
+            return keyIterator.hasNext();
+        }
+
+        /**
+         * @inheritdoc
+         */
+        public Entry<K, V> next() {
+            final K key = (K) keyIterator.next();
+            lastKey = key;
+            return new JCacheEntry<K, V>(ehcache.get(key));
+        }
+
+        /**
+         * @inheritdoc
+         */
+        public void remove() {
+            if (lastKey == null) {
+                throw new IllegalStateException();
+            }
+            ehcache.remove(lastKey);
+            lastKey = null;
+        }
+    }
+
 
     protected JCacheCacheLoaderAdapter<K, V> getCacheLoaderAdapter() {
         return this.cacheLoaderAdapter;
@@ -850,23 +850,34 @@ public class JCache<K, V> implements Cache<K, V> {
     private static class JCacheLoaderLoadAllCallable<K, V> implements Callable<Map<K, V>> {
         private final JCache<K, V> cache;
         private final Collection<? extends K> keys;
-
-        JCacheLoaderLoadAllCallable(JCache<K, V> cache, Collection<? extends K> keys) {
+        private final CacheLoader<K,V> cacheLoader;
+        
+        JCacheLoaderLoadAllCallable(JCache<K, V> cache, CacheLoader<K, V> cacheLoader, Collection<? extends K> keys) {
             this.cache = cache;
             this.keys = keys;
+            this.cacheLoader = cacheLoader;
         }
 
         @Override
         public Map<K, V> call() throws Exception {
             ArrayList<K> keysNotInStore = new ArrayList<K>();
 
+
             //Entry<K, V> entry = cacheLoader.load(key);
             //cache.put(entry.getKey(), entry.getValue());
-            Map<K, V> map = cache.ehcache.getAllWithLoader(keys, null);
-            if (map.values().contains(null)) {
-                throw new NullPointerException("Loader can't load null values");
+            //TODO: is there any benefit to using the underlying loadAll method of ehcache?
+            //Map<K, V> map = cache.ehcache.getAllWithLoader(keys, null);
+//            if (map.values().contains(null)) {
+//                throw new NullPointerException("Loader can't load null values");
+//            }
+            for (K key : keys) {
+                if (!cache.containsKey(key)) {
+                    keysNotInStore.add(key);
+                }
             }
-            return map;
+            Map<K, V> value = cacheLoader.loadAll(keysNotInStore);
+            cache.putAll(value);
+            return value;
         }
     }
 
