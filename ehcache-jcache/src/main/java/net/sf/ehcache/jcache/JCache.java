@@ -832,7 +832,12 @@ public class JCache<K, V> implements Cache<K, V> {
         public V call() throws Exception {
             //Entry<K, V> entry = cacheLoader.load(key);
             //cache.put(entry.getKey(), entry.getValue());
-            V v = (V) cache.getCacheLoaderAdapter().load(key);
+            if (key == null) {
+                throw new NullPointerException("Can't load null values");
+            }
+            // the adapter is convenient to pass of to the underlying Ehcache - but we want to speak native JSR107
+            // to the CacheLoader here so we retrieve the adapted loader and hit it directly for this load method.
+            V v = (V) cache.getCacheLoaderAdapter().getJCacheCacheLoader().load(key).getValue();
             if (v == null) {
                 throw new NullPointerException("Can't load null values");
             }
