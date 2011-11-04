@@ -50,13 +50,20 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
         cacheConfiguration.statistics(statisticsEnabled);
         this.isolationLevel = isolationLevel;
         this.transactionMode = transactionMode;
+        // use the setter to set these, which will set the value in the underlying ehcache
         this.timeToLive = timeToLive;
+        for (ExpiryType expiryType : ExpiryType.values()) {
+            setExpiry(expiryType, timeToLive[expiryType.ordinal()]);
+        }
     }
 
     public JCacheConfiguration(CacheConfiguration ehCacheConfiguration) {
         this.readThrough = new AtomicBoolean(DEFAULT_READ_THROUGH);
         this.writeThrough = new AtomicBoolean(DEFAULT_WRITE_THROUGH);
-        timeToLive = Builder.defaultTimeToLive();
+        timeToLive = new Duration[ExpiryType.values().length];
+        for (int i = 0; i < timeToLive.length; i++) {
+            timeToLive[i] = Duration.ETERNAL;
+        }
     }
 
 
@@ -112,7 +119,7 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
     // TODO: is this the best analog to the isStoryByValue?
     @Override
     public boolean isStoreByValue() {
-        return (!(cacheConfiguration.isCopyOnRead() && cacheConfiguration.isCopyOnWrite()));
+        return (cacheConfiguration.isCopyOnRead() && cacheConfiguration.isCopyOnWrite());
     }
 
     /**
@@ -189,21 +196,26 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
     // since the ehcache configuration could be adjusted out from under this, test if it is still the same
     @Override
     public Duration getExpiry(ExpiryType type) {
-        TimeUnit timeUnit = this.timeToLive[type.ordinal()].getTimeUnit();
+        Duration duration = this.timeToLive[type.ordinal()];
+        TimeUnit timeUnit = duration.getTimeUnit();
+        Long ttl = duration.getTimeToLive();
+
         if (type == ExpiryType.ACCESSED) {
-            if (timeUnit.toSeconds(timeToLive[type.ordinal()].getTimeToLive()) != cacheConfiguration.getTimeToIdleSeconds()) {
-                timeToLive[type.ordinal()] = new Duration(TimeUnit.SECONDS, cacheConfiguration.getTimeToIdleSeconds());
+            long timeToIdleSeconds = cacheConfiguration.getTimeToIdleSeconds();
+            if (timeUnit.toSeconds(ttl) != timeToIdleSeconds) {
+                duration = new Duration(TimeUnit.SECONDS, timeToIdleSeconds);
             }
         }
         if (type == ExpiryType.MODIFIED) {
-            if (timeUnit.toSeconds(timeToLive[type.ordinal()].getTimeToLive()) != cacheConfiguration.getTimeToLiveSeconds()) {
-                timeToLive[type.ordinal()] = new Duration(TimeUnit.SECONDS, cacheConfiguration.getTimeToLiveSeconds());
+            long timeToLiveSeconds = cacheConfiguration.getTimeToLiveSeconds();
+            if (timeUnit.toSeconds(ttl) != timeToLiveSeconds) {
+                duration = new Duration(TimeUnit.SECONDS, timeToLiveSeconds);
             }
         }
-        if (timeToLive[type.ordinal()].getTimeToLive() == 0) {
+        if (duration.getTimeToLive() == 0) {
             return Duration.ETERNAL;
         } else {
-            return this.timeToLive[type.ordinal()];
+            return duration;
         }
     }
 
@@ -275,7 +287,10 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
          * Constructor
          */
         public Builder() {
-            timeToLive = defaultTimeToLive();
+            timeToLive = new Duration[ExpiryType.values().length];
+            for (int i = 0; i < timeToLive.length; i++) {
+                timeToLive[i] = Duration.ETERNAL;
+            }
         }
 
         /**
@@ -339,8 +354,7 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
             if (duration == null) {
                 throw new NullPointerException();
             }
-            this.timeToLive[type.ordinal()] =
-                    duration.getTimeToLive() == 0 ? Duration.ETERNAL : duration;
+            timeToLive[type.ordinal()] = duration;
             return this;
         }
 
