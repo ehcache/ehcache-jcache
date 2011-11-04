@@ -5,17 +5,17 @@ import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.event.CacheEventListener;
 
-import javax.cache.Cache;
 import javax.cache.event.CacheEntryCreatedListener;
 import javax.cache.event.CacheEntryExpiredListener;
 import javax.cache.event.CacheEntryListener;
 import javax.cache.event.CacheEntryRemovedListener;
 import javax.cache.event.CacheEntryUpdatedListener;
+import javax.cache.event.NotificationScope;
+
 
 
 public class JCacheListenerAdapter<K, V> implements CacheEventListener {
-    private CacheEntryListener<K, V> cacheListener;
-    private JCache<K, V> jcache;
+    private CacheEntryListener<K, V> cacheListener;    
     private boolean removedListener;
     private boolean createdListener;
     private boolean updatedListener;
@@ -178,7 +178,8 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
             // TODO - does ehCache have the ability to pass this up natively? If not, decorating over the native events might not work            
             // and we might need to have our JCache adapter layer handle talking to CacheEntryListeners directly (which wouldn't be 
             // ideal because then only things happening through the JCache wrapper would be sent out through the event system)
-            ((CacheEntryRemovedListener<K, V>) cacheListener).onRemoveAll(jcache);
+
+            //((CacheEntryRemovedListener<K, V>) cacheListener).onRemoveAll(null);
         }
     }
 
@@ -187,7 +188,7 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
      */
     @Override
     public void dispose() {
-        this.jcache = null;
+
     }
 
     /**
@@ -253,5 +254,42 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     @Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    public static net.sf.ehcache.event.NotificationScope adaptScope(NotificationScope scope) {
+        switch (scope) {
+            case LOCAL:
+                return net.sf.ehcache.event.NotificationScope.LOCAL;
+            case REMOTE:
+                return net.sf.ehcache.event.NotificationScope.REMOTE;
+            default:
+                return net.sf.ehcache.event.NotificationScope.LOCAL;
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        JCacheListenerAdapter that = (JCacheListenerAdapter) o;
+
+        if (createdListener != that.createdListener) return false;
+        if (expiredListener != that.expiredListener) return false;
+        if (removedListener != that.removedListener) return false;
+        if (updatedListener != that.updatedListener) return false;
+        if (!cacheListener.equals(that.cacheListener)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = cacheListener.hashCode();
+        result = 31 * result + (removedListener ? 1 : 0);
+        result = 31 * result + (createdListener ? 1 : 0);
+        result = 31 * result + (updatedListener ? 1 : 0);
+        result = 31 * result + (expiredListener ? 1 : 0);
+        return result;
     }
 }
