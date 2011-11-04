@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
@@ -38,6 +39,7 @@ public class JCache<K, V> implements Cache<K, V> {
     private final ExecutorService executorService = Executors.newFixedThreadPool(CACHE_LOADER_THREADS);
 
     private static final Logger LOG = LoggerFactory.getLogger(JCache.class);
+    private final Set<ScopedListener<K, V>> cacheEntryListeners = new CopyOnWriteArraySet<ScopedListener<K, V>>();
 
     /**
      * An Ehcache backing instance
@@ -648,8 +650,17 @@ public class JCache<K, V> implements Cache<K, V> {
      */
     @Override
     public boolean registerCacheEntryListener(CacheEntryListener<K, V> cacheEntryListener, NotificationScope scope, boolean synchronous) {
-        throw new UnsupportedOperationException("registerCacheEntryListener is not implemented in net.sf.ehcache.jcache.JCache");
+        checkValue(cacheEntryListener);
+        checkValue(scope);
+
+        JCacheListenerAdapter listener = new JCacheListenerAdapter(cacheEntryListener);
+        ScopedListener<K, V> scopedListener = new ScopedListener<K, V>(listener, scope, synchronous);
+
+        ehcache.getCacheEventNotificationService().registerListener(listener, JCacheListenerAdapter.adaptScope(scope));
+        return cacheEntryListeners.add(scopedListener);
+
     }
+
 
     /**
      * Removes a call back listener.
@@ -659,7 +670,20 @@ public class JCache<K, V> implements Cache<K, V> {
      */
     @Override
     public boolean unregisterCacheEntryListener(CacheEntryListener<?, ?> cacheEntryListener) {
-        throw new UnsupportedOperationException("unregisterCacheEntryListener is not implemented in net.sf.ehcache.jcache.JCache");
+        if (cacheEntryListener == null) {
+            return false;
+        }
+        /*
+         * Only listeners that can be added are typed so this cast should be safe
+         */
+        @SuppressWarnings("unchecked")
+        CacheEntryListener<K, V> castCacheEntryListener = (CacheEntryListener<K, V>)cacheEntryListener;
+
+        //Only cacheEntryListener is checked for equality
+        JCacheListenerAdapter<K, V> listenerAdapter = new JCacheListenerAdapter<K, V>((CacheEntryListener<K, V>) cacheEntryListener);
+        ScopedListener<K, V> scopedListener = new ScopedListener<K, V>(listenerAdapter, null, true);
+        ehcache.getCacheEventNotificationService().unregisterListener(listenerAdapter);
+        return cacheEntryListeners.remove(scopedListener);
     }
 
     /**
@@ -951,6 +975,9 @@ public class JCache<K, V> implements Cache<K, V> {
                 // needed for the writeAll
                 jcache.ehcache.registerCacheWriter(jcache.cacheWriterAdapter);
             }
+            for (ListenerRegistration listenerRegistration : listeners) {
+                jcache.registerCacheEntryListener(listenerRegistration.cacheEntryListener, listenerRegistration.scope, listenerRegistration.synchronous);
+            }
 
             return jcache;
         }
@@ -1026,8 +1053,76 @@ public class JCache<K, V> implements Cache<K, V> {
             configurationBuilder.setExpiry(type, timeToLive);
             return this;
         }
-
     }
+
+    /**
+      * Combine a Listener and its NotificationScope.  Equality and hashcode are based purely on the listener.
+      * This implies that the same listener cannot be added to the set of registered listeners more than
+      * once with different notification scopes.
+      *
+      * @author Greg Luck
+      */
+     private static final class ScopedListener<K, V> {
+         private final JCacheListenerAdapter<K, V> listener;
+         private final NotificationScope scope;
+         private final boolean synchronous;
+
+         private ScopedListener(JCacheListenerAdapter<K, V> listener, NotificationScope scope, boolean synchronous) {
+             this.listener = listener;
+             this.scope = scope;
+             this.synchronous = synchronous;
+         }
+
+         private JCacheListenerAdapter<K, V> getListener() {
+             return listener;
+         }
+
+         private NotificationScope getScope() {
+             return scope;
+         }
+
+         /**
+          * Hash code based on listener
+          *
+          * @see java.lang.Object#hashCode()
+          */
+         @Override
+         public int hashCode() {
+             return listener.hashCode();
+         }
+
+         /**
+          * Equals based on listener (NOT based on scope) - can't have same listener with two different scopes
+          *
+          * @see java.lang.Object#equals(java.lang.Object)
+          */
+         @Override
+         public boolean equals(Object obj) {
+             if (this == obj) {
+                 return true;
+             }
+             if (obj == null) {
+                 return false;
+             }
+             if (getClass() != obj.getClass()) {
+                 return false;
+             }
+             ScopedListener<?, ?> other = (ScopedListener<?, ?>) obj;
+             if (listener == null) {
+                 if (other.listener != null) {
+                     return false;
+                 }
+             } else if (!listener.equals(other.listener)) {
+                 return false;
+             }
+             return true;
+         }
+
+         @Override
+         public String toString() {
+             return listener.toString();
+         }
+     }
 
     /**
      * A struct :)
