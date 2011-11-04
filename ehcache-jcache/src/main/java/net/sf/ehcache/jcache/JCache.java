@@ -236,6 +236,9 @@ public class JCache<K, V> implements Cache<K, V> {
         if (keys.contains(null)) {
             throw new NullPointerException("key");
         }
+        if (cacheLoaderAdapter == null) {
+            return null;
+        }
         FutureTask<Map<K, V>> task = new FutureTask<Map<K, V>>(new JCacheLoaderLoadAllCallable<K, V>(this, keys));
         executorService.submit(task);
         return task;
