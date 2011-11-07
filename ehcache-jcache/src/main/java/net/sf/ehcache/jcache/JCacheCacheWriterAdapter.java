@@ -21,6 +21,7 @@ import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.writer.CacheWriter;
 
+import javax.cache.Cache;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -123,7 +124,7 @@ public class JCacheCacheWriterAdapter<K, V> implements CacheWriter {
         for (Element e : elements) {
             javaxCacheEntries.add(new JCacheEntry(e));
         }
-        jsr107CacheWriter.writeAll(javaxCacheEntries);
+        jsr107CacheWriter.writeAll((Collection<Cache.Entry<? extends K, ? extends V>>) javaxCacheEntries);
     }
 
     /**

@@ -24,8 +24,9 @@ import javax.cache.Cache;
  * <p/>
  * A CacheEntry is metadata about an entry in the cache. It does not include the value.
  *
- * @author Greg Luck
- * @version $Id: JCacheEntry.java 744 2008-08-16 20:10:49Z gregluck $
+ * @param <K> the type of keys used by this JCacheEntry
+ * @param <V> the type of values that are loaded by this JCacheEntry
+ * @author Greg Luck, Ryan Gardner
  */
 public class JCacheEntry<K, V> implements Cache.Entry<K, V> {
     private Element element;

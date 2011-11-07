@@ -49,10 +49,10 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Implementation
+ * Implementation of a {@see Cache} that wraps an underlying {@see net.sf.ehcache.ehcache} cache.
  *
- * @param <K>
- * @param <V>
+ * @param <K> the type of keys used by this JCache
+ * @param <V> the type of values that are loaded by this JCache
  * @author Ryan Gardner
  */
 public class JCache<K, V> implements Cache<K, V> {

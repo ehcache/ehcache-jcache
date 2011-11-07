@@ -39,7 +39,7 @@ import java.util.Set;
 
 
 public class JCacheManager implements javax.cache.CacheManager {
-    private static final Logger logger = LoggerFactory.getLogger(JCacheManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JCacheManager.class);
 
     private final HashMap<String, Cache<?, ?>> caches = new HashMap<String, Cache<?, ?>>();
     private final HashSet<Class<?>> immutableClasses = new HashSet<Class<?>>();
@@ -119,8 +119,7 @@ public class JCacheManager implements javax.cache.CacheManager {
         synchronized (caches) {
             if (caches.containsKey(cacheName)) {
                 return (Cache<K, V>) caches.get(cacheName);
-            }
-            else {
+            } else {
                 Ehcache ehcache = ehcacheManager.getEhcache(cacheName);
                 if (ehcache == null) {
                     return null;
@@ -301,7 +300,7 @@ public class JCacheManager implements javax.cache.CacheManager {
         synchronized (caches) {
             if (caches.containsKey(cache.getName())) {
                 ehcacheManager.removeCache(cache.getName());
-            }    
+            }
             // remove the cache if it already exists
             if (ehcacheManager.getCache(cache.getName()) != null) {
                 ehcacheManager.removeCache(cache.getName());

@@ -17,7 +17,6 @@ package net.sf.ehcache.jcache;
 
 
 import net.sf.ehcache.config.CacheConfiguration;
-import net.sf.ehcache.config.generator.ConfigurationUtil;
 
 import javax.cache.Caching;
 import javax.cache.InvalidConfigurationException;
@@ -411,6 +410,10 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
                     isolationLevel, transactionMode, timeToLive);
         }
 
+        /**
+         * Construct a default Duration[] with TimeToLive values that match the spec default
+         * @return a Duration[] containing Durations that match the default TimeToLive of the spec
+         */
         protected static Duration[] defaultTimeToLive() {
             Duration[] ttl = new Duration[ExpiryType.values().length];
             for (int i = 0; i < ttl.length; i++) {
