@@ -6,4 +6,10 @@
 <suppressions>
     <!-- Suppress duplicate checking of copyright notice -->
     <suppress checks="StrictDuplicateCode" files=".java" lines="1-15"/>
+
+    <!-- the equals method in JCacheConfiguration has a high cyclomatic complexity
+         because it has to workaround Ehcache's cacheConfiguration not implementing equals -->
+    <suppress checks="CyclomaticComplexity" files="JCacheConfiguration.java" />
+    <suppress checks="NPathComplexity" files="JCacheConfiguration.java" />
+
 </suppressions>

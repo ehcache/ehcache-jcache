@@ -72,6 +72,11 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
         }
     }
 
+    /**
+     * Create a JCacheConfiguration that wraps the existing ehCacheConfiguration
+     *
+     * @param ehCacheConfiguration a {@link net.sf.ehcache.config.CacheConfiguration} to wrap
+     */
     public JCacheConfiguration(CacheConfiguration ehCacheConfiguration) {
         this.readThrough = new AtomicBoolean(DEFAULT_READ_THROUGH);
         this.writeThrough = new AtomicBoolean(DEFAULT_WRITE_THROUGH);
@@ -102,7 +107,7 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
      * @throws IllegalStateException if the configuration can no longer be changed
      */
     @Override
-    public void setReadThrough(boolean readThrough) {
+    public void setReadThrough(boolean readThrough) throws IllegalStateException {
         this.readThrough.set(readThrough);
     }
 
@@ -130,8 +135,12 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
 
     /**
      * {@inheritDoc}
+     * <p/>
+     * This will return true if the underlying cache is configured as both {@code copyOnRead}
+     * and {@code copyOnWrite}
+     * {@see net.sf.ehcache.config.CacheConfiguration#isCopyOnRead()}
+     * {@see net.sf.ehcache.config.CacheConfiguration#isCopyOnWrite()}
      */
-    // TODO: is this the best analog to the isStoryByValue?
     @Override
     public boolean isStoreByValue() {
         return (cacheConfiguration.isCopyOnRead() && cacheConfiguration.isCopyOnWrite());
@@ -229,8 +238,7 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
         }
         if (duration.getTimeToLive() == 0) {
             return Duration.ETERNAL;
-        }
-        else {
+        } else {
             return duration;
         }
     }
@@ -246,7 +254,8 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
 
         JCacheConfiguration that = (JCacheConfiguration) o;
 
-        // TODO: Ehcache's CacheConfiguration needs to override equals
+        // Once ehcache's CacheConfiguration overrides equals this method can be
+        // greatly simplified
         if (isolationLevel != that.isolationLevel) {
             return false;
         }
@@ -300,8 +309,7 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
         result = 31 * result + (transactionMode != null ? transactionMode.hashCode() : 0);
         result = 31 * result + (isolationLevel != null ? isolationLevel.hashCode() : 0);
         result = 31 * result + Arrays.hashCode(timeToLive);
-        // TODO: EHCache's CacheConfiguration needs to override hashCode
-        //result = 31 * result + cacheConfigurationHashCode(this.cacheConfiguration);
+        // once ehcache's cacheConfiguration overrides hashcode, this method can be redone
         return result;
     }
 
