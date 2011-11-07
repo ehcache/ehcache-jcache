@@ -16,17 +16,20 @@
 package net.sf.ehcache.jcache;
 
 import javax.cache.CacheManager;
+import javax.cache.Caching;
 import javax.cache.OptionalFeature;
 import javax.cache.spi.CachingProvider;
+import java.net.URL;
 
 
 /**
  * A JSR107 adapter for EHCache.
  * <p/>
+ *
  * @author Ryan Gardner
  */
 public class JCacheCachingProvider implements CachingProvider {
-    
+
     /**
      * {@inheritDoc}
      */
@@ -35,12 +38,37 @@ public class JCacheCachingProvider implements CachingProvider {
         if (name == null) {
             throw new NullPointerException("CacheManager name not specified");
         }
-        return new JCacheManager(name, classLoader);
+        net.sf.ehcache.CacheManager ehcacheManager = configureEhCacheManager(name, classLoader);
+        return new JCacheManager(name, ehcacheManager, classLoader);
     }
 
     /**
-     * {@inheritDoc}
+     * Configures the underlying ehcacheManager - either by retrieving it via the
+     * {@code ehcache-<NAME>.xml} or by creating a new CacheManager
      *
+     * @param name        name of the CacheManager to create
+     * @param classLoader
+     * @return a CacheManager configured with that name
+     */
+    private net.sf.ehcache.CacheManager configureEhCacheManager(String name, ClassLoader classLoader) {
+        net.sf.ehcache.CacheManager cacheManager;
+        String defaultName = "ehcache-" + name + ".xml";
+
+        URL configResource = classLoader.getResource(defaultName);
+        if (!name.equals(Caching.DEFAULT_CACHE_MANAGER_NAME) && configResource != null) {
+            cacheManager = net.sf.ehcache.CacheManager.create(configResource);
+        } else {
+            // return the default EhCache singleton if the default CacheManager is requested or there is no mapped
+            // config file for that cache manager name
+            cacheManager = new net.sf.ehcache.CacheManager();
+        }
+        return cacheManager;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     * <p/>
      * By default, use the thread's context ClassLoader.
      */
     @Override
@@ -50,12 +78,11 @@ public class JCacheCachingProvider implements CachingProvider {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Currently, this JCache decroator
      * does not support {@link OptionalFeature#TRANSACTIONS}
-     *  or {@link OptionalFeature#ANNOTATIONS} or
-     *  {@link OptionalFeature#STORE_BY_REFERENCE}
-     *
+     * or {@link OptionalFeature#ANNOTATIONS} or
+     * {@link OptionalFeature#STORE_BY_REFERENCE}
      */
     @Override
     public boolean isSupported(OptionalFeature optionalFeature) {
@@ -65,7 +92,7 @@ public class JCacheCachingProvider implements CachingProvider {
             case TRANSACTIONS:
                 return false;
             case STORE_BY_REFERENCE:
-                return false;
+                return true;
             default:
                 return false;
         }
