@@ -455,7 +455,7 @@ public class JCache<K, V> implements Cache<K, V> {
         if (this.getClass().isAssignableFrom(cls)) {
             return (T) this;
         }
-        if (ehcache.getClass().isAssignableFrom(cls)) {
+        if (cls.isAssignableFrom(Ehcache.class)) {
             return (T) ehcache;
         }
         throw new IllegalArgumentException("Can't cast the the specified class");
