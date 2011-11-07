@@ -37,7 +37,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-
+/**
+ * The CacheManager that allows EHCache caches to be retrieved and accessed via JSR107 APIs
+ *
+ * @author Ryan Gardner
+ */
 public class JCacheManager implements javax.cache.CacheManager {
     private static final Logger LOG = LoggerFactory.getLogger(JCacheManager.class);
 
@@ -47,9 +51,6 @@ public class JCacheManager implements javax.cache.CacheManager {
     private final ClassLoader classLoader;
     private final CacheManager ehcacheManager;
 
-    public CacheManager getEhcacheManager() {
-        return ehcacheManager;
-    }
 
     /**
      * Creates a JCacheManager that uses the name of the cache to configure the underlying EhCache CacheManager
@@ -71,9 +72,23 @@ public class JCacheManager implements javax.cache.CacheManager {
         ehcacheManager.setName(name);
     }
 
-    //todo:  figure out how to let it load up configured caches via the file system and a named cache but not
-    // cause it to fail the TCK if the ehcache-name.xml stuff doesn't work
-    protected CacheManager configureEhCacheManager(String name) {
+    /**
+     * Retrieve the underlying ehcache manager that this JCacheManager uses
+     *
+     * @return the underlying ehcache manager
+     */
+    public CacheManager getEhcacheManager() {
+        return ehcacheManager;
+    }
+
+    /**
+     * Configures the underlying ehcacheManager - either by retrieving it via the
+     * {@code ehcache-<NAME>.xml} or by creating a new CacheManager
+     *
+     * @param name name of the CacheManager to create
+     * @return a CacheManager configured with that name
+     */
+    private CacheManager configureEhCacheManager(String name) {
         String configName;
         // if (name.equals(Caching.DEFAULT_CACHE_MANAGER_NAME)) {
         return new CacheManager();
@@ -221,7 +236,13 @@ public class JCacheManager implements javax.cache.CacheManager {
         throw new IllegalArgumentException("Unwapping to " + cls + " is not a supported by this implementation");
     }
 
-
+    /**
+     * Construct a CacheBuilder
+     *
+     * @param <K> the type of keys used by the Cache built by this CacheBuilder
+     * @param <V> the type of values that are loaded by the Cache built by this CacheBuilder
+     * @author Ryan Gardner
+     */
     private class JCacheBuilder<K, V> implements CacheBuilder<K, V> {
         private final JCache.Builder<K, V> cacheBuilder;
 
