@@ -120,11 +120,11 @@ public class JCacheCacheWriterAdapter<K, V> implements CacheWriter {
      * @param elements the Elements to be written
      */
     public void writeAll(Collection<Element> elements) throws CacheException {
-        Set<javax.cache.Cache.Entry> javaxCacheEntries = new HashSet<javax.cache.Cache.Entry>();
+        Collection<Cache.Entry<? extends K,? extends V>> javaxCacheEntries = new HashSet<Cache.Entry<? extends K, ? extends V>>();
         for (Element e : elements) {
             javaxCacheEntries.add(new JCacheEntry(e));
         }
-        jsr107CacheWriter.writeAll((Collection<Cache.Entry<? extends K, ? extends V>>) javaxCacheEntries);
+        jsr107CacheWriter.writeAll( javaxCacheEntries);
     }
 
     /**
