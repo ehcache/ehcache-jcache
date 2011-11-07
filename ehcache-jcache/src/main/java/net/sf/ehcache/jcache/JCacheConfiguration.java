@@ -1,3 +1,18 @@
+/**
+ *  Copyright 2003-2010 Terracotta, Inc.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package net.sf.ehcache.jcache;
 
 
@@ -15,12 +30,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
- * Set of
+ * Configuration for a JSR107 Cache
+ *
+ * @author Ryan Gardner
  */
 public class JCacheConfiguration implements javax.cache.CacheConfiguration {
+    private static final boolean DEFAULT_WRITE_THROUGH = false;
+    private static final boolean DEFAULT_READ_THROUGH = false;
 
-    private final AtomicBoolean readThrough;
     private final AtomicBoolean writeThrough;
+    private final AtomicBoolean readThrough;
 
     private volatile IsolationLevel isolationLevel;
     private volatile Mode transactionMode;
@@ -30,10 +49,6 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
     private final Duration[] timeToLive;
 
     private final CacheConfiguration cacheConfiguration = new CacheConfiguration();
-
-    private static final boolean DEFAULT_READ_THROUGH = false;
-    private static final boolean DEFAULT_WRITE_THROUGH = false;
-
 
     private JCacheConfiguration(boolean readThrough,
                                 boolean writeThrough,
@@ -214,29 +229,51 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
         }
         if (duration.getTimeToLive() == 0) {
             return Duration.ETERNAL;
-        } else {
+        }
+        else {
             return duration;
         }
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         JCacheConfiguration that = (JCacheConfiguration) o;
 
         // TODO: Ehcache's CacheConfiguration needs to override equals
-        //if (!cacheConfigurationEquals(cacheConfiguration, that.getCacheConfiguration())) return false;
-        if (isolationLevel != that.isolationLevel) return false;
-        if (this.isStatisticsEnabled() != that.isStatisticsEnabled()) return false;
-        if (this.isStoreByValue() != that.isStoreByValue()) return false;
-        if (this.isTransactionEnabled() != that.isTransactionEnabled()) return false;
-        if (this.isReadThrough() != that.isReadThrough()) return false;
-        if (this.isWriteThrough() != that.isWriteThrough()) return false;
-        if (!Arrays.equals(timeToLive, that.timeToLive)) return false;
-        if (transactionMode != that.transactionMode) return false;
-        if (writeThrough.get() != that.writeThrough.get()) return false;
+        if (isolationLevel != that.isolationLevel) {
+            return false;
+        }
+        if (this.isStatisticsEnabled() != that.isStatisticsEnabled()) {
+            return false;
+        }
+        if (this.isStoreByValue() != that.isStoreByValue()) {
+            return false;
+        }
+        if (this.isTransactionEnabled() != that.isTransactionEnabled()) {
+            return false;
+        }
+        if (this.isReadThrough() != that.isReadThrough()) {
+            return false;
+        }
+        if (this.isWriteThrough() != that.isWriteThrough()) {
+            return false;
+        }
+        if (!Arrays.equals(timeToLive, that.timeToLive)) {
+            return false;
+        }
+        if (transactionMode != that.transactionMode) {
+            return false;
+        }
+        if (writeThrough.get() != that.writeThrough.get()) {
+            return false;
+        }
 
         return true;
     }

@@ -1,6 +1,6 @@
 $Id: CHANGELOG.txt,v 1.31 2006/03/07 00:05:56 gregluck Exp $
 
-<release version="2.2" date="2011-11-30" desc="Initial release of jcache module using updated javax.cache interfaces">
+<release version="2.2" date="2011-11-07" desc="Initial release of jcache module using updated javax.cache interfaces">
  <action dev="Ryan Gardner" type="add">
     Refactored Caching interfaces to use javax.cache version 0.3
   </action>

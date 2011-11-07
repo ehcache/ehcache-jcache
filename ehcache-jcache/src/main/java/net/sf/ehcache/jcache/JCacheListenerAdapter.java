@@ -1,3 +1,18 @@
+/**
+ *  Copyright 2003-2010 Terracotta, Inc.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package net.sf.ehcache.jcache;
 
 import net.sf.ehcache.CacheException;
@@ -13,9 +28,8 @@ import javax.cache.event.CacheEntryUpdatedListener;
 import javax.cache.event.NotificationScope;
 
 
-
 public class JCacheListenerAdapter<K, V> implements CacheEventListener {
-    private CacheEntryListener<K, V> cacheListener;    
+    private CacheEntryListener<K, V> cacheListener;
     private boolean removedListener;
     private boolean createdListener;
     private boolean updatedListener;
@@ -253,7 +267,7 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        return super.clone();    //To change body of overridden methods use File | Settings | File Templates.
+        return super.clone();
     }
 
     public static net.sf.ehcache.event.NotificationScope adaptScope(NotificationScope scope) {
@@ -269,16 +283,30 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         JCacheListenerAdapter that = (JCacheListenerAdapter) o;
 
-        if (createdListener != that.createdListener) return false;
-        if (expiredListener != that.expiredListener) return false;
-        if (removedListener != that.removedListener) return false;
-        if (updatedListener != that.updatedListener) return false;
-        if (!cacheListener.equals(that.cacheListener)) return false;
+        if (createdListener != that.createdListener) {
+            return false;
+        }
+        if (expiredListener != that.expiredListener) {
+            return false;
+        }
+        if (removedListener != that.removedListener) {
+            return false;
+        }
+        if (updatedListener != that.updatedListener) {
+            return false;
+        }
+        if (!cacheListener.equals(that.cacheListener)) {
+            return false;
+        }
 
         return true;
     }

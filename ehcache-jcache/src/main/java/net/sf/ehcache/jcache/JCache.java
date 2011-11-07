@@ -1,3 +1,18 @@
+/**
+ *  Copyright 2003-2010 Terracotta, Inc.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package net.sf.ehcache.jcache;
 
 import net.sf.ehcache.Ehcache;
@@ -33,12 +48,22 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
-
+/**
+ * Implementation
+ *
+ * @param <K>
+ * @param <V>
+ * @author Ryan Gardner
+ */
 public class JCache<K, V> implements Cache<K, V> {
+    private static final Logger LOG = LoggerFactory.getLogger(JCache.class);
+
     private static final int CACHE_LOADER_THREADS = 2;
+    private static final int DEFAULT_EXECUTOR_TIMEOUT = 10;
+
     private final ExecutorService executorService = Executors.newFixedThreadPool(CACHE_LOADER_THREADS);
 
-    private static final Logger LOG = LoggerFactory.getLogger(JCache.class);
+
     private final Set<ScopedListener<K, V>> cacheEntryListeners = new CopyOnWriteArraySet<ScopedListener<K, V>>();
 
     /**
@@ -51,10 +76,6 @@ public class JCache<K, V> implements Cache<K, V> {
 
     private JCacheConfiguration configuration;
 
-    public Ehcache getEhcache() {
-        return ehcache;
-    }
-
     /**
      * A constructor for JCache.
      * <p/>
@@ -62,6 +83,8 @@ public class JCache<K, V> implements Cache<K, V> {
      * <p/>
      *
      * @param ehcache An ehcache
+     * @param cacheManager the {@see CacheManager} that manages this wrapped ehcache
+     * @param classLoader the classloader to use to serialize / deserialize cache entries
      * @see "class description for recommended usage"
      * @since 1.4
      */
@@ -71,6 +94,16 @@ public class JCache<K, V> implements Cache<K, V> {
         this.configuration = new JCacheConfiguration(ehcache.getCacheConfiguration());
     }
 
+    /**
+     * Retrieve the underlying ehcache cache.
+     *
+     * @return the ehcache that this JCache adapter wraps
+     */
+    public Ehcache getEhcache() {
+        return ehcache;
+    }
+
+
     private void checkStatusStarted() {
         if (!JCacheStatusAdapter.adaptStatus(ehcache.getStatus()).equals(Status.STARTED)) {
             throw new IllegalStateException("The cache status is not STARTED");
@@ -78,15 +111,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Gets an entry from the cache.
-     * <p/>
-     *
-     * @param key the key whose associated value is to be returned
-     * @return the element, or null, if it does not exist.
-     * @throws IllegalStateException      if the cache is not {@link javax.cache.Status#STARTED}
-     * @throws NullPointerException       if the key is null
-     * @throws javax.cache.CacheException if there is a problem fetching the value
-     * @see java.util.Map#get(Object)
+     * {@inheritDoc}
      */
     @Override
     public V get(Object key) throws CacheException {
@@ -116,19 +141,7 @@ public class JCache<K, V> implements Cache<K, V> {
 
 
     /**
-     * The getAll method will return, from the cache, a {@link java.util.Map} of the objects
-     * associated with the Collection of keys in argument "keys". If the objects
-     * are not in the cache, the associated cache loader will be called. If no
-     * loader is associated with an object, a null is returned.  If a problem
-     * is encountered during the retrieving or loading of the objects, an
-     * exception will be thrown.
-     * <p/>
-     *
-     * @param keys The keys whose associated values are to be returned.
-     * @return The entries for the specified keys.
-     * @throws NullPointerException       if keys is null or if keys contains a null
-     * @throws IllegalStateException      if the cache is not {@link javax.cache.Status#STARTED}
-     * @throws javax.cache.CacheException if there is a problem fetching the values.
+     * {@inheritDoc}
      */
     @Override
     public Map<K, V> getAll(Collection<? extends K> keys) throws CacheException {
@@ -145,18 +158,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Returns <tt>true</tt> if this cache contains a mapping for the specified
-     * key.  More formally, returns <tt>true</tt> if and only if
-     * this cache contains a mapping for a key <tt>k</tt> such that
-     * <tt>key.equals(k)</tt>.  (There can be at most one such mapping.)
-     * <p/>
-     *
-     * @param key key whose presence in this cache is to be tested.
-     * @return <tt>true</tt> if this map contains a mapping for the specified key
-     * @throws NullPointerException       if key is null
-     * @throws IllegalStateException      if the cache is not {@link javax.cache.Status#STARTED}
-     * @throws javax.cache.CacheException it there is a problem checking the mapping
-     * @see java.util.Map#containsKey(Object)
+     * {@inheritDoc}
      */
     @Override
     public boolean containsKey(Object key) throws CacheException {
@@ -166,21 +168,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * The load method provides a means to "pre load" the cache. This method
-     * will, asynchronously, load the specified object into the cache using
-     * the associated {@link javax.cache.CacheLoader}.
-     * If the object already exists in the cache, no action is taken and null is returned.
-     * If no loader is associated with the cache
-     * no object will be loaded into the cache and null is returned.
-     * If a problem is encountered during the retrieving or loading of the object, an exception
-     * must be propagated on {@link java.util.concurrent.Future#get()} as a {@link java.util.concurrent.ExecutionException}
-     * <p/>
-     *
-     * @param key the key
-     * @return a Future which can be used to monitor execution.
-     * @throws NullPointerException       if key is null.
-     * @throws IllegalStateException      if the cache is not {@link javax.cache.Status#STARTED}
-     * @throws javax.cache.CacheException if there is a problem doing the load
+     * {@inheritDoc}
      */
     @Override
     public Future<V> load(K key) throws CacheException {
@@ -207,27 +195,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * The loadAll method provides a means to "pre load" objects into the cache.
-     * This method will, asynchronously, load the specified objects into the
-     * cache using the associated cache loader. If the an object already exists
-     * in the cache, no action is taken. If no loader is associated with the
-     * object, no object will be loaded into the cache.  If a problem is
-     * encountered during the retrieving or loading of the objects, an
-     * exception (to be defined) should be logged.
-     * <p/>
-     * The getAll method will return, from the cache, a Map of the objects
-     * associated with the Collection of keys in argument "keys". If the objects
-     * are not in the cache, the associated cache loader will be called. If no
-     * loader is associated with an object, a null is returned.  If a problem
-     * is encountered during the retrieving or loading of the objects, an
-     * exception (to be defined) will be thrown.
-     * <p/>
-     *
-     * @param keys the keys
-     * @return a Future which can be used to monitor execution
-     * @throws NullPointerException       if keys is null or if keys contains a null.
-     * @throws IllegalStateException      if the cache is not {@link javax.cache.Status#STARTED}
-     * @throws javax.cache.CacheException if there is a problem doing the load
+     * {@inheritDoc}
      */
     @Override
     public Future<Map<K, V>> loadAll(Collection<? extends K> keys) throws CacheException {
@@ -241,17 +209,18 @@ public class JCache<K, V> implements Cache<K, V> {
         if (cacheLoaderAdapter == null) {
             return null;
         }
-        FutureTask<Map<K, V>> task = new FutureTask<Map<K, V>>(new JCacheLoaderLoadAllCallable<K, V>(this, cacheLoaderAdapter.getJCacheCacheLoader(), keys));
+        FutureTask<Map<K, V>> task =
+                new FutureTask<Map<K, V>>(
+                        new JCacheLoaderLoadAllCallable<K, V>(
+                                this, cacheLoaderAdapter.getJCacheCacheLoader(), keys
+                        )
+                );
         executorService.submit(task);
         return task;
     }
 
     /**
-     * Returns the {@link javax.cache.CacheStatistics} MXBean associated with the cache.
-     * May return null if the cache does not support statistics gathering.
-     *
-     * @return the CacheStatisticsMBean
-     * @throws IllegalStateException if the cache is not {@link javax.cache.Status#STARTED}
+     * {@inheritDoc}
      */
     @Override
     public CacheStatistics getStatistics() {
@@ -264,24 +233,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Associates the specified value with the specified key in this cache
-     * If the cache previously contained a mapping for
-     * the key, the old value is replaced by the specified value.  (A cache
-     * <tt>c</tt> is said to contain a mapping for a key <tt>k</tt> if and only
-     * if {@link #containsKey(Object) c.containsKey(k)} would return
-     * <tt>true</tt>.)
-     * <p/>
-     * In contrast to the corresponding Map operation, does not return
-     * the previous value.
-     *
-     * @param key   key with which the specified value is to be associated
-     * @param value value to be associated with the specified key
-     * @throws NullPointerException       if key is null or if value is null
-     * @throws IllegalStateException      if the cache is not {@link javax.cache.Status#STARTED}
-     * @throws javax.cache.CacheException if there is a problem doing the put
-     * @see java.util.Map#put(Object, Object)
-     * @see #getAndPut(Object, Object)
-     * @see #getAndReplace(Object, Object)
+     * {@inheritDoc}
      */
     @Override
     public void put(K key, V value) throws CacheException {
@@ -292,29 +244,10 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Atomically associates the specified value with the specified key in this cache
-     * <p/>
-     * If the cache previously contained a mapping for
-     * the key, the old value is replaced by the specified value.  (A cache
-     * <tt>c</tt> is said to contain a mapping for a key <tt>k</tt> if and only
-     * if {@link #containsKey(Object) c.containsKey(k)} would return
-     * <tt>true</tt>.)
-     * <p/>
-     * The the previous value is returned, or null if there was no value associated
-     * with the key previously.
-     *
-     * @param key   key with which the specified value is to be associated
-     * @param value value to be associated with the specified key
-     * @return the value associated with the key at the start of the operation or null if none was associated
-     * @throws NullPointerException       if key is null or if value is null
-     * @throws IllegalStateException      if the cache is not {@link javax.cache.Status#STARTED}
-     * @throws javax.cache.CacheException if there is a problem doing the put
-     * @see java.util.Map#put(Object, Object)
-     * @see #put(Object, Object)
-     * @see #getAndReplace(Object, Object)
+     * {@inheritDoc}
      */
     @Override
-    public V getAndPut(K key, V value) throws CacheException {
+    public V getAndPut(K key, V value) throws CacheException, NullPointerException, IllegalStateException {
         checkStatusStarted();
         if (key == null || value == null) {
             throw new NullPointerException("Key cannot be null");
@@ -329,18 +262,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Copies all of the mappings from the specified map to this cache.
-     * The effect of this call is equivalent to that
-     * of calling {@link #put(Object, Object) put(k, v)} on this cache once
-     * for each mapping from key <tt>k</tt> to value <tt>v</tt> in the
-     * specified map.  The behavior of this operation is undefined if the
-     * specified cache or map is modified while the operation is in progress.
-     *
-     * @param map mappings to be stored in this cache
-     * @throws NullPointerException       if map is null or if map contains null keys or values.
-     * @throws IllegalStateException      if the cache is not {@link javax.cache.Status#STARTED}
-     * @throws javax.cache.CacheException if there is a problem doing the put
-     * @see java.util.Map#putAll(java.util.Map)
+     * {@inheritDoc}
      */
     @Override
     public void putAll(Map<? extends K, ? extends V> map) throws CacheException {
@@ -354,29 +276,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Atomically associates the specified key with the given value if it is
-     * not already associated with a value.
-     * <p/>
-     * This is equivalent to
-     * <pre>
-     *   if (!cache.containsKey(key)) {}
-     *       cache.put(key, value);
-     *       return true;
-     *   } else {
-     *       return false;
-     *   }</pre>
-     * except that the action is performed atomically.
-     *
-     * In contrast to the corresponding ConcurrentMap operation, does not return
-     * the previous value.
-     *
-     * @param key   key with which the specified value is to be associated
-     * @param value value to be associated with the specified key
-     * @return true if a value was set.
-     * @throws NullPointerException       if key is null or value is null
-     * @throws IllegalStateException      if the cache is not {@link javax.cache.Status#STARTED}
-     * @throws javax.cache.CacheException if there is a problem doing the put
-     * @see java.util.concurrent.ConcurrentMap#putIfAbsent(Object, Object)
+     * {@inheritDoc}
      */
     @Override
     public boolean putIfAbsent(K key, V value) throws CacheException {
@@ -392,24 +292,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Removes the mapping for a key from this cache if it is present.
-     * More formally, if this cache contains a mapping
-     * from key <tt>k</tt> to value <tt>v</tt> such that
-     * <code>(key==null ?  k==null : key.equals(k))</code>, that mapping
-     * is removed.  (The cache can contain at most one such mapping.)
-     * <p/>
-     * <p>Returns <tt>true</tt> if this cache previously associated the key,
-     * or <tt>false</tt> if the cache contained no mapping for the key.
-     * <p/>
-     * <p>The cache will not contain a mapping for the specified key once the
-     * call returns.
-     *
-     * @param key key whose mapping is to be removed from the cache
-     * @return returns false if there was no matching key
-     * @throws NullPointerException       if key is null
-     * @throws IllegalStateException      if the cache is not {@link javax.cache.Status#STARTED}
-     * @throws javax.cache.CacheException if there is a problem doing the put
-     * @see java.util.Map#remove(Object)
+     * {@inheritDoc}
      */
     @Override
     public boolean remove(Object key) throws CacheException {
@@ -419,25 +302,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Atomically removes the mapping for a key only if currently mapped to the given value.
-     * <p/>
-     * This is equivalent to
-     * <pre>
-     *   if (cache.containsKey(key) &amp;&amp; cache.get(key).equals(oldValue)) {
-     *       cache.remove(key);
-     *       return true;
-     *   } else {
-     *       return false;
-     *   }</pre>
-     * except that the action is performed atomically.
-     *
-     * @param key      key whose mapping is to be removed from the cache
-     * @param oldValue value expected to be associated with the specified key
-     * @return returns false if there was no matching key
-     * @throws NullPointerException       if key is null
-     * @throws IllegalStateException      if the cache is not {@link javax.cache.Status#STARTED}
-     * @throws javax.cache.CacheException if there is a problem doing the put
-     * @see java.util.Map#remove(Object)
+     * {@inheritDoc}
      */
     @Override
     public boolean remove(Object key, V oldValue) throws CacheException {
@@ -453,25 +318,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Atomically removes the entry for a key only if currently mapped to a given value.
-     * <p/>
-     * This is equivalent to
-     * <pre>
-     *   if (cache.containsKey(key)) {
-     *       V oldValue = cache.get(key);
-     *       cache.remove(key);
-     *       return oldValue;
-     *   } else {
-     *       return null;
-     *   }</pre>
-     * except that the action is performed atomically.
-     *
-     * @param key key with which the specified value is associated
-     * @return the value if one existed or null if no mapping existed for this key
-     * @throws NullPointerException       if the specified key or value is null.
-     * @throws IllegalStateException      if the cache is not {@link javax.cache.Status#STARTED}
-     * @throws javax.cache.CacheException if there is a problem during the remove
-     * @see java.util.Map#remove(Object)
+     * {@inheritDoc}
      */
     @Override
     public V getAndRemove(Object key) throws CacheException {
@@ -488,26 +335,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Atomically replaces the entry for a key only if currently mapped to a given value.
-     * <p/>
-     * This is equivalent to
-     * <pre>
-     *   if (cache.containsKey(key) &amp;&amp; cache.get(key).equals(oldValue)) {
-     *       cache.put(key, newValue);
-     *       return true;
-     *   } else {
-     *       return false;
-     *   }</pre>
-     * except that the action is performed atomically.
-     *
-     * @param key      key with which the specified value is associated
-     * @param oldValue value expected to be associated with the specified key
-     * @param newValue value to be associated with the specified key
-     * @return <tt>true</tt> if the value was replaced
-     * @throws NullPointerException       if key is null or if the values are null
-     * @throws IllegalStateException      if the cache is not {@link javax.cache.Status#STARTED}
-     * @throws javax.cache.CacheException if there is a problem during the replace
-     * @see java.util.concurrent.ConcurrentMap#replace(Object, Object, Object)
+     * {@inheritDoc}
      */
     @Override
     public boolean replace(K key, V oldValue, V newValue) throws CacheException {
@@ -520,29 +348,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Atomically replaces the entry for a key only if currently mapped to some value.
-     * <p/>
-     * This is equivalent to
-     * <pre>
-     *   if (cache.containsKey(key)) {
-     *       cache.put(key, value);
-     *       return true;
-     *   } else {
-     *       return false;
-     *   }</pre>
-     * except that the action is performed atomically.
-     *
-     * In contrast to the corresponding ConcurrentMap operation, does not return
-     * the previous value.
-     *
-     * @param key   key with which the specified value is associated
-     * @param value value to be associated with the specified key
-     * @return <tt>true</tt> if the value was replaced
-     * @throws NullPointerException       if key is null or if value is null
-     * @throws IllegalStateException      if the cache is not {@link javax.cache.Status#STARTED}
-     * @throws javax.cache.CacheException if there is a problem during the replace
-     * @see #getAndReplace(Object, Object)
-     * @see java.util.concurrent.ConcurrentMap#replace(Object, Object)
+     * {@inheritDoc}
      */
     @Override
     public boolean replace(K key, V value) throws CacheException {
@@ -553,27 +359,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Atomically replaces the entry for a key only if currently mapped to some value.
-     * <p/>
-     * This is equivalent to
-     * <pre>
-     *   if (cache.containsKey(key)) {
-     *       V value = cache.get(key, value);
-     *       cache.put(key, value);
-     *       return value;
-     *   } else {
-     *       return null;
-     *   }</pre>
-     * except that the action is performed atomically.
-     *
-     * @param key   key with which the specified value is associated
-     * @param value value to be associated with the specified key
-     * @return the previous value associated with the specified key, or
-     *         <tt>null</tt> if there was no mapping for the key.
-     * @throws NullPointerException       if key is null or if value is null
-     * @throws IllegalStateException      if the cache is not {@link javax.cache.Status#STARTED}
-     * @throws javax.cache.CacheException if there is a problem during the replace
-     * @see java.util.concurrent.ConcurrentMap#replace(Object, Object)
+     * {@inheritDoc}
      */
     @Override
     public V getAndReplace(K key, V value) throws CacheException {
@@ -585,13 +371,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Removes entries for the specified keys
-     * <p/>
-     *
-     * @param keys the keys to remove
-     * @throws NullPointerException       if keys is null or if it contains a null key
-     * @throws IllegalStateException      if the cache is not {@link javax.cache.Status#STARTED}
-     * @throws javax.cache.CacheException if there is a problem during the remove
+     * {@inheritDoc}
      */
     @Override
     public void removeAll(Collection<? extends K> keys) throws CacheException {
@@ -602,14 +382,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Removes all of the mappings from this cache.
-     * <p/>
-     * This is potentially an expensive operation.
-     * <p/>
-     *
-     * @throws IllegalStateException      if the cache is not {@link javax.cache.Status#STARTED}
-     * @throws javax.cache.CacheException if there is a problem during the remove
-     * @see java.util.Map#clear()
+     * {@inheritDoc}
      */
     @Override
     public void removeAll() throws CacheException {
@@ -618,18 +391,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Returns a CacheConfiguration.
-     * <p/>
-     * When status is {@link javax.cache.Status#STARTED} an implementation must respect the following:
-     * <ul>
-     * <li>Statistics must be mutable when status is {@link javax.cache.Status#STARTED} ({@link javax.cache.CacheConfiguration#setStatisticsEnabled(boolean)})</li>
-     * </ul>
-     * <p/>
-     * If an implementation permits mutation of configuration to a running cache, those changes must be reflected
-     * in the cache. In the case where mutation is not allowed {@link javax.cache.InvalidConfigurationException} must be thrown on
-     * an attempt to mutate the configuration.
-     *
-     * @return the {@link javax.cache.CacheConfiguration} of this cache
+     * {@inheritDoc}
      */
     @Override
     public JCacheConfiguration getConfiguration() {
@@ -637,16 +399,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Adds a listener to the notification service. No guarantee is made that listeners will be
-     * notified in the order they were added.
-     * <p/>
-     *
-     * @param cacheEntryListener The listener to add. A listener may be added only once, so the same listener with two difference scopes
-     *                           is not allowed.
-     * @param scope              The notification scope.
-     * @param synchronous        whether to listener should be invoked synchronously
-     * @return true if the listener is being added and was not already added
-     * @throws NullPointerException if any of the arguments are null.
+     * {@inheritDoc}
      */
     @Override
     public boolean registerCacheEntryListener(CacheEntryListener<K, V> cacheEntryListener, NotificationScope scope, boolean synchronous) {
@@ -663,21 +416,13 @@ public class JCache<K, V> implements Cache<K, V> {
 
 
     /**
-     * Removes a call back listener.
-     *
-     * @param cacheEntryListener the listener to remove
-     * @return true if the listener was present
+     * {@inheritDoc}
      */
     @Override
     public boolean unregisterCacheEntryListener(CacheEntryListener<?, ?> cacheEntryListener) {
         if (cacheEntryListener == null) {
             return false;
         }
-        /*
-         * Only listeners that can be added are typed so this cast should be safe
-         */
-        @SuppressWarnings("unchecked")
-        CacheEntryListener<K, V> castCacheEntryListener = (CacheEntryListener<K, V>)cacheEntryListener;
 
         //Only cacheEntryListener is checked for equality
         JCacheListenerAdapter<K, V> listenerAdapter = new JCacheListenerAdapter<K, V>((CacheEntryListener<K, V>) cacheEntryListener);
@@ -687,9 +432,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Return the name of the cache.
-     *
-     * @return the name of the cache.
+     * {@inheritDoc}
      */
     @Override
     public String getName() {
@@ -697,11 +440,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Gets the CacheManager managing this cache.
-     * <p/>
-     * A cache can be in only one CacheManager.
-     *
-     * @return the manager
+     * {@inheritDoc}
      */
     @Override
     public CacheManager getCacheManager() {
@@ -709,12 +448,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Return an object of the specified type to allow access to the provider-specific API. If the provider's
-     * implementation does not support the specified class, the {@link IllegalArgumentException} is thrown.
-     *
-     * @param cls he class of the object to be returned. This is normally either the underlying implementation class or an interface that it implements.
-     * @return an instance of the specified class
-     * @throws IllegalArgumentException if the provider doesn't support the specified class.
+     * {@inheritDoc}
      */
     @Override
     public <T> T unwrap(Class<T> cls) {
@@ -728,14 +462,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Notifies providers to start themselves.
-     * <p/>
-     * This method is called during the resource's start method after it has changed it's
-     * status to alive. Cache operations are legal in this method.
-     * <p/>
-     * At the completion of this method invocation {@link #getStatus()} must return {@link javax.cache.Status#STARTED}.
-     *
-     * @throws javax.cache.CacheException
+     * {@inheritDoc}
      */
     @Override
     public void start() throws CacheException {
@@ -743,25 +470,14 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Providers may be doing all sorts of exotic things and need to be able to clean up on
-     * stop.
-     * <p/>
-     * Cache operations are illegal after this method is called.
-     * A {@link IllegalStateException} will be
-     * <p/>
-     * Resources will change status to {@link javax.cache.Status#STOPPED} when this method completes.
-     * <p/>
-     * Stop must free any JVM resources used.
-     *
-     * @throws javax.cache.CacheException
-     * @throws IllegalStateException      thrown if an operation is performed on a cache unless it is started.
+     * {@inheritDoc}
      */
     @Override
     public void stop() throws CacheException {
         checkStatusStarted();
         executorService.shutdown();
         try {
-            executorService.awaitTermination(10, TimeUnit.SECONDS);
+            executorService.awaitTermination(DEFAULT_EXECUTOR_TIMEOUT, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new CacheException(e);
         }
@@ -769,11 +485,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Returns the cache status.
-     * <p/>
-     * This method blocks while the state is changing
-     *
-     * @return one of {@link javax.cache.Status}
+     * {@inheritDoc}
      */
     @Override
     public Status getStatus() {
@@ -791,6 +503,11 @@ public class JCache<K, V> implements Cache<K, V> {
         return new EhcacheIterator(ehcache.getKeys().iterator());
     }
 
+    /**
+     * Iterator for EHCache Entries
+     *
+     * @author Ryan Gardner
+     */
     private class EhcacheIterator implements Iterator<Entry<K, V>> {
         private final Iterator keyIterator;
         private K lastKey = null;
@@ -800,14 +517,14 @@ public class JCache<K, V> implements Cache<K, V> {
         }
 
         /**
-         * @inheritdoc
+         * {@inheritdoc}
          */
         public boolean hasNext() {
             return keyIterator.hasNext();
         }
 
         /**
-         * @inheritdoc
+         * {@inheritdoc}
          */
         public Entry<K, V> next() {
             final K key = (K) keyIterator.next();
@@ -816,7 +533,7 @@ public class JCache<K, V> implements Cache<K, V> {
         }
 
         /**
-         * @inheritdoc
+         * {@inheritdoc}
          */
         public void remove() {
             if (lastKey == null) {
@@ -827,22 +544,25 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-
-    protected JCacheCacheLoaderAdapter<K, V> getCacheLoaderAdapter() {
+    private JCacheCacheLoaderAdapter<K, V> getCacheLoaderAdapter() {
         return this.cacheLoaderAdapter;
     }
 
-    protected JCacheCacheWriterAdapter<K, V> getCacheWriterAdapter() {
+    private JCacheCacheWriterAdapter<K, V> getCacheWriterAdapter() {
         return this.cacheWriterAdapter;
     }
 
     /**
      * Callable used for cache loader.
      *
+     * (Based on the CacheLoader pattern used in {@link javax.cache.implementation.RICache.RICacheLoaderLoadCallable})
+     *
      * @param <K> the type of the key
      * @param <V> the type of the value
-     * @author Yannis Cosmadopoulos
+     *
+     * @author Ryan Gardner
      */
+    @SuppressWarnings("JavadocReference")
     private static class JCacheLoaderCallable<K, V> implements Callable<V> {
         private final JCache<K, V> cache;
         private final K key;
@@ -854,22 +574,19 @@ public class JCache<K, V> implements Cache<K, V> {
 
         @Override
         public V call() throws Exception {
-            //Entry<K, V> entry = cacheLoader.load(key);
-            //cache.put(entry.getKey(), entry.getValue());
             if (key == null) {
                 throw new NullPointerException("Can't load null values");
             }
-            // the adapter is convenient to pass of to the underlying Ehcache - but we want to speak native JSR107
+            // the adapter is convenient to pass of to the underlying Ehcache so other things that
+            // hit the ehcache directly can call things like getWithLoader() - but here want to speak native JSR107
             // to the CacheLoader here so we retrieve the adapted loader and hit it directly for this load method.
-            Cache.Entry<K,V> loadedEntry = (Cache.Entry<K,V>)cache.getCacheLoaderAdapter().getJCacheCacheLoader().load(key);
+            Cache.Entry<K, V> loadedEntry = (Cache.Entry<K, V>) cache.getCacheLoaderAdapter().getJCacheCacheLoader().load(key);
             V loadedValue = loadedEntry.getValue();
             if (loadedValue == null) {
                 throw new NullPointerException("Can't load null values");
             }
             cache.put(loadedEntry.getKey(), loadedEntry.getValue());
             return loadedValue;
-            //Element element = cache.ehcache.getWithLoader(key, (net.sf.ehcache.loader.CacheLoader) cache.ehcache.getRegisteredCacheExtensions().iterator().next(), null);
-            //return (V) element.getValue();
         }
     }
 
@@ -878,13 +595,14 @@ public class JCache<K, V> implements Cache<K, V> {
      *
      * @param <K> the type of the key
      * @param <V> the type of the value
+     * @link javax.cache.implementation.RICache.RICacheLoaderLoadAllCallable
      * @author Yannis Cosmadopoulos
      */
     private static class JCacheLoaderLoadAllCallable<K, V> implements Callable<Map<K, V>> {
         private final JCache<K, V> cache;
         private final Collection<? extends K> keys;
-        private final CacheLoader<K,V> cacheLoader;
-        
+        private final CacheLoader<K, V> cacheLoader;
+
         JCacheLoaderLoadAllCallable(JCache<K, V> cache, CacheLoader<K, V> cacheLoader, Collection<? extends K> keys) {
             this.cache = cache;
             this.keys = keys;
@@ -895,14 +613,8 @@ public class JCache<K, V> implements Cache<K, V> {
         public Map<K, V> call() throws Exception {
             ArrayList<K> keysNotInStore = new ArrayList<K>();
 
-
-            //Entry<K, V> entry = cacheLoader.load(key);
-            //cache.put(entry.getKey(), entry.getValue());
-            //TODO: is there any benefit to using the underlying loadAll method of ehcache?
-            //Map<K, V> map = cache.ehcache.getAllWithLoader(keys, null);
-//            if (map.values().contains(null)) {
-//                throw new NullPointerException("Loader can't load null values");
-//            }
+            // ehcache has an underlying loadAll method that could, potentially,
+            // be used instead of this.
             for (K key : keys) {
                 if (!cache.containsKey(key)) {
                     keysNotInStore.add(key);
@@ -914,6 +626,16 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
+    /**
+     * A Builder for the JCache wrapper for Ehcache.
+     * <p/>
+     * Using this builder, you can create a new Cache. When the cache is built by calling the
+     * {@link #build()} method the cache will be created and added to the cache manager.
+     *
+     * @param <K> The type of keys that are used for this cache
+     * @param <V> The type of values that are stored in this cache
+     * @author Ryan Gardner
+     */
     public static class Builder<K, V> implements CacheBuilder<K, V> {
         private String cacheName;
         private ClassLoader classLoader;
@@ -924,15 +646,17 @@ public class JCache<K, V> implements Cache<K, V> {
 
         private final CopyOnWriteArraySet<ListenerRegistration<K, V>> listeners = new CopyOnWriteArraySet<ListenerRegistration<K, V>>();
         private final JCacheConfiguration.Builder configurationBuilder = new JCacheConfiguration.Builder();
-        //        private boolean writeThrough;
-//        private boolean readThrough;
-//        private boolean storeByValue;
-//        private boolean enableStats;
         private CacheManager cacheManager;
 
 
-        //private final JCache.Builder<K, V> cacheBuilder;
-
+        /**
+         * Create a new CacheBuilder that can be used to initialize a new cache with the 
+         * {@code cacheName} in the {@code cacheManager} using the specified {@code classLoader}
+         *
+         * @param cacheName name of the cache that this cacheBuilder will create
+         * @param cacheManager the {@link CacheManager} that will manage this cache when it is built
+         * @param classLoader the classLoader that will be used for this cache
+         */
         public Builder(String cacheName, CacheManager cacheManager, ClassLoader classLoader) {
             this.cacheName = cacheName;
             this.cacheManager = cacheManager;
@@ -958,7 +682,7 @@ public class JCache<K, V> implements Cache<K, V> {
             cacheConfiguration.getCacheConfiguration().setCopyOnWrite(cacheConfiguration.getCacheConfiguration().isCopyOnWrite());
             cacheConfiguration.getCacheConfiguration().setStatistics(cacheConfiguration.isStatisticsEnabled());
 
-            // not best for default, but for now its good
+            // this needs to be exposed via configuration methods
             cacheConfiguration.getCacheConfiguration().setDiskPersistent(false);
 
             net.sf.ehcache.Cache cache = new net.sf.ehcache.Cache(cacheConfiguration.getCacheConfiguration());
@@ -976,7 +700,11 @@ public class JCache<K, V> implements Cache<K, V> {
                 jcache.ehcache.registerCacheWriter(jcache.cacheWriterAdapter);
             }
             for (ListenerRegistration listenerRegistration : listeners) {
-                jcache.registerCacheEntryListener(listenerRegistration.cacheEntryListener, listenerRegistration.scope, listenerRegistration.synchronous);
+                jcache.registerCacheEntryListener(
+                        listenerRegistration.cacheEntryListener,
+                        listenerRegistration.scope,
+                        listenerRegistration.synchronous
+                );
             }
 
             return jcache;
@@ -1056,73 +784,73 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     /**
-      * Combine a Listener and its NotificationScope.  Equality and hashcode are based purely on the listener.
-      * This implies that the same listener cannot be added to the set of registered listeners more than
-      * once with different notification scopes.
-      *
-      * @author Greg Luck
-      */
-     private static final class ScopedListener<K, V> {
-         private final JCacheListenerAdapter<K, V> listener;
-         private final NotificationScope scope;
-         private final boolean synchronous;
+     * Combine a Listener and its NotificationScope.  Equality and hashcode are based purely on the listener.
+     * This implies that the same listener cannot be added to the set of registered listeners more than
+     * once with different notification scopes.
+     *
+     * @author Greg Luck
+     */
+    private static final class ScopedListener<K, V> {
+        private final JCacheListenerAdapter<K, V> listener;
+        private final NotificationScope scope;
+        private final boolean synchronous;
 
-         private ScopedListener(JCacheListenerAdapter<K, V> listener, NotificationScope scope, boolean synchronous) {
-             this.listener = listener;
-             this.scope = scope;
-             this.synchronous = synchronous;
-         }
+        private ScopedListener(JCacheListenerAdapter<K, V> listener, NotificationScope scope, boolean synchronous) {
+            this.listener = listener;
+            this.scope = scope;
+            this.synchronous = synchronous;
+        }
 
-         private JCacheListenerAdapter<K, V> getListener() {
-             return listener;
-         }
+        private JCacheListenerAdapter<K, V> getListener() {
+            return listener;
+        }
 
-         private NotificationScope getScope() {
-             return scope;
-         }
+        private NotificationScope getScope() {
+            return scope;
+        }
 
-         /**
-          * Hash code based on listener
-          *
-          * @see java.lang.Object#hashCode()
-          */
-         @Override
-         public int hashCode() {
-             return listener.hashCode();
-         }
+        /**
+         * Hash code based on listener
+         *
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode() {
+            return listener.hashCode();
+        }
 
-         /**
-          * Equals based on listener (NOT based on scope) - can't have same listener with two different scopes
-          *
-          * @see java.lang.Object#equals(java.lang.Object)
-          */
-         @Override
-         public boolean equals(Object obj) {
-             if (this == obj) {
-                 return true;
-             }
-             if (obj == null) {
-                 return false;
-             }
-             if (getClass() != obj.getClass()) {
-                 return false;
-             }
-             ScopedListener<?, ?> other = (ScopedListener<?, ?>) obj;
-             if (listener == null) {
-                 if (other.listener != null) {
-                     return false;
-                 }
-             } else if (!listener.equals(other.listener)) {
-                 return false;
-             }
-             return true;
-         }
+        /**
+         * Equals based on listener (NOT based on scope) - can't have same listener with two different scopes
+         *
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            ScopedListener<?, ?> other = (ScopedListener<?, ?>) obj;
+            if (listener == null) {
+                if (other.listener != null) {
+                    return false;
+                }
+            } else if (!listener.equals(other.listener)) {
+                return false;
+            }
+            return true;
+        }
 
-         @Override
-         public String toString() {
-             return listener.toString();
-         }
-     }
+        @Override
+        public String toString() {
+            return listener.toString();
+        }
+    }
 
     /**
      * A struct :)

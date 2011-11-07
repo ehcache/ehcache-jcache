@@ -1,3 +1,18 @@
+/**
+ *  Copyright 2003-2010 Terracotta, Inc.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package net.sf.ehcache.jcache;
 
 import net.sf.ehcache.CacheException;
@@ -8,25 +23,32 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
-* Created by IntelliJ IDEA.
-* User: ddcryang
-* Date: 10/28/11
-* Time: 1:26 PM
-* To change this template use File | Settings | File Templates.
-*/
-public class JCacheCacheLoaderAdapter<K,V> implements net.sf.ehcache.loader.CacheLoader {
-    private javax.cache.CacheLoader cacheLoader;
+ * Adapt a {@link javax.cache.CacheLoader<K,V>} to the interface of {@link net.sf.ehcache.loader.CacheLoader}
+ *
+ * @param <K> the type of keys used by this JCacheCacheLoaderAdapter
+ * @param <V> the type of values that are loaded by this JCacheCacheLoaderAdapter
+ * @author Ryan Gardner
+ */
+public class JCacheCacheLoaderAdapter<K, V> implements net.sf.ehcache.loader.CacheLoader {
+    private final javax.cache.CacheLoader<K, V> cacheLoader;
 
-    public JCacheCacheLoaderAdapter(CacheLoader cacheLoader) {
+    /**
+     * Construct a JCacheCacheLoaderAdapter to make {@code cacheLoader} usable via the
+     * {@link net.sf.ehcache.loader.CacheLoader} interface
+     *
+     * @param cacheLoader the {@link CacheLoader<K,V> to adapt}
+     */
+    public JCacheCacheLoaderAdapter(CacheLoader<K, V> cacheLoader) {
         this.cacheLoader = cacheLoader;
     }
 
-    public CacheLoader getJCacheCacheLoader() {
+    /**
+     * Retrieve the {@link CacheLoader<K,V>} that this method wraps
+     *
+     * @return
+     */
+    public final CacheLoader<K, V> getJCacheCacheLoader() {
         return cacheLoader;
-    }
-
-    public void setCacheLoader(CacheLoader cacheLoader) {
-        this.cacheLoader = cacheLoader;
     }
 
     /**
@@ -111,7 +133,7 @@ public class JCacheCacheLoaderAdapter<K,V> implements net.sf.ehcache.loader.Cach
      */
     @Override
     public net.sf.ehcache.loader.CacheLoader clone(Ehcache cache) throws CloneNotSupportedException {
-        JCacheCacheLoaderAdapter clone = (JCacheCacheLoaderAdapter)super.clone();
+        JCacheCacheLoaderAdapter clone = (JCacheCacheLoaderAdapter) super.clone();
         return clone;
     }
 
