@@ -47,7 +47,7 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
     // will be lost and we wont pass the TCK
     private final Duration[] timeToLive;
 
-    private final CacheConfiguration cacheConfiguration = new CacheConfiguration();
+    private final CacheConfiguration cacheConfiguration;
 
     private JCacheConfiguration(boolean readThrough,
                                 boolean writeThrough,
@@ -58,6 +58,7 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
         this.readThrough = new AtomicBoolean(readThrough);
         this.writeThrough = new AtomicBoolean(writeThrough);
 
+        this.cacheConfiguration = new CacheConfiguration();
         cacheConfiguration.setCopyOnRead(storeByValue);
         cacheConfiguration.setCopyOnWrite(storeByValue);
 
@@ -79,9 +80,16 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
     public JCacheConfiguration(CacheConfiguration ehCacheConfiguration) {
         this.readThrough = new AtomicBoolean(DEFAULT_READ_THROUGH);
         this.writeThrough = new AtomicBoolean(DEFAULT_WRITE_THROUGH);
+
         timeToLive = new Duration[ExpiryType.values().length];
         for (int i = 0; i < timeToLive.length; i++) {
             timeToLive[i] = Duration.ETERNAL;
+        }
+
+        if (ehCacheConfiguration != null) {
+            this.cacheConfiguration = ehCacheConfiguration;
+        } else {
+            this.cacheConfiguration = new CacheConfiguration();
         }
     }
 
@@ -281,6 +289,7 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
 
     /**
      * Return the underlying {@see CacheConfiguration} that this JCacheConfiguration wraps
+     *
      * @return the wrapped CacheConfiguration
      */
     public CacheConfiguration getCacheConfiguration() {
@@ -412,6 +421,7 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
 
         /**
          * Construct a default Duration[] with TimeToLive values that match the spec default
+         *
          * @return a Duration[] containing Durations that match the default TimeToLive of the spec
          */
         protected static Duration[] defaultTimeToLive() {
