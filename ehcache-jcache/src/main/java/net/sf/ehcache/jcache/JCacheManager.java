@@ -57,9 +57,10 @@ public class JCacheManager implements javax.cache.CacheManager {
      * via an ehcache-name.xml config file
      *
      * @param name
+     * @param ehcacheManager
      * @param classLoader
      */
-    public JCacheManager(String name, ClassLoader classLoader) {
+    public JCacheManager(String name, CacheManager ehcacheManager, ClassLoader classLoader) {
         if (classLoader == null) {
             throw new NullPointerException("No classLoader specified");
         }
@@ -68,8 +69,8 @@ public class JCacheManager implements javax.cache.CacheManager {
         }
         this.classLoader = classLoader;
 
-        ehcacheManager = configureEhCacheManager(name);
-        ehcacheManager.setName(name);
+        this.ehcacheManager = ehcacheManager;
+        this.ehcacheManager.setName(name);
     }
 
     /**
@@ -81,26 +82,12 @@ public class JCacheManager implements javax.cache.CacheManager {
         return ehcacheManager;
     }
 
-    /**
-     * Configures the underlying ehcacheManager - either by retrieving it via the
-     * {@code ehcache-<NAME>.xml} or by creating a new CacheManager
-     *
-     * @param name name of the CacheManager to create
-     * @return a CacheManager configured with that name
-     */
-    private CacheManager configureEhCacheManager(String name) {
-        String configName;
-        // if (name.equals(Caching.DEFAULT_CACHE_MANAGER_NAME)) {
-        return new CacheManager();
-        // } else {
-        //return new CacheManager("/ehcache-" + name + ".xml");
-        // }
-    }
+
 
     /**
      * {@inheritDoc}
      * <p/>
-     * The name returned will be that passed in to the constructor {@link #JCacheManager(String, ClassLoader)}
+     * The name returned will be that passed in to the constructor {@link #JCacheManager(String, net.sf.ehcache.CacheManager, ClassLoader)}
      */
     @Override
     public String getName() {
