@@ -28,6 +28,13 @@ import javax.cache.event.CacheEntryUpdatedListener;
 import javax.cache.event.NotificationScope;
 
 
+/**
+ * Adapt a {@link CacheEntryListener} to the {@link CacheEventListener} interface
+ *
+ * @param <K> the type of keys used by this JCacheListenerAdapter
+ * @param <V> the type of values that are loaded by this JCacheListenerAdapter
+ * @author Ryan Gardner
+ */
 public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     private CacheEntryListener<K, V> cacheListener;
     private boolean removedListener;
@@ -35,6 +42,26 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     private boolean updatedListener;
     private boolean expiredListener;
 
+    /**
+     * Construct an adapter that wraps the {@code cacheListener} to be used by Ehcache
+     * <p/>
+     * The interfaces of {@link CacheEntryListener} are more fine-grained than the
+     * CacheEntryListener interface - and may only implement one or more of the following
+     * sub-interfaces:
+     * {@link CacheEntryRemovedListener}
+     * {@link CacheEntryCreatedListener}
+     * {@link CacheEntryUpdatedListener}
+     * {@link CacheEntryExpiredListener}
+     * <p/>
+     * When this constructor is called, the {@code cacheListener} will be inspected
+     * and based upon which sub-interfaces of CacheEntryListener the {@code cacheListener}
+     * implements, listeners on the corresponding EHCache events will be adapted to it.
+     * <p/>
+     * It is expected that the EventListener model of JSR107 will change, so this class
+     * will likely be refactored several times before the final release of JSR107.
+     *
+     * @param cacheListener the cacheListener to wrap
+     */
     public JCacheListenerAdapter(CacheEntryListener<K, V> cacheListener) {
         this.cacheListener = cacheListener;
         removedListener = implementsMethods(CacheEntryRemovedListener.class);
@@ -188,13 +215,10 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
      */
     @Override
     public void notifyRemoveAll(Ehcache cache) {
-        if (removedListener) {
-            // TODO - does ehCache have the ability to pass this up natively? If not, decorating over the native events might not work            
-            // and we might need to have our JCache adapter layer handle talking to CacheEntryListeners directly (which wouldn't be 
-            // ideal because then only things happening through the JCache wrapper would be sent out through the event system)
 
-            //((CacheEntryRemovedListener<K, V>) cacheListener).onRemoveAll(null);
-        }
+        //does ehCache have the ability to pass this up natively? If not, decorating over the native events might not work
+        // and we might need to have our JCache adapter layer handle talking to CacheEntryListeners directly (which wouldn't be
+        // ideal because then only things happening through the JCache wrapper would be sent out through the event system)
     }
 
     /**
@@ -270,6 +294,12 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
         return super.clone();
     }
 
+    /**
+     * Adapt a JSR107 {@link NotificationScope} to a corresponding {@link net.sf.ehcache.event.NotificationScope}
+     *
+     * @param scope a native JSR107 NotificationScope
+     * @return an ehcache NotificationScope that matches the scope of the JSR107 scope
+     */
     public static net.sf.ehcache.event.NotificationScope adaptScope(NotificationScope scope) {
         switch (scope) {
             case LOCAL:
