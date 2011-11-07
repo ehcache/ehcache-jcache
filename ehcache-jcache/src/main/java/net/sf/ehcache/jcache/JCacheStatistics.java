@@ -15,19 +15,27 @@
  */
 package net.sf.ehcache.jcache;
 
-import net.sf.ehcache.Statistics;
 import net.sf.ehcache.statistics.LiveCacheStatistics;
 
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * Adapt the EHCache statistics to be accessible via the {@link javax.cache.CacheStatistics}
+ *
+ * @author Ryan Gardner
+ */
 public class JCacheStatistics implements javax.cache.CacheStatistics, Serializable {
-    private LiveCacheStatistics statistics;
-    private final javax.cache.Cache cache;
+    private final LiveCacheStatistics statistics;
+    private final JCache cache;
     private Date dateFrom;
 
-
-    public JCacheStatistics(final javax.cache.Cache cache, LiveCacheStatistics statistics) {
+    /**
+     * Create a JCacheStatistics adapter
+     * @param cache the jsr107 ehcache cache
+     * @param statistics
+     */
+    public JCacheStatistics(final JCache cache, final LiveCacheStatistics statistics) {
         this.statistics = statistics;
         this.cache = cache;
     }

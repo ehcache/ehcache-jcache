@@ -17,7 +17,18 @@ package net.sf.ehcache.jcache;
 
 import javax.cache.Status;
 
+/**
+ * Adapt a {@link net.sf.ehcache.Status} to a matching {@link Status}
+ *
+ * @author Ryan Gardner
+ */
 public class JCacheStatusAdapter {
+
+    /**
+     * Adapt the {@link net.sf.ehcache.Status} to the matching {@link Status}
+     * @param status the status to adapt
+     * @return a Status that matches the lifecycle phase of the ehcache-specific status
+     */
     public static Status adaptStatus(net.sf.ehcache.Status status) {
         if (status.intValue() == net.sf.ehcache.Status.STATUS_ALIVE.intValue()) {
             return Status.STARTED;
