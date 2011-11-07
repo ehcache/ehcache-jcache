@@ -180,28 +180,6 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
         return transactionMode;
     }
 
-
-//
-//        /**
-//         * Gets the registered {@link javax.cache.CacheLoader}, if any.
-//         *
-//         * @return the {@link javax.cache.CacheLoader} or null if none has been set.
-//         */
-//        @Override
-//        public CacheLoader getCacheLoader() {
-//            return jcache.getCacheLoader();
-//        }
-//
-//        /**
-//         * Gets the registered {@link javax.cache.CacheWriter}, if any.
-//         *
-//         * @return
-//         */
-//        @Override
-//        public CacheWriter getCacheWriter() {
-//            return jcache.getCacheWriter();
-//        }
-
     @Override
     public void setExpiry(ExpiryType type, Duration duration) {
         if (type == null) {
@@ -287,17 +265,6 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
         return true;
     }
 
-    // CacheConfiguration doesn't override equals - so this method needs to have a way to compare them.
-    // doing the toString of their configs wont work though since it dumps their names into that config and un
-    protected boolean cacheConfigurationEquals(CacheConfiguration a, CacheConfiguration b) {
-        return ConfigurationUtil.generateCacheConfigurationText(a)
-                .equals(ConfigurationUtil.generateCacheConfigurationText(b));
-    }
-
-    protected int cacheConfigurationHashCode(CacheConfiguration a) {
-        return ConfigurationUtil.generateCacheConfigurationText(a).hashCode();
-    }
-
     @Override
     public int hashCode() {
         int result = readThrough.hashCode();
@@ -313,6 +280,10 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
         return result;
     }
 
+    /**
+     * Return the underlying {@see CacheConfiguration} that this JCacheConfiguration wraps
+     * @return the wrapped CacheConfiguration
+     */
     public CacheConfiguration getCacheConfiguration() {
         return cacheConfiguration;
     }
