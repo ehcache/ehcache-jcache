@@ -6,7 +6,7 @@
     <name>Ehcache JCache Parent Pom</name>
     <artifactId>ehcache-jcache-parent</artifactId>
     <packaging>pom</packaging>
-    <version>2.2-SNAPSHOT</version>
+    <version>0.3</version>
     <description><![CDATA[Parent project for Ehcache's implementation of JSR107 - JCACHE.]]> </description>
     <properties>
         <net.sf.ehcache.speedAdjustmentFactor>2</net.sf.ehcache.speedAdjustmentFactor>
