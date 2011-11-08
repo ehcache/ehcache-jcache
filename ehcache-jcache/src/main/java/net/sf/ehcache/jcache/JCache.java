@@ -114,7 +114,7 @@ public class JCache<K, V> implements Cache<K, V> {
      * {@inheritDoc}
      */
     @Override
-    public V get(Object key) throws CacheException {
+    public V get(K key) throws CacheException {
         checkStatusStarted();
         checkKey(key);
         Element cacheElement = ehcache.get(key);
@@ -128,7 +128,7 @@ public class JCache<K, V> implements Cache<K, V> {
         return (V) cacheElement.getValue();
     }
 
-    private V getFromLoader(Object key) {
+    private V getFromLoader(K key) {
         Cache.Entry<K, V> entry = (Entry<K, V>) cacheLoaderAdapter.load(key);
         if (entry != null) {
             ehcache.put(new Element(entry.getKey(), entry.getValue()));
@@ -161,7 +161,7 @@ public class JCache<K, V> implements Cache<K, V> {
      * {@inheritDoc}
      */
     @Override
-    public boolean containsKey(Object key) throws CacheException {
+    public boolean containsKey(K key) throws CacheException {
         checkStatusStarted();
         checkKey(key);
         return ehcache.isKeyInCache(key);
@@ -295,7 +295,7 @@ public class JCache<K, V> implements Cache<K, V> {
      * {@inheritDoc}
      */
     @Override
-    public boolean remove(Object key) throws CacheException {
+    public boolean remove(K key) throws CacheException {
         checkStatusStarted();
         checkKey(key);
         return ehcache.remove(key);
@@ -305,7 +305,7 @@ public class JCache<K, V> implements Cache<K, V> {
      * {@inheritDoc}
      */
     @Override
-    public boolean remove(Object key, V oldValue) throws CacheException {
+    public boolean remove(K key, V oldValue) throws CacheException {
         checkStatusStarted();
         checkKey(key);
         checkValue(oldValue);
@@ -321,7 +321,7 @@ public class JCache<K, V> implements Cache<K, V> {
      * {@inheritDoc}
      */
     @Override
-    public V getAndRemove(Object key) throws CacheException {
+    public V getAndRemove(K key) throws CacheException {
         checkStatusStarted();
         checkKey(key);
 
