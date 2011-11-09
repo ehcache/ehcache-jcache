@@ -474,14 +474,15 @@ public class JCache<K, V> implements Cache<K, V> {
      */
     @Override
     public void stop() throws CacheException {
-        checkStatusStarted();
         executorService.shutdown();
         try {
             executorService.awaitTermination(DEFAULT_EXECUTOR_TIMEOUT, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new CacheException(e);
         }
-        ehcache.dispose();
+        if (ehcache.getStatus().equals(net.sf.ehcache.Status.STATUS_ALIVE)) {
+            ehcache.dispose();
+        }
     }
 
     /**
@@ -544,11 +545,11 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    private JCacheCacheLoaderAdapter<K, V> getCacheLoaderAdapter() {
+    protected JCacheCacheLoaderAdapter<K, V> getCacheLoaderAdapter() {
         return this.cacheLoaderAdapter;
     }
 
-    private JCacheCacheWriterAdapter<K, V> getCacheWriterAdapter() {
+    protected JCacheCacheWriterAdapter<K, V> getCacheWriterAdapter() {
         return this.cacheWriterAdapter;
     }
 
