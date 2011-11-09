@@ -63,7 +63,7 @@ public class JCacheCacheLoaderAdapter<K, V> implements net.sf.ehcache.loader.Cac
      */
     @Override
     public Object load(Object key) throws CacheException {
-        return cacheLoader.load(key);
+        return cacheLoader.load((K) key);
     }
 
     /**
