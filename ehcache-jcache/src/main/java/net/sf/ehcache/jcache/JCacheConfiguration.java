@@ -18,6 +18,8 @@ package net.sf.ehcache.jcache;
 
 import net.sf.ehcache.config.CacheConfiguration;
 
+import javax.cache.CacheLoader;
+import javax.cache.CacheWriter;
 import javax.cache.Caching;
 import javax.cache.InvalidConfigurationException;
 import javax.cache.OptionalFeature;
@@ -48,6 +50,7 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
     private final Duration[] timeToLive;
 
     private final CacheConfiguration cacheConfiguration;
+    private JCache jcache;
 
     private JCacheConfiguration(boolean readThrough,
                                 boolean writeThrough,
@@ -107,15 +110,35 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
         return this.readThrough.get();
     }
 
-    /**
-     * Sets whether the cache is a read-through cache.
+    /***
+     * Set the backing cache to expose more configuration.
      *
-     * @param readThrough the value for readThrough
-     * @throws IllegalStateException if the configuration can no longer be changed
+     * @param jcache the backing cache.
+     */
+    void setJCache(JCache jcache) {
+        this.jcache = jcache;
+    }
+
+    /**
+     * Gets the registered {@link javax.cache.CacheLoader}, if any.
+     *
+     * @return the {@link javax.cache.CacheLoader} or null if none has been set.
      */
     @Override
-    public void setReadThrough(boolean readThrough) throws IllegalStateException {
-        this.readThrough.set(readThrough);
+    public CacheLoader getCacheLoader() {
+        JCacheCacheLoaderAdapter cacheLoaderAdapter = jcache.getCacheLoaderAdapter();
+        return (cacheLoaderAdapter != null) ? cacheLoaderAdapter.getJCacheCacheLoader() : null;
+    }
+
+    /**
+     * Gets the registered {@link javax.cache.CacheWriter}, if any.
+     *
+     * @return
+     */
+    @Override
+    public CacheWriter getCacheWriter() {
+        JCacheCacheWriterAdapter cacheWriterAdapter = jcache.getCacheWriterAdapter();
+        return (cacheWriterAdapter != null) ? cacheWriterAdapter.getJCacheCacheWriter() : null;
     }
 
     /**
@@ -128,16 +151,6 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
     @Override
     public boolean isWriteThrough() {
         return this.writeThrough.get();
-    }
-
-    /**
-     * Whether the cache is a write-through cache. A CacheWriter should be configured.
-     *
-     * @param writeThrough set to true for a write-through cache
-     */
-    @Override
-    public void setWriteThrough(boolean writeThrough) {
-        this.writeThrough.set(writeThrough);
     }
 
     /**
@@ -187,17 +200,23 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
         return transactionMode;
     }
 
-    @Override
-    public void setExpiry(ExpiryType type, Duration duration) {
+    /**
+     * Set the expiry for this CacheConfiguration and configure the
+     * underlying ehcache to match the same configuration
+     *
+     * @param type Type of expiry to set
+     * @param duration duration for that expiry
+     */
+    private void setExpiry(ExpiryType type, Duration duration) {
         if (type == null) {
             throw new NullPointerException("ExpiryType can't be null");
         }
         this.timeToLive[type.ordinal()] = duration;
         if (type == ExpiryType.ACCESSED) {
-            cacheConfiguration.setTimeToIdleSeconds(duration.getTimeUnit().toSeconds(duration.getTimeToLive()));
+            cacheConfiguration.setTimeToIdleSeconds(duration.getTimeUnit().toSeconds(duration.getDurationAmount()));
         }
         if (type == ExpiryType.MODIFIED) {
-            cacheConfiguration.setTimeToLiveSeconds(duration.getTimeUnit().toSeconds(duration.getTimeToLive()));
+            cacheConfiguration.setTimeToLiveSeconds(duration.getTimeUnit().toSeconds(duration.getDurationAmount()));
         }
         this.timeToLive[type.ordinal()] = duration;
     }
@@ -207,7 +226,7 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
     public Duration getExpiry(ExpiryType type) {
         Duration duration = this.timeToLive[type.ordinal()];
         TimeUnit timeUnit = duration.getTimeUnit();
-        Long ttl = duration.getTimeToLive();
+        Long ttl = duration.getDurationAmount();
 
         if (type == ExpiryType.ACCESSED) {
             long timeToIdleSeconds = cacheConfiguration.getTimeToIdleSeconds();
@@ -221,7 +240,7 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
                 duration = new Duration(TimeUnit.SECONDS, timeToLiveSeconds);
             }
         }
-        if (duration.getTimeToLive() == 0) {
+        if (duration.getDurationAmount() == 0) {
             return Duration.ETERNAL;
         } else {
             return duration;

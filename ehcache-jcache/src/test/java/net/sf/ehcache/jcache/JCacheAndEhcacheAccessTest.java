@@ -36,12 +36,12 @@ public class JCacheAndEhcacheAccessTest {
                 jcache.getConfiguration().isStoreByValue(), is(false));
         assertThat(jcache.getConfiguration().getExpiry(CacheConfiguration.ExpiryType.ACCESSED).getTimeUnit(),
                 is(equalTo(TimeUnit.SECONDS)));
-        assertThat(jcache.getConfiguration().getExpiry(CacheConfiguration.ExpiryType.ACCESSED).getTimeToLive(),
+        assertThat(jcache.getConfiguration().getExpiry(CacheConfiguration.ExpiryType.ACCESSED).getDurationAmount(),
                 is(360L));
 
         assertThat(jcache.getConfiguration().getExpiry(CacheConfiguration.ExpiryType.MODIFIED).getTimeUnit(),
                 is(equalTo(TimeUnit.SECONDS)));
-        assertThat(jcache.getConfiguration().getExpiry(CacheConfiguration.ExpiryType.MODIFIED).getTimeToLive(),
+        assertThat(jcache.getConfiguration().getExpiry(CacheConfiguration.ExpiryType.MODIFIED).getDurationAmount(),
                 is(1000L));
         assertThat(jcache.getConfiguration().getCacheConfiguration().isOverflowToDisk(), is(true));
     }
