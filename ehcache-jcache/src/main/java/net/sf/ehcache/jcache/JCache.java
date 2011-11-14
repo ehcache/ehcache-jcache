@@ -17,6 +17,7 @@ package net.sf.ehcache.jcache;
 
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
+import net.sf.ehcache.config.CopyStrategyConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -402,7 +403,7 @@ public class JCache<K, V> implements Cache<K, V> {
      * {@inheritDoc}
      */
     @Override
-    public boolean registerCacheEntryListener(CacheEntryListener<K, V> cacheEntryListener, NotificationScope scope, boolean synchronous) {
+    public boolean registerCacheEntryListener(CacheEntryListener<? super K, ? super V> cacheEntryListener, NotificationScope scope, boolean synchronous) {
         checkValue(cacheEntryListener);
         checkValue(scope);
 
@@ -678,10 +679,20 @@ public class JCache<K, V> implements Cache<K, V> {
                 throw new InvalidConfigurationException("cacheWriter can't be null on a writeThrough cache");
             }
 
-
             cacheConfiguration.getCacheConfiguration().setName(cacheName);
-            cacheConfiguration.getCacheConfiguration().setCopyOnWrite(cacheConfiguration.getCacheConfiguration().isCopyOnWrite());
+
+            if (cacheConfiguration.isStoreByValue()) {
+                cacheConfiguration.getCacheConfiguration().setCopyOnWrite(true);
+                cacheConfiguration.getCacheConfiguration().setCopyOnRead(true);
+                CopyStrategyConfiguration copyStrategyConfiguration =
+                        cacheConfiguration.getCacheConfiguration().getCopyStrategyConfiguration();
+                copyStrategyConfiguration.setCopyStrategyInstance(new JCacheCopyOnWriteStrategy(this.classLoader));
+            }
+
+
+
             cacheConfiguration.getCacheConfiguration().setStatistics(cacheConfiguration.isStatisticsEnabled());
+
 
             // this needs to be exposed via configuration methods
             cacheConfiguration.getCacheConfiguration().setDiskPersistent(false);
