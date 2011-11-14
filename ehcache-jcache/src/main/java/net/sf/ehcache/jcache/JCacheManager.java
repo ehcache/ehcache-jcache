@@ -190,7 +190,7 @@ public class JCacheManager implements javax.cache.CacheManager {
      * {@inheritDoc}
      */
     @Override
-    public void addImmutableClass(Class<?> immutableClass) {
+    public void registerImmutableClass(Class<?> immutableClass) {
         if (immutableClass == null) {
             throw new NullPointerException();
         }
