@@ -186,8 +186,8 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
      * @return the time in milliseconds
      */
     @Override
-    public long getAverageGetMillis() {
-        return (long)(statistics.getAverageGetTimeMillis());
+    public float getAverageGetMillis() {
+        return (statistics.getAverageGetTimeMillis());
     }
 
     /**
@@ -196,7 +196,7 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
      * @return the time in milliseconds
      */
     @Override
-    public long getAveragePutMillis() {
+    public float getAveragePutMillis() {
         throw new UnsupportedOperationException("getAveragePutMillis is not implemented in net.sf.ehcache.jcache.JCacheStatistics");
     }
 
@@ -206,7 +206,7 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
      * @return the time in milliseconds
      */
     @Override
-    public long getAverageRemoveMillis() {
+    public float getAverageRemoveMillis() {
         throw new UnsupportedOperationException("getAverageRemoveMillis is not implemented in net.sf.ehcache.jcache.JCacheStatistics");
     }
 }
