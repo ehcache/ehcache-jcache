@@ -1,8 +1,6 @@
 package net.sf.ehcache.jcache;
 
-import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import javax.cache.Cache;
@@ -22,11 +20,11 @@ public class JCacheAndEhcacheAccessTest {
         Cache foo = Caching.getCacheManager().createCacheBuilder("foo").build();
         assertThat(foo, is(JCache.class));
     }
-    
+
     @Test
-    public void namedEhcacheDotXMLReadWhenOneExists() {        
+    public void namedEhcacheDotXMLReadWhenOneExists() {
         javax.cache.Cache jcache = Caching.getCacheManager("basic").getCache("sampleCache");
-        assertThat((jcache.unwrap(Ehcache.class)), is(notNullValue()));        
+        assertThat((jcache.unwrap(Ehcache.class)), is(notNullValue()));
     }
 
     @Test
