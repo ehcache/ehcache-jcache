@@ -83,7 +83,6 @@ public class JCacheManager implements javax.cache.CacheManager {
     }
 
 
-
     /**
      * {@inheritDoc}
      * <p/>
@@ -137,19 +136,13 @@ public class JCacheManager implements javax.cache.CacheManager {
      * {@inheritDoc}
      */
     @Override
-    public <K, V> Set<Cache<K, V>> getCaches() {
+    public Iterable<Cache<?, ?>> getCaches() {
         synchronized (caches) {
-            HashSet<Cache<K, V>> set = new HashSet<Cache<K, V>>();
+            HashSet<Cache<?, ?>> cacheSet = new HashSet<Cache<?, ?>>(caches.size(), 1.0f);
             for (Cache<?, ?> cache : caches.values()) {
-                /*
-                 * Can't really verify K/V cast but it is required by the API, using a 
-                 * local variable for the cast to allow for a minimal scoping of @SuppressWarnings 
-                 */
-                @SuppressWarnings("unchecked")
-                final Cache<K, V> castCache = (Cache<K, V>) cache;
-                set.add(castCache);
+                cacheSet.add(cache);
             }
-            return Collections.unmodifiableSet(set);
+            return Collections.unmodifiableSet(cacheSet);
         }
     }
 
@@ -310,12 +303,14 @@ public class JCacheManager implements javax.cache.CacheManager {
                 ehcacheManager.removeCache(cache.getName());
             }
             // remove the cache if it already exists
-            if (ehcacheManager.getCache(cache.getName()) != null) {
+            if (ehcacheManager.getEhcache(cache.getName()) != null) {
                 ehcacheManager.removeCache(cache.getName());
             }
             caches.remove(cache.getName());
             caches.put(cache.getName(), cache);
-            ehcacheManager.addCache(cache.getEhcache());
+            // decorate the cache with a reference to the JCache
+            ehcacheManager.addCache(new JCacheEhcacheDecorator(cache.getEhcache(),cache));
+
         }
 
     }

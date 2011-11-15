@@ -71,7 +71,7 @@ public class JCache<K, V> implements Cache<K, V> {
      * An Ehcache backing instance
      */
     private Ehcache ehcache;
-    private CacheManager cacheManager;
+    private JCacheManager cacheManager;
     private JCacheCacheLoaderAdapter cacheLoaderAdapter;
     private JCacheCacheWriterAdapter cacheWriterAdapter;
 
@@ -82,16 +82,18 @@ public class JCache<K, V> implements Cache<K, V> {
      * <p/>
      * JCache is an adaptor for an Ehcache, and therefore requires an Ehcache in its constructor.
      * <p/>
+     * <p/>
+     * // TODO - perhaps this should not be exposed
      *
-     * @param ehcache An ehcache
+     * @param ehcache      An ehcache
      * @param cacheManager the {@see CacheManager} that manages this wrapped ehcache
-     * @param classLoader the classloader to use to serialize / deserialize cache entries
+     * @param classLoader  the classloader to use to serialize / deserialize cache entries
      * @see "class description for recommended usage"
      * @since 1.4
      */
-    public JCache(Ehcache ehcache, CacheManager cacheManager, ClassLoader classLoader) {
-        this.ehcache = ehcache;
+    public JCache(Ehcache ehcache, JCacheManager cacheManager, ClassLoader classLoader) {
         this.cacheManager = cacheManager;
+        this.ehcache = ehcache;
         this.configuration = new JCacheConfiguration(ehcache.getCacheConfiguration());
     }
 
@@ -556,12 +558,11 @@ public class JCache<K, V> implements Cache<K, V> {
 
     /**
      * Callable used for cache loader.
-     *
+     * <p/>
      * (Based on the CacheLoader pattern used in {@link javax.cache.implementation.RICache.RICacheLoaderLoadCallable})
      *
      * @param <K> the type of the key
      * @param <V> the type of the value
-     *
      * @author Ryan Gardner
      */
     @SuppressWarnings("JavadocReference")
@@ -597,8 +598,8 @@ public class JCache<K, V> implements Cache<K, V> {
      *
      * @param <K> the type of the key
      * @param <V> the type of the value
-     * @link javax.cache.implementation.RICache.RICacheLoaderLoadAllCallable
      * @author Yannis Cosmadopoulos
+     * @link javax.cache.implementation.RICache.RICacheLoaderLoadAllCallable
      */
     private static class JCacheLoaderLoadAllCallable<K, V> implements Callable<Map<K, V>> {
         private final JCache<K, V> cache;
@@ -648,18 +649,18 @@ public class JCache<K, V> implements Cache<K, V> {
 
         private final CopyOnWriteArraySet<ListenerRegistration<K, V>> listeners = new CopyOnWriteArraySet<ListenerRegistration<K, V>>();
         private final JCacheConfiguration.Builder configurationBuilder = new JCacheConfiguration.Builder();
-        private CacheManager cacheManager;
+        private JCacheManager cacheManager;
 
 
         /**
-         * Create a new CacheBuilder that can be used to initialize a new cache with the 
+         * Create a new CacheBuilder that can be used to initialize a new cache with the
          * {@code cacheName} in the {@code cacheManager} using the specified {@code classLoader}
          *
-         * @param cacheName name of the cache that this cacheBuilder will create
+         * @param cacheName    name of the cache that this cacheBuilder will create
          * @param cacheManager the {@link CacheManager} that will manage this cache when it is built
-         * @param classLoader the classLoader that will be used for this cache
+         * @param classLoader  the classLoader that will be used for this cache
          */
-        public Builder(String cacheName, CacheManager cacheManager, ClassLoader classLoader) {
+        public Builder(String cacheName, JCacheManager cacheManager, ClassLoader classLoader) {
             this.cacheName = cacheName;
             this.cacheManager = cacheManager;
             this.classLoader = classLoader;
@@ -684,11 +685,7 @@ public class JCache<K, V> implements Cache<K, V> {
             if (cacheConfiguration.isStoreByValue()) {
                 cacheConfiguration.getCacheConfiguration().setCopyOnWrite(true);
                 cacheConfiguration.getCacheConfiguration().setCopyOnRead(true);
-                CopyStrategyConfiguration copyStrategyConfiguration =
-                        cacheConfiguration.getCacheConfiguration().getCopyStrategyConfiguration();
-                copyStrategyConfiguration.setCopyStrategyInstance(new JCacheCopyOnWriteStrategy(this.classLoader));
             }
-
 
 
             cacheConfiguration.getCacheConfiguration().setStatistics(cacheConfiguration.isStatisticsEnabled());
@@ -700,6 +697,9 @@ public class JCache<K, V> implements Cache<K, V> {
             net.sf.ehcache.Cache cache = new net.sf.ehcache.Cache(cacheConfiguration.getCacheConfiguration());
             JCache<K, V> jcache = new JCache<K, V>(cache, this.cacheManager, this.classLoader);
             jcache.configuration = cacheConfiguration;
+
+            Ehcache decoratedCache = new JCacheEhcacheDecorator(cache, jcache);
+            jcache.ehcache = decoratedCache;
 
             if (cacheLoader != null) {
                 jcache.cacheLoaderAdapter = (new JCacheCacheLoaderAdapter(cacheLoader));
