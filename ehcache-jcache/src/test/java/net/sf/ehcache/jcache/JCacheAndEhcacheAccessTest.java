@@ -8,8 +8,10 @@ import javax.cache.CacheConfiguration;
 import javax.cache.Caching;
 import java.util.concurrent.TimeUnit;
 
+import static javax.cache.CacheConfiguration.Duration;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -17,7 +19,10 @@ public class JCacheAndEhcacheAccessTest {
 
     @Test
     public void ehcacheIsBeingPickedAsCacheProvider() {
-        Cache foo = Caching.getCacheManager().createCacheBuilder("foo").build();
+        Cache foo = Caching.getCacheManager().createCacheBuilder("foo")
+                .setExpiry(CacheConfiguration.ExpiryType.MODIFIED, new Duration(TimeUnit.MINUTES, 10))
+                .setStoreByValue(false)
+                .build();
         assertThat(foo, is(JCache.class));
     }
 
@@ -42,6 +47,12 @@ public class JCacheAndEhcacheAccessTest {
         assertThat(jcache.getConfiguration().getExpiry(CacheConfiguration.ExpiryType.MODIFIED).getDurationAmount(),
                 is(1000L));
         assertThat(jcache.getConfiguration().getCacheConfiguration().isOverflowToDisk(), is(true));
+    }
+
+    @Test
+    public void nullCacheWhenNoCacheExists() {
+        JCache jcache = (JCache) Caching.getCacheManager("basic").getCache("nonexistent-cache");
+        assertThat(jcache, nullValue());
     }
 
 }
