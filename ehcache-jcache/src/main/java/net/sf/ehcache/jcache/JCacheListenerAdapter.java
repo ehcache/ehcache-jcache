@@ -97,7 +97,10 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     public void notifyElementRemoved(Ehcache cache, Element element) throws CacheException {
         if (removedListener) {
             if (element != null) {
-                ((CacheEntryRemovedListener<K, V>) cacheListener).onRemove(new JCacheEntry(element));
+                ((CacheEntryRemovedListener<? super K, ? super V>) cacheListener)
+                        .entryRemoved(
+                            new JCacheEntryEventAdapter<K, V>(fromEhcache(cache), element)
+                            );
             }
         }
     }
@@ -118,7 +121,10 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     public void notifyElementPut(Ehcache cache, Element element) throws CacheException {
         if (createdListener) {
             if (element != null) {
-                ((CacheEntryCreatedListener<K, V>) cacheListener).onCreate(new JCacheEntry<K, V>(element));
+                ((CacheEntryCreatedListener<K, V>) cacheListener)
+                        .entryCreated(
+                                new JCacheEntryEventAdapter<K, V>(fromEhcache(cache), element)
+                        );
             }
         }
     }
@@ -141,7 +147,10 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     public void notifyElementUpdated(Ehcache cache, Element element) throws CacheException {
         if (updatedListener) {
             if (element != null) {
-                ((CacheEntryCreatedListener<K, V>) cacheListener).onCreate(new JCacheEntry<K, V>(element));
+                ((CacheEntryCreatedListener<K, V>) cacheListener)
+                        .entryCreated(
+                            new JCacheEntryEventAdapter<K, V>(fromEhcache(cache), element)
+                            );
             }
         }
     }
@@ -176,7 +185,10 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     public void notifyElementExpired(Ehcache cache, Element element) {
         if (expiredListener) {
             if (element != null) {
-                ((CacheEntryExpiredListener<K, V>) cacheListener).onExpire(new JCacheEntry<K, V>(element));
+                ((CacheEntryExpiredListener<K, V>) cacheListener)
+                        .entryExpired(
+                                new JCacheEntryEventAdapter<K, V>(fromEhcache(cache), element)
+                        );
             }
         }
     }
@@ -196,7 +208,9 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     public void notifyElementEvicted(Ehcache cache, Element element) {
         if (expiredListener) {
             if (element != null) {
-                ((CacheEntryExpiredListener<K, V>) cacheListener).onExpire(new JCacheEntry<K, V>(element));
+                ((CacheEntryExpiredListener<K, V>) cacheListener).entryExpired(
+                        new JCacheEntryEventAdapter<K, V>(fromEhcache(cache), element)
+                );
             }
         }
     }
@@ -308,6 +322,15 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
                 return net.sf.ehcache.event.NotificationScope.REMOTE;
             default:
                 return net.sf.ehcache.event.NotificationScope.LOCAL;
+        }
+    }
+    
+    protected JCache<K,V> fromEhcache(Ehcache ehcache) {
+        if (ehcache instanceof JCacheEhcacheDecorator) {
+            return (JCache<K,V>)((JCacheEhcacheDecorator) ehcache).getJcache();
+        }
+        else {
+            return null;
         }
     }
 
