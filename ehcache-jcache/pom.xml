@@ -9,7 +9,7 @@
     <parent>
         <groupId>net.sf.ehcache</groupId>
         <artifactId>ehcache-jcache-parent</artifactId>
-        <version>0.4-SNAPSHOT</version>
+        <version>3.0.0-beta1-SNAPSHOT</version>
     </parent>
 
     <description><![CDATA[Ehcache's implementation of JSR107 - JCACHE.]]> </description>
