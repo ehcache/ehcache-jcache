@@ -17,6 +17,7 @@ package net.sf.ehcache.jcache;
 
 import net.sf.ehcache.statistics.LiveCacheStatistics;
 
+import javax.cache.Status;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -54,8 +55,8 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
      * @return The status value from the Status enum class
      */
     @Override
-    public String getStatus() {
-        return cache.getStatus().toString();
+    public Status getStatus() {
+        return cache.getStatus();
     }
 
     /**
