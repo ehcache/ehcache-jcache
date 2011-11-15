@@ -81,7 +81,7 @@ public class JCacheCachingProvider implements CachingProvider {
      * <p/>
      * Currently, this JCache decroator
      * does not support {@link OptionalFeature#TRANSACTIONS}
-     * or {@link OptionalFeature#ANNOTATIONS} or
+     * or {@link OptionalFeature#ANNOTATIONS} but does support
      * {@link OptionalFeature#STORE_BY_REFERENCE}
      */
     @Override
