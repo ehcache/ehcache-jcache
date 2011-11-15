@@ -74,6 +74,7 @@ public class JCache<K, V> implements Cache<K, V> {
     private JCacheManager cacheManager;
     private JCacheCacheLoaderAdapter cacheLoaderAdapter;
     private JCacheCacheWriterAdapter cacheWriterAdapter;
+    private ClassLoader classLoader;
 
     private JCacheConfiguration configuration;
 
@@ -94,6 +95,7 @@ public class JCache<K, V> implements Cache<K, V> {
     public JCache(Ehcache ehcache, JCacheManager cacheManager, ClassLoader classLoader) {
         this.cacheManager = cacheManager;
         this.ehcache = ehcache;
+        this.classLoader = classLoader;
         this.configuration = new JCacheConfiguration(ehcache.getCacheConfiguration());
     }
 
@@ -685,6 +687,9 @@ public class JCache<K, V> implements Cache<K, V> {
             if (cacheConfiguration.isStoreByValue()) {
                 cacheConfiguration.getCacheConfiguration().setCopyOnWrite(true);
                 cacheConfiguration.getCacheConfiguration().setCopyOnRead(true);
+                CopyStrategyConfiguration copyStrategyConfiguration =
+                        cacheConfiguration.getCacheConfiguration().getCopyStrategyConfiguration();
+                copyStrategyConfiguration.setCopyStrategyInstance(new JCacheCopyOnWriteStrategy(this.classLoader));
             }
 
 
