@@ -35,7 +35,7 @@ import javax.cache.transaction.Mode;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * The CacheManager that allows EHCache caches to be retrieved and accessed via JSR107 APIs
@@ -106,7 +106,7 @@ public class JCacheManager implements javax.cache.CacheManager {
 
     @Override
     public <K, V> CacheBuilder<K, V> createCacheBuilder(String cacheName) {
-        return new JCacheBuilder<K, V>(cacheName, this);
+        return new JCacheBuilder<K, V>(cacheName, this, classLoader);
     }
 
     /**
@@ -225,12 +225,17 @@ public class JCacheManager implements javax.cache.CacheManager {
      */
     private class JCacheBuilder<K, V> implements CacheBuilder<K, V> {
         private final JCache.Builder<K, V> cacheBuilder;
-
-        public JCacheBuilder(String cacheName, JCacheManager jCacheManager) {
+        private Pattern namePattern = Pattern.compile("\\S+");
+        
+        public JCacheBuilder(String cacheName, JCacheManager jCacheManager, ClassLoader cl) {
             if (cacheName == null) {
                 throw new NullPointerException("Cache name cannot be null");
             }
-            cacheBuilder = new JCache.Builder<K, V>(cacheName, jCacheManager, classLoader);
+            if (!(namePattern.matcher(cacheName).find())) {
+                throw new IllegalArgumentException("Cache name must contain one or more non-whitespace characters");
+            }
+
+            cacheBuilder = new JCache.Builder<K, V>(cacheName, jCacheManager, cl);
         }
 
         @Override
