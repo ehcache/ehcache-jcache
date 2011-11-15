@@ -192,12 +192,12 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
 
     @Override
     public IsolationLevel getTransactionIsolationLevel() {
-        return isolationLevel;
+        return isolationLevel != null ? isolationLevel : IsolationLevel.NONE;
     }
 
     @Override
     public Mode getTransactionMode() {
-        return transactionMode;
+        return transactionMode != null ? transactionMode : Mode.NONE;
     }
 
     /**
