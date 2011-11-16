@@ -320,7 +320,41 @@ public class JCacheManager implements javax.cache.CacheManager {
             ehcacheManager.addCache(new JCacheEhcacheDecorator(cache.getEhcache(),cache));
 
         }
-
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        JCacheManager that = (JCacheManager) o;
+
+        if (caches != null ? !caches.equals(that.caches) : that.caches != null) {
+            return false;
+        }
+        if (classLoader != null ? !classLoader.equals(that.classLoader) : that.classLoader != null) {
+            return false;
+        }
+        if (ehcacheManager != null ? !ehcacheManager.equals(that.ehcacheManager) : that.ehcacheManager != null) {
+            return false;
+        }
+        if (immutableClasses != null ? !immutableClasses.equals(that.immutableClasses) : that.immutableClasses != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = caches != null ? caches.hashCode() : 0;
+        result = 31 * result + (immutableClasses != null ? immutableClasses.hashCode() : 0);
+        result = 31 * result + (classLoader != null ? classLoader.hashCode() : 0);
+        result = 31 * result + (ehcacheManager != null ? ehcacheManager.hashCode() : 0);
+        return result;
+    }
 }
