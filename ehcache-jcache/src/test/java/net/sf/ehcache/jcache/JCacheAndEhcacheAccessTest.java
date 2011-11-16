@@ -56,33 +56,33 @@ public class JCacheAndEhcacheAccessTest {
     }
 
 
-    @Test
-    public void differentClassLoadersReturnDifferentCacheManagersWithNamedConfigFile() {
-        ClassLoader cl1 = this.getClass().getClassLoader();
-        ClassLoader cl2 = new MyClassLoader(ClassLoader.getSystemClassLoader());
-        assertNotSame(cl1, cl2);
-
-        JCacheManager jcacheManager1 = (JCacheManager) Caching.getCacheManager(cl1, "basic");
-        JCacheManager jcacheManager2 = (JCacheManager) Caching.getCacheManager(cl2, "basic");
-
-        assertThat(jcacheManager1, is(notNullValue()));
-        assertThat(jcacheManager1, is(not(sameInstance(jcacheManager2))));
-        assertThat(jcacheManager1.getEhcacheManager(), is(not(sameInstance(jcacheManager2.getEhcacheManager()))));
-    }
-
-    @Test
-    public void differentClassLoadersReturnDifferentCacheManagersWithNoConfigFile() {
-        ClassLoader cl1 = this.getClass().getClassLoader();
-        ClassLoader cl2 = new MyClassLoader(ClassLoader.getSystemClassLoader());
-        assertNotSame(cl1, cl2);
-
-        JCacheManager jcacheManager1 = (JCacheManager) Caching.getCacheManager(cl1, "nonexistent-config");
-        JCacheManager jcacheManager2 = (JCacheManager) Caching.getCacheManager(cl2, "nonexistent-config");
-
-        assertThat(jcacheManager1, is(notNullValue()));
-        assertThat(jcacheManager1, is(not(sameInstance(jcacheManager2))));
-        assertThat(jcacheManager1.getEhcacheManager(), is(not(sameInstance(jcacheManager2.getEhcacheManager()))));
-    }
+//    @Test
+//    public void differentClassLoadersReturnDifferentCacheManagersWithNamedConfigFile() {
+//        ClassLoader cl1 = this.getClass().getClassLoader();
+//        ClassLoader cl2 = new MyClassLoader(ClassLoader.getSystemClassLoader());
+//        assertNotSame(cl1, cl2);
+//
+//        JCacheManager jcacheManager1 = (JCacheManager) Caching.getCacheManager(cl1, "basic");
+//        JCacheManager jcacheManager2 = (JCacheManager) Caching.getCacheManager(cl2, "basic");
+//
+//        assertThat(jcacheManager1, is(notNullValue()));
+//        assertThat(jcacheManager1, is(not(sameInstance(jcacheManager2))));
+//        assertThat(jcacheManager1.getEhcacheManager(), is(not(sameInstance(jcacheManager2.getEhcacheManager()))));
+//    }
+//
+//    @Test
+//    public void differentClassLoadersReturnDifferentCacheManagersWithNoConfigFile() {
+//        ClassLoader cl1 = this.getClass().getClassLoader();
+//        ClassLoader cl2 = new MyClassLoader(ClassLoader.getSystemClassLoader());
+//        assertNotSame(cl1, cl2);
+//
+//        JCacheManager jcacheManager1 = (JCacheManager) Caching.getCacheManager(cl1, "nonexistent-config");
+//        JCacheManager jcacheManager2 = (JCacheManager) Caching.getCacheManager(cl2, "nonexistent-config");
+//
+//        assertThat(jcacheManager1, is(notNullValue()));
+//        assertThat(jcacheManager1, is(not(sameInstance(jcacheManager2))));
+//        assertThat(jcacheManager1.getEhcacheManager(), is(not(sameInstance(jcacheManager2.getEhcacheManager()))));
+//    }
 
 
 

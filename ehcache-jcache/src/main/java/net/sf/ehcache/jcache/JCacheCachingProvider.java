@@ -73,22 +73,22 @@ public class JCacheCachingProvider implements CachingProvider {
 
         // check if any cache with that name has ever been created.
         // if it has, a unique name for the underlying ehcache will be needed for the next classLoader
-        synchronized (cachesCreated) {
+      //  synchronized (cachesCreated) {
             Configuration config = getInitialConfigurationForCacheManager(name, classLoader);                    
             
             // no cache with this name is in use in any classloader
-            if (cachesCreated.contains(name)) {
+           // if (cachesCreated.contains(name)) {
                 LOG.warn("A cache with the name {} was already created with a different classloader. " +
                         " this is likely a mistake. Another copy of the CacheManager will be created" +
                         " with a unique name to be used with this.", name);
-                config.setName(name + UUID.randomUUID().toString());
+        //        config.setName(name + UUID.randomUUID().toString());
                 LOG.debug("CacheName was set to {} used with classLoader {}", name, classLoader.toString());                               
-            }
+          //  }
             
 
             cacheManager = net.sf.ehcache.CacheManager.create(config);
-            cachesCreated.add(name);
-        }
+           // cachesCreated.add(name);
+        //}
 
 
         return cacheManager;
