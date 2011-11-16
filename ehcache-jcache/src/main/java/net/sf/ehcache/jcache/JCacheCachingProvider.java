@@ -38,10 +38,10 @@ import java.util.UUID;
  */
 public class JCacheCachingProvider implements CachingProvider {
     private static Logger LOG = LoggerFactory.getLogger(JCacheCachingProvider.class);
-    
+
     private static Set<String> cachesCreated = new HashSet<String>();
-    
-    
+
+
     /**
      * {@inheritDoc}
      */
@@ -53,8 +53,7 @@ public class JCacheCachingProvider implements CachingProvider {
         net.sf.ehcache.CacheManager ehcacheManager = configureEhCacheManager(name, classLoader);
         return new JCacheManager(name, ehcacheManager, classLoader);
     }
-    
-    
+
 
     /**
      * Configures the underlying ehcacheManager - either by retrieving it via the
@@ -71,25 +70,14 @@ public class JCacheCachingProvider implements CachingProvider {
     private net.sf.ehcache.CacheManager configureEhCacheManager(String name, ClassLoader classLoader) {
         net.sf.ehcache.CacheManager cacheManager;
 
-        // check if any cache with that name has ever been created.
-        // if it has, a unique name for the underlying ehcache will be needed for the next classLoader
-      //  synchronized (cachesCreated) {
-            Configuration config = getInitialConfigurationForCacheManager(name, classLoader);                    
-            
-            // no cache with this name is in use in any classloader
-           // if (cachesCreated.contains(name)) {
-//                LOG.warn("A cache with the name {} was already created with a different classloader. " +
-//                        " this is likely a mistake. Another copy of the CacheManager will be created" +
-//                        " with a unique name to be used with this.", name);
-                config.setName(name + UUID.randomUUID().toString());
-                LOG.debug("CacheName was set to {} used with classLoader {}", name, classLoader.toString());                               
-          //  }
-            
+        Configuration config = getInitialConfigurationForCacheManager(name, classLoader);
 
-            cacheManager = net.sf.ehcache.CacheManager.create(config);
-           // cachesCreated.add(name);
-        //}
+        // in ehcache 2.5.0 it started enforcing that CacheManagers could only be created once per name.
+        // but we have to at least have one per classloader.
+        config.setName(name + UUID.randomUUID().toString());
+        LOG.debug("CacheName was set to {} used with classLoader {}", name, classLoader.toString());
 
+        cacheManager = net.sf.ehcache.CacheManager.create(config);
 
         return cacheManager;
     }
@@ -97,15 +85,14 @@ public class JCacheCachingProvider implements CachingProvider {
     private Configuration getInitialConfigurationForCacheManager(String name, ClassLoader classLoader) {
         String defaultName = "ehcache-" + name + ".xml";
         Configuration configuration;
-        
+
         URL configResource = null;
         if (name != Caching.DEFAULT_CACHE_MANAGER_NAME) {
             configResource = classLoader.getResource(defaultName);
         }
-        if (configResource != null) {            
-            configuration = ConfigurationFactory.parseConfiguration(configResource);                                
-        }
-        else {
+        if (configResource != null) {
+            configuration = ConfigurationFactory.parseConfiguration(configResource);
+        } else {
             configuration = ConfigurationFactory.parseConfiguration();
         }
         return configuration;
