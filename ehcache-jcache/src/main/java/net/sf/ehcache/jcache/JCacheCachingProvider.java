@@ -15,6 +15,12 @@
  */
 package net.sf.ehcache.jcache;
 
+import net.sf.ehcache.config.CacheConfiguration;
+import net.sf.ehcache.config.Configuration;
+import net.sf.ehcache.config.ConfigurationFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.cache.CacheManager;
 import javax.cache.Caching;
 import javax.cache.OptionalFeature;
@@ -29,6 +35,7 @@ import java.net.URL;
  * @author Ryan Gardner
  */
 public class JCacheCachingProvider implements CachingProvider {
+    private static Logger LOG = LoggerFactory.getLogger(JCacheCachingProvider.class);
 
     /**
      * {@inheritDoc}
@@ -53,6 +60,8 @@ public class JCacheCachingProvider implements CachingProvider {
     private net.sf.ehcache.CacheManager configureEhCacheManager(String name, ClassLoader classLoader) {
         net.sf.ehcache.CacheManager cacheManager;
         String defaultName = "ehcache-" + name + ".xml";
+        //String ehcacheDefault = "ehcache.xml";
+
 
         URL configResource = classLoader.getResource(defaultName);
         if (!name.equals(Caching.DEFAULT_CACHE_MANAGER_NAME) && configResource != null) {
@@ -60,7 +69,15 @@ public class JCacheCachingProvider implements CachingProvider {
         } else {
             // return the default EhCache singleton if the default CacheManager is requested or there is no mapped
             // config file for that cache manager name
-            cacheManager = new net.sf.ehcache.CacheManager();
+            if (name.equals(Caching.DEFAULT_CACHE_MANAGER_NAME)) {
+                return net.sf.ehcache.CacheManager.create();                
+            }
+            else {
+                Configuration configuration = ConfigurationFactory.parseConfiguration();
+                configuration.setName(name);
+                cacheManager = net.sf.ehcache.CacheManager.create(configuration);
+            }
+
         }
         return cacheManager;
     }
