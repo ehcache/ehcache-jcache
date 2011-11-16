@@ -40,6 +40,14 @@ import java.io.ObjectOutputStream;
 public class JCacheEhcacheDecorator<K, V> extends EhcacheDecoratorAdapter {
     private JCache<K, V> jcache;
 
+    public JCacheEhcacheDecorator(Ehcache underlyingCache) {
+        super(underlyingCache);
+    }
+
+    public void setJcache(JCache<K, V> jcache) {
+        this.jcache = jcache;
+    }
+
     public JCacheEhcacheDecorator(Ehcache underlyingCache, JCache<K, V> jcache) {
         super(underlyingCache);
         this.jcache = jcache;
