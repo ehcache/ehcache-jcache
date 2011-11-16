@@ -15,7 +15,6 @@
  */
 package net.sf.ehcache.jcache;
 
-import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.config.Configuration;
 import net.sf.ehcache.config.ConfigurationFactory;
 import org.slf4j.Logger;
@@ -26,6 +25,9 @@ import javax.cache.Caching;
 import javax.cache.OptionalFeature;
 import javax.cache.spi.CachingProvider;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 
 /**
@@ -36,7 +38,10 @@ import java.net.URL;
  */
 public class JCacheCachingProvider implements CachingProvider {
     private static Logger LOG = LoggerFactory.getLogger(JCacheCachingProvider.class);
-
+    
+    private static Set<String> cachesCreated = new HashSet<String>();
+    
+    
     /**
      * {@inheritDoc}
      */
@@ -48,10 +53,16 @@ public class JCacheCachingProvider implements CachingProvider {
         net.sf.ehcache.CacheManager ehcacheManager = configureEhCacheManager(name, classLoader);
         return new JCacheManager(name, ehcacheManager, classLoader);
     }
+    
+    
 
     /**
      * Configures the underlying ehcacheManager - either by retrieving it via the
      * {@code ehcache-<NAME>.xml} or by creating a new CacheManager
+     * <p/>
+     * JSR107 has unique CacheManagers per classLoader. The CacheManager in EHCache 2.5 wont allow multiple cacheManagers
+     * with the same name to be created so this method will sometimes change the underlying ehcache cachemanager name
+     * to be unique (which will make it more difficult to pull it back)
      *
      * @param name        name of the CacheManager to create
      * @param classLoader
@@ -59,27 +70,45 @@ public class JCacheCachingProvider implements CachingProvider {
      */
     private net.sf.ehcache.CacheManager configureEhCacheManager(String name, ClassLoader classLoader) {
         net.sf.ehcache.CacheManager cacheManager;
-        String defaultName = "ehcache-" + name + ".xml";
-        //String ehcacheDefault = "ehcache.xml";
 
-
-        URL configResource = classLoader.getResource(defaultName);
-        if (!name.equals(Caching.DEFAULT_CACHE_MANAGER_NAME) && configResource != null) {
-            cacheManager = net.sf.ehcache.CacheManager.create(configResource);
-        } else {
-            // return the default EhCache singleton if the default CacheManager is requested or there is no mapped
-            // config file for that cache manager name
-            if (name.equals(Caching.DEFAULT_CACHE_MANAGER_NAME)) {
-                return net.sf.ehcache.CacheManager.create();                
+        // check if any cache with that name has ever been created.
+        // if it has, a unique name for the underlying ehcache will be needed for the next classLoader
+        synchronized (cachesCreated) {
+            Configuration config = getInitialConfigurationForCacheManager(name, classLoader);                    
+            
+            // no cache with this name is in use in any classloader
+            if (cachesCreated.contains(name)) {
+                LOG.warn("A cache with the name {} was already created with a different classloader. " +
+                        " this is likely a mistake. Another copy of the CacheManager will be created" +
+                        " with a unique name to be used with this.", name);
+                config.setName(name + UUID.randomUUID().toString());
+                LOG.debug("CacheName was set to {} used with classLoader {}", name, classLoader.toString());                               
             }
-            else {
-                Configuration configuration = ConfigurationFactory.parseConfiguration();
-                configuration.setName(name);
-                cacheManager = net.sf.ehcache.CacheManager.create(configuration);
-            }
+            
 
+            cacheManager = net.sf.ehcache.CacheManager.create(config);
+            cachesCreated.add(name);
         }
+
+
         return cacheManager;
+    }
+
+    private Configuration getInitialConfigurationForCacheManager(String name, ClassLoader classLoader) {
+        String defaultName = "ehcache-" + name + ".xml";
+        Configuration configuration;
+        
+        URL configResource = null;
+        if (name != Caching.DEFAULT_CACHE_MANAGER_NAME) {
+            configResource = classLoader.getResource(defaultName);
+        }
+        if (configResource != null) {            
+            configuration = ConfigurationFactory.parseConfiguration(configResource);                                
+        }
+        else {
+            configuration = ConfigurationFactory.parseConfiguration();
+        }
+        return configuration;
     }
 
 
