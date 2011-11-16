@@ -23,18 +23,21 @@ public class JCacheAndEhcacheAccessTest {
                 .setExpiry(CacheConfiguration.ExpiryType.MODIFIED, new Duration(TimeUnit.MINUTES, 10))
                 .setStoreByValue(false)
                 .build();
+        assertThat(foo, is(notNullValue()));
         assertThat(foo, is(JCache.class));
     }
 
     @Test
     public void namedEhcacheDotXMLReadWhenOneExists() {
         javax.cache.Cache jcache = Caching.getCacheManager("basic").getCache("sampleCache");
+        assertThat(jcache, is(notNullValue()));
         assertThat((jcache.unwrap(Ehcache.class)), is(notNullValue()));
     }
 
     @Test
     public void namedEhcachePropertiesUsedWhenOneExists() {
         JCache jcache = (JCache) Caching.getCacheManager("basic").getCache("sampleCache");
+        assertThat(jcache, is(notNullValue()));
         assertThat("Store by value is only true if copyOnRead and copyOnWrite are both configured in the xml config",
                 jcache.getConfiguration().isStoreByValue(), is(false));
         assertThat(jcache.getConfiguration().getExpiry(CacheConfiguration.ExpiryType.ACCESSED).getTimeUnit(),
