@@ -349,8 +349,16 @@ public class JCache<K, V> implements Cache<K, V> {
         checkKey(key);
         checkValue(oldValue);
         checkValue(newValue);
-
-        return ehcache.replace(new Element(key, oldValue), new Element(key, newValue));
+        
+        // This is a workaround for https://jira.terracotta.org/jira/browse/EHC-894
+        Element e = ehcache.get(key);
+        if (e != null && e.getValue().equals(oldValue)) {
+            ehcache.put(new Element(key, newValue));
+            return true;
+        }
+        return false;
+        
+        //return ehcache.replace(new Element(key, oldValue), new Element(key, newValue));
     }
 
     /**
