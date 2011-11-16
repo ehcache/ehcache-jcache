@@ -20,29 +20,10 @@ To include this in your project, you need to include:
 </dependency>
 ```
 
-If you want to use annotations with this (or any other JSR107 provider) you need to also include:
-
-For spring annotations _(compatible with Spring 3.0.6+)_:
-```xml
-<dependency>
-   <groupId>javax.cache.implementation</groupId>
-   <artifactId>cache-annotations-ri-spring</artifactId>
-   <version>0.4-SNAPSHOT</version>
-</dependency>
-```
-
-For CDI annotations:
-```xml
-<dependency>
-   <groupId>javax.cache.implementation</groupId>
-   <artifactId>cache-annotations-ri-cdi</artifactId>
-   <version>0.4-SNAPSHOT</version>
-</dependency>
-```
-
 ### Configuring a JCache ###
 
 There are two ways to configure a JCache.
+
 1. Programatically using a CacheBuilder
 2. Declaratively using an ehcache-*.xml file
 
@@ -87,6 +68,29 @@ Using with JSR107 annotations
 The reference implementation of the JSR107 annotations can be used with any JSR107 caching provider.
 There are annotation implementations provided for both CDI and Spring that will work with ehcache-jcache.
 For more information on annotations, see <https://github.com/jsr107/RI/tree/master/cache-annotations-ri>
+
+If you want to use annotations with this (or any other JSR107 provider) you need to also include:
+
+**For spring annotations** _(compatible with Spring 3.0.6+)_:
+
+```xml
+<dependency>
+   <groupId>javax.cache.implementation</groupId>
+   <artifactId>cache-annotations-ri-spring</artifactId>
+   <version>0.4-SNAPSHOT</version>
+</dependency>
+```
+
+**For CDI annotations:**
+
+```xml
+<dependency>
+   <groupId>javax.cache.implementation</groupId>
+   <artifactId>cache-annotations-ri-cdi</artifactId>
+   <version>0.4-SNAPSHOT</version>
+</dependency>
+```
+
 
 Documentation
 -------------
