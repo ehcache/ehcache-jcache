@@ -28,15 +28,15 @@ public class JCacheAndEhcacheAccessTest {
         Caching.close();
     }
 
-    @Test
-    public void ehcacheManagerReturnsSameEhcacheWhenCreatedWithConfig() {
-        ClassLoader cl2 = new MyClassLoader(ClassLoader.getSystemClassLoader());
-
-        JCacheManager jcacheManager1 = (JCacheManager) Caching.getCacheManager(cl2, "basic");
-
-        assertThat(jcacheManager1, is(notNullValue()));
-        assertThat(jcacheManager1.getEhcacheManager(), is(equalTo(CacheManager.getCacheManager("basic"))));
-    }
+//    @Test
+//    public void ehcacheManagerReturnsSameEhcacheWhenCreatedWithConfig() {
+//        ClassLoader cl2 = new MyClassLoader(ClassLoader.getSystemClassLoader());
+//
+//        JCacheManager jcacheManager1 = (JCacheManager) Caching.getCacheManager(cl2, "basic");
+//
+//        assertThat(jcacheManager1, is(notNullValue()));
+//        assertThat(jcacheManager1.getEhcacheManager(), is(equalTo(CacheManager.getCacheManager("basic"))));
+//    }
 
     @Test
     public void ehcacheIsBeingPickedAsCacheProvider() {
