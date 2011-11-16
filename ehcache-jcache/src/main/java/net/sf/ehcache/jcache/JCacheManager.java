@@ -125,7 +125,10 @@ public class JCacheManager implements javax.cache.CacheManager {
                 if (ehcache == null) {
                     return null;
                 }
-                final JCache<K, V> cache = new JCache<K, V>(ehcache, this, this.classLoader);
+                JCacheEhcacheDecorator decoratedCache = new JCacheEhcacheDecorator<K,V>(ehcache);
+                final JCache<K, V> cache = new JCache<K, V>(decoratedCache, this, this.classLoader);
+                decoratedCache.setJcache(cache);
+
                 caches.put(cacheName, cache);
                 return cache;
             }
