@@ -9,6 +9,37 @@ that allows allows you to use Ehcache as the caching provider using only JSR107 
 
 Getting Started
 ---------------
+### Including in your project ###
+To include this in your project, you need to include:
+
+```xml
+<dependency>
+   <groupId>net.sf.ehcache</groupId>
+   <artifactId>ehcache-jcache</artifactId>
+   <version>3.0.0-Beta1-SNAPSHOT</version>
+</dependency>
+```
+
+If you want to use annotations with this (or any other JSR107 provider) you need to also include:
+
+For spring annotations _(compatible with Spring 3.0.6+)_:
+```xml
+<dependency>
+   <groupId>javax.cache.implementation</groupId>
+   <artifactId>cache-annotations-ri-spring</artifactId>
+   <version>0.4-SNAPSHOT</version>
+</dependency>
+```
+
+For CDI annotations:
+```xml
+<dependency>
+   <groupId>javax.cache.implementation</groupId>
+   <artifactId>cache-annotations-ri-cdi</artifactId>
+   <version>0.4-SNAPSHOT</version>
+</dependency>
+```
+
 ### Configuring a JCache ###
 
 There are two ways to configure a JCache.
@@ -22,15 +53,19 @@ elements to an underlying ehcache.
 
 The `CacheManager` can be created manually, or you can use the `Caching` singleton entrypoint to retrieve it.
 
- 	    Cache foo = Caching.getCacheManager().createCacheBuilder("foo").build();
+```java
+    Cache foo = Caching.getCacheManager().createCacheBuilder("foo").build();
+````
 
 You can set additional parameters on the cache as well. For instance, to create a new cache that will have entries
 expire 10 minutes after they are created (or last modified) that stores cache values as references:
 
- 	    Cache blarg = Caching.getCacheManager().createCacheBuilder("blarg")
-                .setExpiry(CacheConfiguration.ExpiryType.MODIFIED, new Duration(TimeUnit.MINUTES, 10))
-                .setStoreByValue(false)
-                .build();
+```java
+    Cache blarg = Caching.getCacheManager().createCacheBuilder("blarg")
+            .setExpiry(CacheConfiguration.ExpiryType.MODIFIED, new Duration(TimeUnit.MINUTES, 10))
+            .setStoreByValue(false)
+            .build();
+```
 
 Currently only the configuration parameters specified in the JSR107 spec are exposed via the builder interface.
 You can also configure caches declartively in ehcache's well-known xml cache configuration format.
@@ -40,7 +75,9 @@ When you create a named cache manager, the jcache-ehcache provider will look in 
 
 If you have a file named `ehcache-jcache-example.xml`, for instance, then when you call:
 
- 	    Cache boo = Caching.getCacheManager("jcache-example").getCache("boo");
+```java
+    Cache boo = Caching.getCacheManager("jcache-example").getCache("boo");
+```
 
 The cache will be configured based on the parameters set in the `ehcache-jcache-example.xml` file in the classpath.
 In that xml file additional parameters (such as the size of the cache) can be configured.
