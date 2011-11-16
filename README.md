@@ -1,43 +1,19 @@
 Ehcache-JCache
 ==============
 
-
 About
 -----
 
-*ehcache-jcache* is a full implementation of the API and SPI from from JSR107. It provides a `CacheDecorator` to an Ehcache cache. Full
-Ehcache functionality is available as with any decorated cache.
-
-Documentation
--------------
-
-See See the <http://ehcache.org/documentation/jsr107.html> for full documentation.
+*ehcache-jcache* is a full implementation of the API and SPI from from JSR107 (aka JCache). It provides a wrapper around an Ehcache cache
+that allows allows you to use Ehcache as the caching provider using only JSR107 APIs.
 
 
-Release
---------
-
-The stable releases of this software are tagged with version numbers, starting with 0.1. Eventually, when the specification is further
-along releases will match the specification number.
-
-
-Features
---------
-
-- CacheManager
-- Cache
-
-
-Building From Source
+Modules
 --------------------
-
-`mvn clean install`
-
-
-Mailing list
-------------
-
-Please join the Ehcache mailing list if you're interested in using or developing the software: <http://ehcache.org/mail-lists.html>
+* [ehcache-jcache](./ehcache-jcache/)
+  This contains the ehcache-jcache implementation
+* [jcache-tck-runner](./jcache-tck-runner/)
+  This runs the JSR107 TCK suite against the ehcache-jcache implementation to verify compliance with the spec.
 
 IRC
 ---
@@ -49,12 +25,6 @@ Issue tracker
 -------------
 
 Please log issues to: <https://github.com/jsr107/ehcache-jcache/issues>
-
-
-Contributing
-------------
-
-Right now contribution is limited to the Expert Group, but as we go along we will open it up.
 
 
 License
