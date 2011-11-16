@@ -78,10 +78,10 @@ public class JCacheCachingProvider implements CachingProvider {
             
             // no cache with this name is in use in any classloader
            // if (cachesCreated.contains(name)) {
-                LOG.warn("A cache with the name {} was already created with a different classloader. " +
-                        " this is likely a mistake. Another copy of the CacheManager will be created" +
-                        " with a unique name to be used with this.", name);
-        //        config.setName(name + UUID.randomUUID().toString());
+//                LOG.warn("A cache with the name {} was already created with a different classloader. " +
+//                        " this is likely a mistake. Another copy of the CacheManager will be created" +
+//                        " with a unique name to be used with this.", name);
+                config.setName(name + UUID.randomUUID().toString());
                 LOG.debug("CacheName was set to {} used with classLoader {}", name, classLoader.toString());                               
           //  }
             
