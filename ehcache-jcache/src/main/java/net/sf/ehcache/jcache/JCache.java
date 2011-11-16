@@ -29,6 +29,7 @@ import javax.cache.CacheLoader;
 import javax.cache.CacheManager;
 import javax.cache.CacheStatistics;
 import javax.cache.CacheWriter;
+import javax.cache.Caching;
 import javax.cache.InvalidConfigurationException;
 import javax.cache.Status;
 import javax.cache.event.CacheEntryListener;
@@ -690,6 +691,23 @@ public class JCache<K, V> implements Cache<K, V> {
                 CopyStrategyConfiguration copyStrategyConfiguration =
                         cacheConfiguration.getCacheConfiguration().getCopyStrategyConfiguration();
                 copyStrategyConfiguration.setCopyStrategyInstance(new JCacheCopyOnWriteStrategy(this.classLoader));
+            }
+            
+            // in ehcache 2.5 caches if the cacheManager doesn't specify a maxBytesLocalHeap then a cache must specify 
+            // either a size in bytes or in elements
+            if (cacheManager.getEhcacheManager().getConfiguration().getMaxBytesLocalHeap() == 0) {
+                if (cacheConfiguration.getCacheConfiguration().getMaxBytesLocalHeap() == 0 
+                        && cacheConfiguration.getCacheConfiguration().getMaxEntriesLocalHeap() == 0) {
+                        LOG.warn("There is no maxBytesLocalHeap set for the cacheManager '{}'. ", 
+                                cacheManager.getEhcacheManager().getName() );
+                        LOG.warn("Ehcache requires either maxBytesLocalHeap be set at the cacheManager Level or " +
+                                "requires maxEntriesLocalHeap or maxBytesLocalHeap to be set at the Cache level" );
+                        LOG.warn("The default value of 10000 maxElementsLocalHeap is being used for now. To fix this in " +
+                                "the future create an ehcache{}.xml file in the classpath that configures maxBytesLocalHeap", 
+                                (cacheManager.getName() == Caching.DEFAULT_CACHE_MANAGER_NAME )? "" : "-" + cacheName );
+                       cacheConfiguration.getCacheConfiguration().maxEntriesLocalHeap(10000);
+                }
+                
             }
 
 
