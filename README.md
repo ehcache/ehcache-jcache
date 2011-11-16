@@ -10,9 +10,9 @@ that allows allows you to use Ehcache as the caching provider using only JSR107 
 
 Modules
 --------------------
-* [ehcache-jcache](../ehcache-jcache)
+* [ehcache-jcache](/ehcache-jcache)
   This contains the ehcache-jcache implementation
-* [jcache-tck-runner](../jcache-tck-runner/)
+* [jcache-tck-runner](/jcache-tck-runner/)
   This runs the JSR107 TCK suite against the ehcache-jcache implementation to verify compliance with the spec.
 
 IRC
