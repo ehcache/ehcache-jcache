@@ -12,7 +12,7 @@
         <net.sf.ehcache.speedAdjustmentFactor>2</net.sf.ehcache.speedAdjustmentFactor>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <javax.cache.version>0.4-SNAPSHOT</javax.cache.version>
+        <javax.cache.version>0.4</javax.cache.version>
     </properties>
 
 	<modules>
