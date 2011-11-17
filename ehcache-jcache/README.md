@@ -63,6 +63,12 @@ If you have a file named `ehcache-jcache-example.xml`, for instance, then when y
 The cache will be configured based on the parameters set in the `ehcache-jcache-example.xml` file in the classpath.
 In that xml file additional parameters (such as the size of the cache) can be configured.
 
+**Note: The defaultCache entry in an xml configuration file is not used for caches created by the JCacheManager**
+
+As part of the specification of JSR107, every cache created programatically via ```getCacheManager().getCache()``` 
+uses the same default settings. This implementation honors that part of the specification which means that you will 
+need to explicitly define the entries in the cache config file. 
+
 Using with JSR107 annotations
 -------------
 The reference implementation of the JSR107 annotations can be used with any JSR107 caching provider.
