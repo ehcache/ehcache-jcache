@@ -27,7 +27,6 @@ import javax.cache.spi.CachingProvider;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 
 /**
@@ -73,8 +72,15 @@ public class JCacheCachingProvider implements CachingProvider {
         Configuration config = getInitialConfigurationForCacheManager(name, classLoader);
 
         // in ehcache 2.5.0 it started enforcing that CacheManagers could only be created once per name.
-        // but we have to at least have one per classloader.
-        config.setName(name + UUID.randomUUID().toString());
+        // but we have to at one per classloader with the same name in order to pass the TCK tests
+        //
+        // appending the toString of the classLoader will allow us to pass the TCK.
+        //
+        // Once ehcache's CacheManager can handle returning CacheManagers with the same name
+        // and different classLoaders (perhaps using the same underlying cache?) this workaround
+        // can be removed
+        //
+        config.setName(name + classLoader.toString());
         LOG.debug("CacheName was set to {} used with classLoader {}", name, classLoader.toString());
 
         cacheManager = net.sf.ehcache.CacheManager.create(config);
@@ -82,6 +88,14 @@ public class JCacheCachingProvider implements CachingProvider {
         return cacheManager;
     }
 
+    /**
+     * This gets the initial configuration - either from a named cache file or from the default config
+     * returned from ehCache.
+     *
+     * @param name cache manager name
+     * @param classLoader classloader to use to retrieve resources
+     * @return the initial configuration for the cache manager
+     */
     private Configuration getInitialConfigurationForCacheManager(String name, ClassLoader classLoader) {
         String defaultName = "ehcache-" + name + ".xml";
         Configuration configuration;
