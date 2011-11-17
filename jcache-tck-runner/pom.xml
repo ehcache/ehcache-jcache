@@ -14,7 +14,7 @@
 
     <name>Implementation Tester</name>
     <url>https://github.com/jsr107/jsr107tck</url>
-    <description>Wires together cache-tests with the RI implementation and runs JUnit against them. Create
+    <description>Wires together cache-tests with the ehcache-jcache implementation and runs JUnit against them. Create
         a similar module for each new implementation you wish to test. See README.md for details.
     </description>
 
@@ -38,9 +38,9 @@
         <!--<annotation-harness-version>${project.parent.version}</annotation-harness-version>-->
 
         <!-- Used by the unwrap tests, leave blank and the tests will be ignored -->
-        <CacheManagerImpl>javax.cache.implementation.RICacheManager</CacheManagerImpl>
-        <CacheImpl>javax.cache.implementation.RICache</CacheImpl>
-        <CacheInvocationContextImpl>javax.cache.annotation.impl.cdi.CdiCacheKeyInvocationContextImpl
+        <CacheManagerImpl>net.sf.ehcache.jcache.JCacheManager</CacheManagerImpl>
+        <CacheImpl>net.sf.ehcache.jcache.JCache</CacheImpl>
+        <CacheInvocationContextImpl>
         </CacheInvocationContextImpl>
     </properties>
 
