@@ -43,6 +43,16 @@ public class JCacheCachingProvider implements CachingProvider {
 
 
     /**
+     * Get a cache manager using the default classloader
+     *
+     * @param name
+     * @return
+     */
+    public CacheManager createCacheManager(String name) {
+        return createCacheManager(Thread.currentThread().getContextClassLoader(), name);
+    }
+    
+    /**
      * {@inheritDoc}
      */
     @Override
