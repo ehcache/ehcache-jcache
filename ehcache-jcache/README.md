@@ -16,7 +16,7 @@ To include this in your project, you need to include:
 <dependency>
    <groupId>net.sf.ehcache</groupId>
    <artifactId>ehcache-jcache</artifactId>
-   <version>3.0.0-Beta1-SNAPSHOT</version>
+   <version>3.0.0-beta1-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -77,7 +77,7 @@ If you want to use annotations with this (or any other JSR107 provider) you need
 <dependency>
    <groupId>javax.cache.implementation</groupId>
    <artifactId>cache-annotations-ri-spring</artifactId>
-   <version>0.4-SNAPSHOT</version>
+   <version>0.4</version>
 </dependency>
 ```
 
@@ -87,7 +87,7 @@ If you want to use annotations with this (or any other JSR107 provider) you need
 <dependency>
    <groupId>javax.cache.implementation</groupId>
    <artifactId>cache-annotations-ri-cdi</artifactId>
-   <version>0.4-SNAPSHOT</version>
+   <version>0.4</version>
 </dependency>
 ```
 
