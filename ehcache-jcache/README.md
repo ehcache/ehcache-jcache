@@ -67,7 +67,7 @@ In that xml file additional parameters (such as the size of the cache) can be co
 **Note: The defaultCache entry in an xml configuration file is not used for caches created by the JCacheManager**
 
 As part of the specification of JSR107, every cache created programatically via ```getCacheManager().getCache()``` 
-uses the same default settings. This implementation honors that part of the specification which means that you will 
+uses the same default settings regardless of the underlying caching provider. This implementation honors that part of the specification which means that you will 
 need to explicitly define the entries in the cache config file. 
 
 Using with JSR107 annotations
