@@ -25,6 +25,8 @@ import java.util.Date;
  * Adapt the EHCache statistics to be accessible via the {@link javax.cache.CacheStatistics}
  *
  * @author Ryan Gardner
+ * @version $Id: $
+ * @since 1.4.0-beta1
  */
 public class JCacheStatistics implements javax.cache.CacheStatistics, Serializable {
     private final LiveCacheStatistics statistics;
@@ -33,26 +35,25 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
 
     /**
      * Create a JCacheStatistics adapter
+     *
      * @param cache the jsr107 ehcache cache
-     * @param statistics
+     * @param statistics a {@link net.sf.ehcache.statistics.LiveCacheStatistics} object.
      */
     public JCacheStatistics(final JCache cache, final LiveCacheStatistics statistics) {
         this.statistics = statistics;
         this.cache = cache;
     }
 
-    /**
-     * @return the name of the Cache these statistics are for
-     */
+    /** {@inheritDoc} */
     @Override
     public String getName() {
         return cache.getName();
     }
 
     /**
-     * Gets the {@link javax.cache.Status} attribute of the Cache expressed as a String.
+     * {@inheritDoc}
      *
-     * @return The status value from the Status enum class
+     * Gets the {@link javax.cache.Status} attribute of the Cache expressed as a String.
      */
     @Override
     public Status getStatus() {
@@ -60,6 +61,8 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Clears the statistics counters to 0 for the associated Cache.
      */
     @Override
@@ -69,10 +72,10 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
     }
 
     /**
+     * {@inheritDoc}
+     *
      * The date from which statistics have been accumulated. Because statistics can be cleared, this is not necessarily
      * since the cache was started.
-     *
-     * @return the date statistics started being accumulated
      */
     @Override
     public Date statsAccumulatingFrom() {
@@ -80,9 +83,9 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
     }
 
     /**
-     * The number of get requests that were satisfied by the cache.
+     * {@inheritDoc}
      *
-     * @return the number of hits
+     * The number of get requests that were satisfied by the cache.
      */
     @Override
     public long getCacheHits() {
@@ -90,10 +93,10 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
     }
 
     /**
+     * {@inheritDoc}
+     *
      * {@link #getCacheHits} divided by the total number of gets.
      * This is a measure of cache efficiency.
-     *
-     * @return the percentage of successful hits, as a decimal
      */
     @Override
     public float getCacheHitPercentage() {
@@ -101,6 +104,8 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
     }
 
     /**
+     * {@inheritDoc}
+     *
      * A miss is a get request which is not satisfied.
      * <p/>
      * In a simple cache a miss occurs when the cache does not satisfy the request.
@@ -112,8 +117,6 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
      * still a miss even though the cache will load and return the value.
      * <p/>
      * Refer to the implementation for precise semantics.
-     *
-     * @return the number of misses
      */
     @Override
     public long getCacheMisses() {
@@ -121,9 +124,9 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
     }
 
     /**
-     * Returns the percentage of cache accesses that did not find a requested entry in the cache.
+     * {@inheritDoc}
      *
-     * @return the percentage of accesses that failed to find anything
+     * Returns the percentage of cache accesses that did not find a requested entry in the cache.
      */
     @Override
     public float getCacheMissPercentage() {
@@ -131,12 +134,12 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
     }
 
     /**
+     * {@inheritDoc}
+     *
      * The total number of requests to the cache. This will be equal to the sum of the hits and misses.
      * <p/>
      * A "get" is an operation that returns the current or previous value. It does not include checking for the existence
      * of a key.
-     *
-     * @return the number of gets
      */
     @Override
     public long getCacheGets() {
@@ -144,11 +147,11 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
     }
 
     /**
+     * {@inheritDoc}
+     *
      * The total number of puts to the cache.
      * <p/>
      * A put is counted even if it is immediately evicted. A replace includes a put and remove.
-     *
-     * @return the number of hits
      */
     @Override
     public long getCachePuts() {
@@ -156,12 +159,12 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
     }
 
     /**
+     * {@inheritDoc}
+     *
      * The total number of removals from the cache. This does not include evictions, where the cache itself
      * initiates the removal to make space.
      * <p/>
      * A replace is a put that overwrites a mapping and is not considered a remove.
-     *
-     * @return the number of hits
      */
     @Override
     public long getCacheRemovals() {        
@@ -169,10 +172,10 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
     }
 
     /**
+     * {@inheritDoc}
+     *
      * The total number of evictions from the cache. An eviction is a removal initiated by the cache itself to free
      * up space. An eviction is not treated as a removal and does not appear in the removal counts.
-     *
-     * @return the number of evictions from the cache
      */
     @Override
     public long getCacheEvictions() {
@@ -180,11 +183,11 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
     }
 
     /**
+     * {@inheritDoc}
+     *
      * The mean time to execute gets.
      * <p/>
      * In a read-through cache the time taken to load an entry on miss is not included in get time.
-     *
-     * @return the time in milliseconds
      */
     @Override
     public float getAverageGetMillis() {
@@ -192,9 +195,9 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
     }
 
     /**
-     * The mean time to execute puts.
+     * {@inheritDoc}
      *
-     * @return the time in milliseconds
+     * The mean time to execute puts.
      */
     @Override
     public float getAveragePutMillis() {
@@ -202,9 +205,9 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
     }
 
     /**
-     * The mean time to execute removes.
+     * {@inheritDoc}
      *
-     * @return the time in milliseconds
+     * The mean time to execute removes.
      */
     @Override
     public float getAverageRemoveMillis() {

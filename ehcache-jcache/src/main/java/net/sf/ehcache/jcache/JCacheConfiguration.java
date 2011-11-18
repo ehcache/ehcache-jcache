@@ -34,6 +34,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Configuration for a JSR107 Cache
  *
  * @author Ryan Gardner
+ * @version $Id: $
+ * @since 1.4.0-beta1
  */
 public class JCacheConfiguration implements javax.cache.CacheConfiguration {
     private static final boolean DEFAULT_WRITE_THROUGH = false;
@@ -79,6 +81,7 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
      * Create a JCacheConfiguration that wraps the existing ehCacheConfiguration
      *
      * @param ehCacheConfiguration a {@link net.sf.ehcache.config.CacheConfiguration} to wrap
+     * @since 1.4.0-beta1
      */
     public JCacheConfiguration(CacheConfiguration ehCacheConfiguration) {
         this.readThrough = new AtomicBoolean(DEFAULT_READ_THROUGH);
@@ -98,12 +101,12 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
 
 
     /**
+     * {@inheritDoc}
+     *
      * Whether the cache is a read-through cache. A CacheLoader should be configured for read through caches
      * which is called on a cache miss.
      * <p/>
      * Default value is false.
-     *
-     * @return true if the cache is read-through
      */
     @Override
     public boolean isReadThrough() {
@@ -120,9 +123,9 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
     }
 
     /**
-     * Gets the registered {@link javax.cache.CacheLoader}, if any.
+     * {@inheritDoc}
      *
-     * @return the {@link javax.cache.CacheLoader} or null if none has been set.
+     * Gets the registered {@link javax.cache.CacheLoader}, if any.
      */
     @Override
     public CacheLoader getCacheLoader() {
@@ -131,9 +134,9 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
     }
 
     /**
-     * Gets the registered {@link javax.cache.CacheWriter}, if any.
+     * {@inheritDoc}
      *
-     * @return
+     * Gets the registered {@link javax.cache.CacheWriter}, if any.
      */
     @Override
     public CacheWriter getCacheWriter() {
@@ -142,11 +145,11 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Whether the cache is a write-through cache. A CacheWriter should be configured.
      * <p/>
      * Default value is false.
-     *
-     * @return true if the cache is write-through
      */
     @Override
     public boolean isWriteThrough() {
@@ -158,43 +161,40 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
      * <p/>
      * This will return true if the underlying cache is configured as both {@code copyOnRead}
      * and {@code copyOnWrite}
-     * {@see net.sf.ehcache.config.CacheConfiguration#isCopyOnRead()}
-     * {@see net.sf.ehcache.config.CacheConfiguration#isCopyOnWrite()}
+     *
+     * @see net.sf.ehcache.config.CacheConfiguration#isCopyOnRead()
+     * @see net.sf.ehcache.config.CacheConfiguration#isCopyOnWrite()
      */
     @Override
     public boolean isStoreByValue() {
         return (cacheConfiguration.isCopyOnRead() && cacheConfiguration.isCopyOnWrite());
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public boolean isStatisticsEnabled() {
         return cacheConfiguration.getStatistics();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void setStatisticsEnabled(boolean enableStatistics) {
         cacheConfiguration.statistics(enableStatistics);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public boolean isTransactionEnabled() {
         return isolationLevel != null && transactionMode != null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public IsolationLevel getTransactionIsolationLevel() {
         return isolationLevel != null ? isolationLevel : IsolationLevel.NONE;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Mode getTransactionMode() {
         return transactionMode != null ? transactionMode : Mode.NONE;
@@ -222,6 +222,7 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
     }
 
     // since the ehcache configuration could be adjusted out from under this, test if it is still the same
+    /** {@inheritDoc} */
     @Override
     public Duration getExpiry(ExpiryType type) {
         Duration duration = this.timeToLive[type.ordinal()];
@@ -247,6 +248,7 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -291,6 +293,7 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
         return true;
     }
 
+    /** {@inheritDoc} */
     @Override
     public int hashCode() {
         int result = readThrough.hashCode();
@@ -307,9 +310,10 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
     }
 
     /**
-     * Return the underlying {@see CacheConfiguration} that this JCacheConfiguration wraps
+     * Return the underlying {@link CacheConfiguration} that this JCacheConfiguration wraps
      *
      * @return the wrapped CacheConfiguration
+     * @since 1.4.0-beta1
      */
     public CacheConfiguration getCacheConfiguration() {
         return cacheConfiguration;

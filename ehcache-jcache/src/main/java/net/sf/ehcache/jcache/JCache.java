@@ -56,6 +56,8 @@ import java.util.concurrent.TimeUnit;
  * @param <K> the type of keys used by this JCache
  * @param <V> the type of values that are loaded by this JCache
  * @author Ryan Gardner
+ * @version $Id: $
+ * @since 1.4.0-beta1
  */
 public class JCache<K, V> implements Cache<K, V> {
     private static final Logger LOG = LoggerFactory.getLogger(JCache.class);
@@ -90,7 +92,6 @@ public class JCache<K, V> implements Cache<K, V> {
      * @param ehcache      An ehcache
      * @param cacheManager the CacheManager that manages this wrapped ehcache
      * @param classLoader  the classloader to use to serialize / deserialize cache entries
-     * @see "class description for recommended usage"
      * @since 1.4
      */
     public JCache(Ehcache ehcache, JCacheManager cacheManager, ClassLoader classLoader) {
@@ -116,9 +117,7 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public V get(K key) throws CacheException {
         checkStatusStarted();
@@ -146,9 +145,6 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Map<K, V> getAll(Collection<? extends K> keys) throws CacheException {
         checkStatusStarted();
@@ -166,9 +162,6 @@ public class JCache<K, V> implements Cache<K, V> {
         return map;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean containsKey(K key) throws CacheException {
         checkStatusStarted();
@@ -176,9 +169,7 @@ public class JCache<K, V> implements Cache<K, V> {
         return ehcache.isKeyInCache(key);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public Future<V> load(K key) throws CacheException {
         checkStatusStarted();
@@ -203,9 +194,6 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Future<Map<K, V>> loadAll(Collection<? extends K> keys) throws CacheException {
         checkStatusStarted();
@@ -228,9 +216,7 @@ public class JCache<K, V> implements Cache<K, V> {
         return task;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public CacheStatistics getStatistics() {
         checkStatusStarted();
@@ -241,9 +227,7 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void put(K key, V value) throws CacheException {
         checkStatusStarted();
@@ -252,9 +236,7 @@ public class JCache<K, V> implements Cache<K, V> {
         ehcache.put(new Element(key, value));
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public V getAndPut(K key, V value) throws CacheException, NullPointerException, IllegalStateException {
         checkStatusStarted();
@@ -270,9 +252,7 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void putAll(Map<? extends K, ? extends V> map) throws CacheException {
         checkStatusStarted();
@@ -284,9 +264,7 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public boolean putIfAbsent(K key, V value) throws CacheException {
         checkStatusStarted();
@@ -300,9 +278,7 @@ public class JCache<K, V> implements Cache<K, V> {
         return containsKey(key);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public boolean remove(K key) throws CacheException {
         checkStatusStarted();
@@ -310,9 +286,7 @@ public class JCache<K, V> implements Cache<K, V> {
         return ehcache.remove(key);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public boolean remove(K key, V oldValue) throws CacheException {
         checkStatusStarted();
@@ -326,9 +300,7 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public V getAndRemove(K key) throws CacheException {
         checkStatusStarted();
@@ -343,9 +315,7 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public boolean replace(K key, V oldValue, V newValue) throws CacheException {
         checkStatusStarted();
@@ -364,9 +334,7 @@ public class JCache<K, V> implements Cache<K, V> {
         //return ehcache.replace(new Element(key, oldValue), new Element(key, newValue));
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public boolean replace(K key, V value) throws CacheException {
         checkStatusStarted();
@@ -375,9 +343,7 @@ public class JCache<K, V> implements Cache<K, V> {
         return (ehcache.replace(new Element(key, value)) != null);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public V getAndReplace(K key, V value) throws CacheException {
         checkStatusStarted();
@@ -387,9 +353,7 @@ public class JCache<K, V> implements Cache<K, V> {
         return replaced != null ? (V) replaced.getValue() : null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void removeAll(Collection<? extends K> keys) throws CacheException {
         checkStatusStarted();
@@ -398,26 +362,20 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void removeAll() throws CacheException {
         checkStatusStarted();
         ehcache.removeAll();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public JCacheConfiguration getConfiguration() {
         return configuration;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public boolean registerCacheEntryListener(CacheEntryListener<? super K, ? super V> cacheEntryListener, NotificationScope scope, boolean synchronous) {
         checkValue(cacheEntryListener);
@@ -432,9 +390,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public boolean unregisterCacheEntryListener(CacheEntryListener<?, ?> cacheEntryListener) {
         if (cacheEntryListener == null) {
@@ -448,25 +404,19 @@ public class JCache<K, V> implements Cache<K, V> {
         return cacheEntryListeners.remove(scopedListener);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public String getName() {
         return this.ehcache.getName();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public CacheManager getCacheManager() {
         return cacheManager;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public <T> T unwrap(Class<T> cls) {
         if (this.getClass().isAssignableFrom(cls)) {
@@ -478,17 +428,13 @@ public class JCache<K, V> implements Cache<K, V> {
         throw new IllegalArgumentException("Can't cast the the specified class");
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void start() throws CacheException {
         //
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void stop() throws CacheException {
         executorService.shutdown();
@@ -502,18 +448,16 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public Status getStatus() {
         return JCacheStatusAdapter.adaptStatus(ehcache.getStatus());
     }
 
     /**
-     * Returns an iterator over a set of elements of type T.
+     * {@inheritDoc}
      *
-     * @return an Iterator.
+     * Returns an iterator over a set of elements of type T.
      */
     @Override
     public Iterator<Entry<K, V>> iterator() {
@@ -535,14 +479,14 @@ public class JCache<K, V> implements Cache<K, V> {
         }
 
         /**
-         * {@inheritdoc}
+         * {@inheritDoc}
          */
         public boolean hasNext() {
             return keyIterator.hasNext();
         }
 
         /**
-         * {@inheritdoc}
+         * {@inheritDoc}
          */
         public Entry<K, V> next() {
             final K key = (K) keyIterator.next();
@@ -551,7 +495,7 @@ public class JCache<K, V> implements Cache<K, V> {
         }
 
         /**
-         * {@inheritdoc}
+         * {@inheritDoc}
          */
         public void remove() {
             if (lastKey == null) {
@@ -562,10 +506,20 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
+    /**
+     * <p>Getter for the field {@code cacheLoaderAdapter}.</p>
+     *
+     * @return a {@link JCacheCacheLoaderAdapter} object.
+     */
     protected JCacheCacheLoaderAdapter<K, V> getCacheLoaderAdapter() {
         return this.cacheLoaderAdapter;
     }
 
+    /**
+     * <p>Getter for the field {@code cacheWriterAdapter}.</p>
+     *
+     * @return a {@link JCacheCacheWriterAdapter} object.
+     */
     protected JCacheCacheWriterAdapter<K, V> getCacheWriterAdapter() {
         return this.cacheWriterAdapter;
     }
@@ -858,7 +812,7 @@ public class JCache<K, V> implements Cache<K, V> {
         /**
          * Hash code based on listener
          *
-         * @see java.lang.Object#hashCode()
+         * @see Object#hashCode()
          */
         @Override
         public int hashCode() {

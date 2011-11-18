@@ -36,26 +36,45 @@ import java.io.ObjectOutputStream;
  * @param <K> the type of keys used in the JCache that this ehcache decorator wraps
  * @param <V> the type of values used in the JCache that this ehcache decorator wraps
  * @author Ryan Gardner
+ * @version $Id: $
+ * @since 1.4.0-beta1
  */
 public class JCacheEhcacheDecorator<K, V> extends EhcacheDecoratorAdapter {
     private JCache<K, V> jcache;
 
+    /**
+     * <p>Constructor for JCacheEhcacheDecorator.</p>
+     *
+     * @param underlyingCache a {@link net.sf.ehcache.Ehcache} object.
+     * @since 1.4.0-beta1
+     */
     public JCacheEhcacheDecorator(Ehcache underlyingCache) {
         super(underlyingCache);
     }
 
+    /**
+     * <p>Setter for the field {@code jcache}.</p>
+     *
+     * @param jcache a {@link JCache} object.
+     * @since 1.4.0-beta1
+     */
     public void setJcache(JCache<K, V> jcache) {
         this.jcache = jcache;
     }
 
+    /**
+     * <p>Constructor for JCacheEhcacheDecorator.</p>
+     *
+     * @param underlyingCache a {@link net.sf.ehcache.Ehcache} object.
+     * @param jcache a {@link net.sf.ehcache.jcache.JCache} object.
+     * @since 1.4.0-beta1
+     */
     public JCacheEhcacheDecorator(Ehcache underlyingCache, JCache<K, V> jcache) {
         super(underlyingCache);
         this.jcache = jcache;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void put(Element element) throws IllegalArgumentException, IllegalStateException, CacheException {
         Element newElement = element;
@@ -66,6 +85,14 @@ public class JCacheEhcacheDecorator<K, V> extends EhcacheDecoratorAdapter {
         super.put(newElement);
     }
 
+    /**
+     * <p>duplicateElementWithNewKey.</p>
+     *
+     * @param element a {@link net.sf.ehcache.Element} object.
+     * @param newKey a {@link java.lang.Object} object.
+     * @return a {@link net.sf.ehcache.Element} object.
+     * @since 1.4.0-beta1
+     */
     protected Element duplicateElementWithNewKey(final Element element, final Object newKey) {
         return new Element(newKey, element.getValue(), element.getVersion(),
                 element.getCreationTime(), element.getLastAccessTime(), element.getHitCount(), element.usesCacheDefaultLifespan(),
@@ -94,6 +121,12 @@ public class JCacheEhcacheDecorator<K, V> extends EhcacheDecoratorAdapter {
         }
     }
 
+    /**
+     * <p>Getter for the field {@code jcache}.</p>
+     *
+     * @return a {@link JCache} object.
+     * @since 1.4.0-beta1
+     */
     public JCache<K, V> getJcache() {
         return jcache;
     }

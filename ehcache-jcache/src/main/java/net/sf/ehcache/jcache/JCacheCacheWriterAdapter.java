@@ -28,11 +28,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Adapt a {@link javax.cache.CacheWriter<K,V>} to the interface of {@link net.sf.ehcache.writer.CacheWriter}
+ * Adapt a {@link javax.cache.CacheWriter} to the interface of {@link net.sf.ehcache.writer.CacheWriter}
  *
  * @param <K> the type of keys used by this JCacheCacheLoaderAdapter
  * @param <V> the type of values that are loaded by this JCacheCacheLoaderAdapter
  * @author Ryan Gardner
+ * @version $Id: $
+ * @since 1.4.0-beta1
  */
 public class JCacheCacheWriterAdapter<K, V> implements CacheWriter {
     private final javax.cache.CacheWriter<K, V> jsr107CacheWriter;
@@ -41,14 +43,14 @@ public class JCacheCacheWriterAdapter<K, V> implements CacheWriter {
      * Construct a JCacheCacheWriterAdapter to adapt the {@code jsr107CacheWriter} to the
      * {@link CacheWriter} interface
      *
-     * @param jsr107CacheWriter the {@link CacheWriter<K,V> to adapt}
+     * @param jsr107CacheWriter the {@link CacheWriter to adapt}
      */
     public JCacheCacheWriterAdapter(javax.cache.CacheWriter<K, V> jsr107CacheWriter) {
         this.jsr107CacheWriter = jsr107CacheWriter;
     }
 
     /**
-     * Retrieve the {@link javax.cache.CacheWriter<K,V>} that this adapter wraps
+     * Retrieve the {@link javax.cache.CacheWriter} that this adapter wraps
      *
      * @return the CacheWriter that this adapter wraps
      */
@@ -57,14 +59,13 @@ public class JCacheCacheWriterAdapter<K, V> implements CacheWriter {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Creates a clone of this writer. This method will only be called by ehcache before a
      * cache is initialized.
      * <p/>
      * Implementations should throw CloneNotSupportedException if they do not support clone
      * but that will stop them from being used with defaultCache.
-     *
-     * @return a clone
-     * @throws CloneNotSupportedException if the extension could not be cloned.
      */
     public CacheWriter clone(Ehcache cache) throws CloneNotSupportedException {
         JCacheCacheWriterAdapter clone = (JCacheCacheWriterAdapter) super.clone();
@@ -80,7 +81,7 @@ public class JCacheCacheWriterAdapter<K, V> implements CacheWriter {
      * cache writer as soon as it has been registered.
      * <p/>
      * Note that if you reuse cache writer instances or create a factory that returns the
-     * same cache writer instance as a singleton, your <code>init</code> method should be able
+     * same cache writer instance as a singleton, your {@code init} method should be able
      * to handle that situation. Unless you perform this multiple usage of a cache writer yourself,
      * Ehcache will not do this though. So in the majority of the use cases, you don't need to do
      * anything special.
@@ -97,53 +98,55 @@ public class JCacheCacheWriterAdapter<K, V> implements CacheWriter {
      * <p/>
      * Cache operations are illegal when this method is called. The cache itself is partly
      * disposed when this method is called.
+     *
+     * @throws net.sf.ehcache.CacheException if any.
      */
     public void dispose() throws CacheException {
 
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Write the specified value under the specified key to the underlying store.
      * This method is intended to support both key/value creation and value update for a specific key.
-     *
-     * @param element the element to be written
      */
     public void write(Element element) throws CacheException {
         jsr107CacheWriter.write(new JCacheEntry(element));
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Write the specified Elements to the underlying store. This method is intended to support both insert and update.
      * If this operation fails (by throwing an exception) after a partial success,
      * the convention is that entries which have been written successfully are to be removed from the specified mapEntries,
      * indicating that the write operation for the entries left in the map has failed or has not been attempted.
-     *
-     * @param elements the Elements to be written
      */
     public void writeAll(Collection<Element> elements) throws CacheException {
         Collection<Cache.Entry<? extends K,? extends V>> javaxCacheEntries = new HashSet<Cache.Entry<? extends K, ? extends V>>();
         for (Element e : elements) {
             javaxCacheEntries.add(new JCacheEntry(e));
         }
-        jsr107CacheWriter.writeAll( javaxCacheEntries);
+        jsr107CacheWriter.writeAll(javaxCacheEntries);
     }
 
     /**
-     * Delete the cache entry from the store
+     * {@inheritDoc}
      *
-     * @param entry the cache entry that is used for the delete operation
+     * Delete the cache entry from the store
      */
     public void delete(CacheEntry entry) throws CacheException {
         jsr107CacheWriter.delete(entry.getKey());
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Remove data and keys from the underlying store for the given collection of keys, if present. If this operation fails
      * (by throwing an exception) after a partial success, the convention is that keys which have been erased successfully
      * are to be removed from the specified keys, indicating that the erase operation for the keys left in the collection
      * has failed or has not been attempted.
-     *
-     * @param entries the entries that have been removed from the cache
      */
     public void deleteAll(Collection<CacheEntry> entries) throws CacheException {
         Set<javax.cache.Cache.Entry> javaxCacheEntries = new HashSet<javax.cache.Cache.Entry>();
@@ -154,15 +157,13 @@ public class JCacheCacheWriterAdapter<K, V> implements CacheWriter {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * This method will be called, whenever an Element couldn't be handled by the writer and all
      * the {@link net.sf.ehcache.config.CacheWriterConfiguration#getRetryAttempts() retryAttempts} have been tried.
      * <p>When batching is enabled all the elements in the failing batch will be passed to this methods
      * <p>Try to not throw RuntimeExceptions from this method. Should an Exception occur, it will be logged, but
      * the element will be lost anyways.
-     *
-     * @param element       the Element that triggered the failure, or one of the elements part of the batch that failed
-     * @param operationType the operation we tried to execute
-     * @param e             the RuntimeException thrown by the Writer when the last retry attempt was being executed
      */
     @Override
     public void throwAway(Element element, SingleOperationType operationType, RuntimeException e) {

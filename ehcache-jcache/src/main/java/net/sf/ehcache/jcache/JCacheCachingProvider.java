@@ -34,6 +34,8 @@ import java.util.Set;
  * <p/>
  *
  * @author Ryan Gardner
+ * @version $Id: $
+ * @since 1.4.0-beta1
  */
 public class JCacheCachingProvider implements CachingProvider {
     private static Logger LOG = LoggerFactory.getLogger(JCacheCachingProvider.class);
@@ -41,9 +43,7 @@ public class JCacheCachingProvider implements CachingProvider {
     private static Set<String> cachesCreated = new HashSet<String>();
 
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public CacheManager createCacheManager(ClassLoader classLoader, String name) {
         if (name == null) {

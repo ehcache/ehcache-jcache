@@ -44,19 +44,25 @@ import java.io.ObjectStreamClass;
  *         )
  * @author Ryan Gardner
  * @since 0.4
+ * @version $Id: $
  */
 public class JCacheCopyOnWriteStrategy implements ReadWriteCopyStrategy<Element> {
     private ClassLoader deserializationClassLoader;
 
+    /**
+     * <p>Constructor for JCacheCopyOnWriteStrategy.</p>
+     *
+     * @param deserializationClassLoader a {@link java.lang.ClassLoader} object.
+     * @since 1.4.0-beta1
+     */
     public JCacheCopyOnWriteStrategy(ClassLoader deserializationClassLoader) {
         this.deserializationClassLoader = deserializationClassLoader;
     }
 
     /**
-     * Deep copies some object and returns an internal storage-ready copy
+     * {@inheritDoc}
      *
-     * @param value the value to copy
-     * @return the storage-ready copy
+     * Deep copies some object and returns an internal storage-ready copy
      */
     @Override
     public Element copyForWrite(Element value) {
@@ -95,10 +101,9 @@ public class JCacheCopyOnWriteStrategy implements ReadWriteCopyStrategy<Element>
 
 
     /**
-     * Reconstruct an object from its storage-ready copy.
+     * {@inheritDoc}
      *
-     * @param storedValue the storage-ready copy
-     * @return the original object
+     * Reconstruct an object from its storage-ready copy.
      */
     @Override
     public Element copyForRead(Element storedValue) {
@@ -142,6 +147,7 @@ public class JCacheCopyOnWriteStrategy implements ReadWriteCopyStrategy<Element>
      * @param newValue the new element's value
      * @return the duplicated element
      * @see net.sf.ehcache.store.compound.ReadWriteSerializationCopyStrategy#duplicateElementWithNewValue(net.sf.ehcache.Element, Object)
+     * @since 1.4.0-beta1
      */
     protected Element duplicateElementWithNewValue(final Element element, final Object newValue) {
         return new Element(element.getKey(), newValue, element.getVersion(),
@@ -159,8 +165,8 @@ public class JCacheCopyOnWriteStrategy implements ReadWriteCopyStrategy<Element>
         /**
          * Constructor
          *
-         * @param in
-         * @throws IOException
+         * @param in the input stream
+         * @throws IOException if the constructor of ObjectInputStream throws an exception
          */
         public PreferredClassLoaderObjectInputSteam(InputStream in, ClassLoader classLoader) throws IOException {
             super(in);

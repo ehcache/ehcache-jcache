@@ -27,6 +27,8 @@ import javax.cache.Cache;
  * @param <K> the type of keys used by this JCacheEntry
  * @param <V> the type of values that are loaded by this JCacheEntry
  * @author Greg Luck, Ryan Gardner
+ * @version $Id: $
+ * @since 1.4.0-beta1
  */
 public class JCacheEntry<K, V> implements Cache.Entry<K, V> {
     private Element element;
@@ -36,8 +38,8 @@ public class JCacheEntry<K, V> implements Cache.Entry<K, V> {
      *
      * Create a new JCacheEntry for this key / value pair
      *
-     * @param key
-     * @param value
+     * @param key a K object.
+     * @param value a V object.
      */
     public JCacheEntry(K key, V value) {
         this.element = new Element(key, value);
@@ -53,9 +55,9 @@ public class JCacheEntry<K, V> implements Cache.Entry<K, V> {
     }
 
     /**
-     * Returns the key corresponding to this entry.
+     * {@inheritDoc}
      *
-     * @return the key corresponding to this entry
+     * Returns the key corresponding to this entry.
      */
     @Override
     public K getKey() {
@@ -67,9 +69,9 @@ public class JCacheEntry<K, V> implements Cache.Entry<K, V> {
     }
 
     /**
-     * Returns the value stored in the cache when this entry was created.
+     * {@inheritDoc}
      *
-     * @return the value corresponding to this entry
+     * Returns the value stored in the cache when this entry was created.
      */
     @Override
     public V getValue() {

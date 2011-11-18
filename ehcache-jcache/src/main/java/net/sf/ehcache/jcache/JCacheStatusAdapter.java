@@ -21,11 +21,14 @@ import javax.cache.Status;
  * Adapt a {@link net.sf.ehcache.Status} to a matching {@link Status}
  *
  * @author Ryan Gardner
+ * @version $Id: $
+ * @since 1.4.0-beta1
  */
 public class JCacheStatusAdapter {
 
     /**
      * Adapt the {@link net.sf.ehcache.Status} to the matching {@link Status}
+     *
      * @param status the status to adapt
      * @return a Status that matches the lifecycle phase of the ehcache-specific status
      */

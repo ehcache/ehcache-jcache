@@ -34,6 +34,8 @@ import javax.cache.event.NotificationScope;
  * @param <K> the type of keys used by this JCacheListenerAdapter
  * @param <V> the type of values that are loaded by this JCacheListenerAdapter
  * @author Ryan Gardner
+ * @version $Id: $
+ * @since 1.4.0-beta1
  */
 public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     private CacheEntryListener<K, V> cacheListener;
@@ -75,6 +77,8 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Called immediately after an attempt to remove an element. The remove method will block until
      * this method returns.
      * <p/>
@@ -88,10 +92,6 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
      * <li>An element was evicted from the cache.
      * See {@link #notifyElementEvicted(net.sf.ehcache.Ehcache, net.sf.ehcache.Element)}
      * </ol>
-     *
-     * @param cache   the cache emitting the notification
-     * @param element the element just deleted, or a synthetic element with just the key set if
-     *                no element was removed.
      */
     @Override
     public void notifyElementRemoved(Ehcache cache, Element element) throws CacheException {
@@ -106,6 +106,8 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Called immediately after an element has been put into the cache. The
      * {@link net.sf.ehcache.Cache#put(net.sf.ehcache.Element)} method
      * will block until this method returns.
@@ -113,9 +115,6 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
      * Implementers may wish to have access to the Element's fields, including value, so the
      * element is provided. Implementers should be careful not to modify the element. The
      * effect of any modifications is undefined.
-     *
-     * @param cache   the cache emitting the notification
-     * @param element the element which was just put into the cache.
      */
     @Override
     public void notifyElementPut(Ehcache cache, Element element) throws CacheException {
@@ -130,6 +129,8 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Called immediately after an element has been put into the cache and the element already
      * existed in the cache. This is thus an update.
      * <p/>
@@ -139,9 +140,6 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
      * Implementers may wish to have access to the Element's fields, including value, so the
      * element is provided. Implementers should be careful not to modify the element. The
      * effect of any modifications is undefined.
-     *
-     * @param cache   the cache emitting the notification
-     * @param element the element which was just put into the cache.
      */
     @Override
     public void notifyElementUpdated(Ehcache cache, Element element) throws CacheException {
@@ -156,6 +154,8 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Called immediately after an element is <i>found</i> to be expired. The
      * {@link net.sf.ehcache.Cache#remove(Object)} method will block until this method returns.
      * <p/>
@@ -170,16 +170,6 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
      * {@link net.sf.ehcache.Cache#DEFAULT_EXPIRY_THREAD_INTERVAL_SECONDS}
      * </ul>
      * If an element is found to be expired, it is deleted and this method is notified.
-     *
-     * @param cache   the cache emitting the notification
-     * @param element the element that has just expired
-     *                <p/>
-     *                Deadlock Warning: expiry will often come from the <code>DiskStore</code>
-     *                expiry thread. It holds a lock to the DiskStorea the time the
-     *                notification is sent. If the implementation of this method calls into a
-     *                synchronized <code>Cache</code> method and that subsequently calls into
-     *                DiskStore a deadlock will result. Accordingly implementers of this method
-     *                should not call back into Cache.
      */
     @Override
     public void notifyElementExpired(Ehcache cache, Element element) {
@@ -194,15 +184,14 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Called immediately after an element is evicted from the cache. Evicted in this sense
      * means evicted from one store and not moved to another, so that it exists nowhere in the
      * local cache.
      * <p/>
      * In a sense the Element has been <i>removed</i> from the cache, but it is different,
      * thus the separate notification.
-     *
-     * @param cache   the cache emitting the notification
-     * @param element the element that has just been evicted
      */
     @Override
     public void notifyElementEvicted(Ehcache cache, Element element) {
@@ -216,6 +205,8 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Called during {@link net.sf.ehcache.Ehcache#removeAll()} to indicate that the all
      * elements have been removed from the cache in a bulk operation. The usual
      * {@link #notifyElementRemoved(net.sf.ehcache.Ehcache, net.sf.ehcache.Element)}
@@ -224,8 +215,6 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
      * This notification exists because clearing a cache is a special case. It is often
      * not practical to serially process notifications where potentially millions of elements
      * have been bulk deleted.
-     *
-     * @param cache the cache emitting the notification
      */
     @Override
     public void notifyRemoveAll(Ehcache cache) {
@@ -236,6 +225,8 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Give the listener a chance to cleanup and free resources when no longer needed
      */
     @Override
@@ -244,6 +235,8 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Creates and returns a copy of this object.  The precise meaning
      * of "copy" may depend on the class of the object. The general
      * intent is that, for any object {@code x}, the expression:
@@ -294,13 +287,6 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
      * {@code Cloneable}, so calling the {@code clone} method on an object
      * whose class is {@code Object} will result in throwing an
      * exception at run time.
-     *
-     * @return a clone of this instance.
-     * @throws CloneNotSupportedException if the object's class does not
-     *                                    support the {@code Cloneable} interface. Subclasses
-     *                                    that override the {@code clone} method can also
-     *                                    throw this exception to indicate that an instance cannot
-     *                                    be cloned.
      * @see Cloneable
      */
     @Override
@@ -325,6 +311,12 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
         }
     }
     
+    /**
+     * <p>fromEhcache.</p>
+     *
+     * @param ehcache a {@link net.sf.ehcache.Ehcache} object.
+     * @return a {@link net.sf.ehcache.jcache.JCache} object.
+     */
     protected JCache<K,V> fromEhcache(Ehcache ehcache) {
         if (ehcache instanceof JCacheEhcacheDecorator) {
             return (JCache<K,V>)((JCacheEhcacheDecorator) ehcache).getJcache();
@@ -334,6 +326,7 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -364,6 +357,7 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
         return true;
     }
 
+    /** {@inheritDoc} */
     @Override
     public int hashCode() {
         int result = cacheListener.hashCode();

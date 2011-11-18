@@ -41,6 +41,8 @@ import java.util.regex.Pattern;
  * The CacheManager that allows EHCache caches to be retrieved and accessed via JSR107 APIs
  *
  * @author Ryan Gardner
+ * @version $Id: $
+ * @since 1.4.0-beta1
  */
 public class JCacheManager implements javax.cache.CacheManager {
     private static final Logger LOG = LoggerFactory.getLogger(JCacheManager.class);
@@ -56,9 +58,9 @@ public class JCacheManager implements javax.cache.CacheManager {
      * Creates a JCacheManager that uses the name of the cache to configure the underlying EhCache CacheManager
      * via an ehcache-name.xml config file
      *
-     * @param name
-     * @param ehcacheManager
-     * @param classLoader
+     * @param name a {@link java.lang.String} object.
+     * @param ehcacheManager a {@link net.sf.ehcache.CacheManager} object.
+     * @param classLoader a {@link java.lang.ClassLoader} object.
      */
     public JCacheManager(String name, CacheManager ehcacheManager, ClassLoader classLoader) {
         if (classLoader == null) {
@@ -94,24 +96,23 @@ public class JCacheManager implements javax.cache.CacheManager {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the status of this CacheManager.
      * <p/>
-     *
-     * @return one of {@link javax.cache.Status}
      */
     @Override
     public Status getStatus() {
         return JCacheStatusAdapter.adaptStatus(ehcacheManager.getStatus());
     }
 
+    /** {@inheritDoc} */
     @Override
     public <K, V> CacheBuilder<K, V> createCacheBuilder(String cacheName) {
         return new JCacheBuilder<K, V>(cacheName, this, classLoader);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName) {
         if (getStatus() != Status.STARTED) {
@@ -135,9 +136,7 @@ public class JCacheManager implements javax.cache.CacheManager {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public Iterable<Cache<?, ?>> getCaches() {
         synchronized (caches) {
@@ -149,9 +148,7 @@ public class JCacheManager implements javax.cache.CacheManager {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public boolean removeCache(String cacheName) {
         if (getStatus() != Status.STARTED) {
@@ -172,19 +169,19 @@ public class JCacheManager implements javax.cache.CacheManager {
     }
 
 
+    /** {@inheritDoc} */
     @Override
     public javax.transaction.UserTransaction getUserTransaction() {
         throw new UnsupportedOperationException();
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isSupported(OptionalFeature optionalFeature) {
         return Caching.isSupported(optionalFeature);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void registerImmutableClass(Class<?> immutableClass) {
         if (immutableClass == null) {
@@ -193,9 +190,7 @@ public class JCacheManager implements javax.cache.CacheManager {
         immutableClasses.add(immutableClass);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void shutdown() {
         if (getStatus() != Status.STARTED) {
@@ -210,6 +205,7 @@ public class JCacheManager implements javax.cache.CacheManager {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public <T> T unwrap(java.lang.Class<T> cls) {
         if (cls.isAssignableFrom(this.getClass())) {
@@ -322,6 +318,7 @@ public class JCacheManager implements javax.cache.CacheManager {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -349,6 +346,7 @@ public class JCacheManager implements javax.cache.CacheManager {
         return true;
     }
 
+    /** {@inheritDoc} */
     @Override
     public int hashCode() {
         int result = caches != null ? caches.hashCode() : 0;
