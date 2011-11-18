@@ -56,7 +56,6 @@ import java.util.concurrent.TimeUnit;
  * @param <K> the type of keys used by this JCache
  * @param <V> the type of values that are loaded by this JCache
  * @author Ryan Gardner
- * @version $Id: $
  * @since 1.4.0-beta1
  */
 public class JCache<K, V> implements Cache<K, V> {

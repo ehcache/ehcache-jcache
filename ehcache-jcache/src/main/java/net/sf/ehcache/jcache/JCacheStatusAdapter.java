@@ -21,7 +21,6 @@ import javax.cache.Status;
  * Adapt a {@link net.sf.ehcache.Status} to a matching {@link Status}
  *
  * @author Ryan Gardner
- * @version $Id: $
  * @since 1.4.0-beta1
  */
 public class JCacheStatusAdapter {

@@ -23,7 +23,6 @@ import javax.cache.event.CacheEntryEvent;
  * Adapt an ehcache event to a JSR107 event
  *
  * @author Ryan Gardner
- * @version $Id: $
  * @since 1.4.0-beta1
  */
 public class JCacheEntryEventAdapter<K, V> extends CacheEntryEvent<K, V> {

@@ -41,7 +41,6 @@ import java.util.regex.Pattern;
  * The CacheManager that allows EHCache caches to be retrieved and accessed via JSR107 APIs
  *
  * @author Ryan Gardner
- * @version $Id: $
  * @since 1.4.0-beta1
  */
 public class JCacheManager implements javax.cache.CacheManager {

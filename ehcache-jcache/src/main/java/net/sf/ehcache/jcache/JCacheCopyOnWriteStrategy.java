@@ -44,7 +44,6 @@ import java.io.ObjectStreamClass;
  *         )
  * @author Ryan Gardner
  * @since 0.4
- * @version $Id: $
  */
 public class JCacheCopyOnWriteStrategy implements ReadWriteCopyStrategy<Element> {
     private ClassLoader deserializationClassLoader;

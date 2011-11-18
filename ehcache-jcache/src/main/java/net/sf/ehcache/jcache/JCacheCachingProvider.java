@@ -34,7 +34,6 @@ import java.util.Set;
  * <p/>
  *
  * @author Ryan Gardner
- * @version $Id: $
  * @since 1.4.0-beta1
  */
 public class JCacheCachingProvider implements CachingProvider {

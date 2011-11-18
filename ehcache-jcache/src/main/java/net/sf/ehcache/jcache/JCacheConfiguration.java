@@ -34,7 +34,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Configuration for a JSR107 Cache
  *
  * @author Ryan Gardner
- * @version $Id: $
  * @since 1.4.0-beta1
  */
 public class JCacheConfiguration implements javax.cache.CacheConfiguration {

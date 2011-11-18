@@ -28,7 +28,6 @@ import java.util.Map;
  * @param <K> the type of keys used by this JCacheCacheLoaderAdapter
  * @param <V> the type of values that are loaded by this JCacheCacheLoaderAdapter
  * @author Ryan Gardner
- * @version $Id: $
  * @since 1.4.0-beta1
  */
 public class JCacheCacheLoaderAdapter<K, V> implements net.sf.ehcache.loader.CacheLoader {

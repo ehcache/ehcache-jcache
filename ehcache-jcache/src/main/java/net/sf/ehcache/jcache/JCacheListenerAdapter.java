@@ -34,7 +34,6 @@ import javax.cache.event.NotificationScope;
  * @param <K> the type of keys used by this JCacheListenerAdapter
  * @param <V> the type of values that are loaded by this JCacheListenerAdapter
  * @author Ryan Gardner
- * @version $Id: $
  * @since 1.4.0-beta1
  */
 public class JCacheListenerAdapter<K, V> implements CacheEventListener {

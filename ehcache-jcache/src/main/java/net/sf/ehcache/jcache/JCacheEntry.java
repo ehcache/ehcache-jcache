@@ -27,7 +27,6 @@ import javax.cache.Cache;
  * @param <K> the type of keys used by this JCacheEntry
  * @param <V> the type of values that are loaded by this JCacheEntry
  * @author Greg Luck, Ryan Gardner
- * @version $Id: $
  * @since 1.4.0-beta1
  */
 public class JCacheEntry<K, V> implements Cache.Entry<K, V> {

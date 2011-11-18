@@ -25,7 +25,6 @@ import java.util.Date;
  * Adapt the EHCache statistics to be accessible via the {@link javax.cache.CacheStatistics}
  *
  * @author Ryan Gardner
- * @version $Id: $
  * @since 1.4.0-beta1
  */
 public class JCacheStatistics implements javax.cache.CacheStatistics, Serializable {

@@ -36,7 +36,6 @@ import java.io.ObjectOutputStream;
  * @param <K> the type of keys used in the JCache that this ehcache decorator wraps
  * @param <V> the type of values used in the JCache that this ehcache decorator wraps
  * @author Ryan Gardner
- * @version $Id: $
  * @since 1.4.0-beta1
  */
 public class JCacheEhcacheDecorator<K, V> extends EhcacheDecoratorAdapter {
