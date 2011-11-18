@@ -4,9 +4,16 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.sf.ehcache</groupId>
     <name>Ehcache JCache Parent Pom</name>
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+        <!--Fixes broken Maven 3 warning-->
+        <relativePath/>
+    </parent>
     <artifactId>ehcache-jcache-parent</artifactId>
     <packaging>pom</packaging>
-    <version>3.0.0-beta1-SNAPSHOT</version>
+    <version>1.4.0-beta1</version>
     <description><![CDATA[Parent project for Ehcache's implementation of JSR107 - JCACHE.]]> </description>
     <properties>
         <net.sf.ehcache.speedAdjustmentFactor>2</net.sf.ehcache.speedAdjustmentFactor>
@@ -15,10 +22,10 @@
         <javax.cache.version>0.4</javax.cache.version>
     </properties>
 
-	<modules>
-		<module>ehcache-jcache</module>
-		<module>jcache-tck-runner</module>
-	</modules>
+    <modules>
+        <module>ehcache-jcache</module>
+        <module>jcache-tck-runner</module>
+    </modules>
 
     <dependencyManagement>
         <dependencies>
@@ -29,6 +36,32 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+
+    <profiles>
+        <profile>
+            <!--Only releases need to be signed. Use mvn -Prelease clean deploy to deploy releases -->
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.1</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <!-- Note: site URL repeated here to ensure correct deployment path -->
     <distributionManagement>

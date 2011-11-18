@@ -51,7 +51,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Implementation of a {@see Cache} that wraps an underlying {@see net.sf.ehcache.ehcache} cache.
+ * Implementation of a {@link Cache} that wraps an underlying ehcache.
  *
  * @param <K> the type of keys used by this JCache
  * @param <V> the type of values that are loaded by this JCache
@@ -88,7 +88,7 @@ public class JCache<K, V> implements Cache<K, V> {
      * // TODO - perhaps this should not be exposed
      *
      * @param ehcache      An ehcache
-     * @param cacheManager the {@see CacheManager} that manages this wrapped ehcache
+     * @param cacheManager the CacheManager that manages this wrapped ehcache
      * @param classLoader  the classloader to use to serialize / deserialize cache entries
      * @see "class description for recommended usage"
      * @since 1.4
