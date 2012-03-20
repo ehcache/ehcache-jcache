@@ -139,8 +139,10 @@ public class JCacheManager implements javax.cache.CacheManager {
     @Override
     public Iterable<Cache<?, ?>> getCaches() {
         synchronized (caches) {
-            HashSet<Cache<?, ?>> cacheSet = new HashSet<Cache<?, ?>>(caches.size(), 1.0f);
-            for (Cache<?, ?> cache : caches.values()) {
+            String[] cacheNames = ehcacheManager.getCacheNames();
+            HashSet<Cache<?, ?>> cacheSet = new HashSet<Cache<?, ?>>(cacheNames.length, 1.0f);
+            for (String cacheName : cacheNames) {
+                Cache<Object, Object> cache = getCache(cacheName);
                 cacheSet.add(cache);
             }
             return Collections.unmodifiableSet(cacheSet);
@@ -224,7 +226,7 @@ public class JCacheManager implements javax.cache.CacheManager {
     private class JCacheBuilder<K, V> implements CacheBuilder<K, V> {
         private final JCache.Builder<K, V> cacheBuilder;
         private Pattern namePattern = Pattern.compile("\\S+");
-        
+
         public JCacheBuilder(String cacheName, JCacheManager jCacheManager, ClassLoader cl) {
             if (cacheName == null) {
                 throw new NullPointerException("Cache name cannot be null");
