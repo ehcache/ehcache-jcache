@@ -41,6 +41,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -489,6 +490,9 @@ public class JCache<K, V> implements Cache<K, V> {
          */
         public Entry<K, V> next() {
             final K key = (K) keyIterator.next();
+            if (key == null) {
+                throw new NoSuchElementException();
+            }
             lastKey = key;
             return new JCacheEntry<K, V>(ehcache.get(key));
         }
