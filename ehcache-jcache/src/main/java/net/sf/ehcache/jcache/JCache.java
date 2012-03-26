@@ -33,7 +33,7 @@ import javax.cache.Caching;
 import javax.cache.InvalidConfigurationException;
 import javax.cache.Status;
 import javax.cache.event.CacheEntryListener;
-import javax.cache.event.NotificationScope;
+import javax.cache.mbeans.CacheMXBean;
 import javax.cache.transaction.IsolationLevel;
 import javax.cache.transaction.Mode;
 import java.util.ArrayList;
@@ -68,7 +68,7 @@ public class JCache<K, V> implements Cache<K, V> {
     private final ExecutorService executorService = Executors.newFixedThreadPool(CACHE_LOADER_THREADS);
 
 
-    private final Set<ScopedListener<K, V>> cacheEntryListeners = new CopyOnWriteArraySet<ScopedListener<K, V>>();
+    private final Set<JCacheListenerAdapter<K, ? extends V>> cacheEntryListeners = new CopyOnWriteArraySet<JCacheListenerAdapter<K, ? extends V>>();
 
     /**
      * An Ehcache backing instance
@@ -144,9 +144,8 @@ public class JCache<K, V> implements Cache<K, V> {
 
     }
 
-
     @Override
-    public Map<K, V> getAll(Collection<? extends K> keys) throws CacheException {
+    public Map<K, V> getAll(Set<? extends K> keys) throws CacheException {
         checkStatusStarted();
         if (keys == null || keys.contains(null)) {
             throw new NullPointerException("key cannot be null");
@@ -195,7 +194,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     @Override
-    public Future<Map<K, V>> loadAll(Collection<? extends K> keys) throws CacheException {
+    public Future<Map<K, ? extends V>> loadAll(Set<? extends K> keys) throws CacheException {
         checkStatusStarted();
         if (keys == null) {
             throw new NullPointerException("keys");
@@ -206,8 +205,8 @@ public class JCache<K, V> implements Cache<K, V> {
         if (cacheLoaderAdapter == null) {
             return null;
         }
-        FutureTask<Map<K, V>> task =
-                new FutureTask<Map<K, V>>(
+        FutureTask<Map<K, ? extends V>> task =
+                new FutureTask<Map<K, ? extends V>>(
                         new JCacheLoaderLoadAllCallable<K, V>(
                                 this, cacheLoaderAdapter.getJCacheCacheLoader(), keys
                         )
@@ -355,7 +354,7 @@ public class JCache<K, V> implements Cache<K, V> {
 
     /** {@inheritDoc} */
     @Override
-    public void removeAll(Collection<? extends K> keys) throws CacheException {
+    public void removeAll(Set<? extends K> keys) throws CacheException {
         checkStatusStarted();
         for (K key : keys) {
             remove(key);
@@ -377,15 +376,12 @@ public class JCache<K, V> implements Cache<K, V> {
 
     /** {@inheritDoc} */
     @Override
-    public boolean registerCacheEntryListener(CacheEntryListener<? super K, ? super V> cacheEntryListener, NotificationScope scope, boolean synchronous) {
+    public boolean registerCacheEntryListener(CacheEntryListener<? super K, ? super V> cacheEntryListener) {
         checkValue(cacheEntryListener);
-        checkValue(scope);
 
         JCacheListenerAdapter listener = new JCacheListenerAdapter(cacheEntryListener);
-        ScopedListener<K, V> scopedListener = new ScopedListener<K, V>(listener, scope, synchronous);
-
-        ehcache.getCacheEventNotificationService().registerListener(listener, JCacheListenerAdapter.adaptScope(scope));
-        return cacheEntryListeners.add(scopedListener);
+        ehcache.getCacheEventNotificationService().registerListener(listener);
+        return cacheEntryListeners.add(listener);
 
     }
 
@@ -399,9 +395,25 @@ public class JCache<K, V> implements Cache<K, V> {
 
         //Only cacheEntryListener is checked for equality
         JCacheListenerAdapter<K, V> listenerAdapter = new JCacheListenerAdapter<K, V>((CacheEntryListener<K, V>) cacheEntryListener);
-        ScopedListener<K, V> scopedListener = new ScopedListener<K, V>(listenerAdapter, null, true);
         ehcache.getCacheEventNotificationService().unregisterListener(listenerAdapter);
-        return cacheEntryListeners.remove(scopedListener);
+        return cacheEntryListeners.remove(listenerAdapter);
+    }
+
+    /**
+     * Passes the cache entry associated with K to be passed to the entry
+     * processor. All operations performed by the processor will be done atomically
+     * i.e. all The processor will perform the operations against
+     *
+     * @param key            the key to the entry
+     * @param kvEntryProcessor the processor which will process the entry
+     * @return an object
+     * @throws NullPointerException  if key or entryProcessor are null
+     * @throws IllegalStateException if the cache is not {@link javax.cache.Status#STARTED}
+     * @see javax.cache.Cache.EntryProcessor
+     */
+    @Override
+    public Object invokeEntryProcessor(K key, EntryProcessor<K, V> kvEntryProcessor) {
+        throw new UnsupportedOperationException("invokeEntryProcessor is not implemented in net.sf.ehcache.jcache.JCache");
     }
 
     /** {@inheritDoc} */
@@ -463,6 +475,17 @@ public class JCache<K, V> implements Cache<K, V> {
     public Iterator<Entry<K, V>> iterator() {
         checkStatusStarted();
         return new EhcacheIterator(ehcache.getKeys().iterator());
+    }
+
+    /**
+     * Get the MBean for this cache.
+     *
+     * @return the MBean
+     *         TODO: not sure this belongs here
+     */
+    @Override
+    public CacheMXBean getMBean() {
+        throw new UnsupportedOperationException("getMBean is not implemented in net.sf.ehcache.jcache.JCache");
     }
 
     /**
@@ -572,10 +595,10 @@ public class JCache<K, V> implements Cache<K, V> {
      * @author Yannis Cosmadopoulos
      * @link javax.cache.implementation.RICache.RICacheLoaderLoadAllCallable
      */
-    private static class JCacheLoaderLoadAllCallable<K, V> implements Callable<Map<K, V>> {
+    private static class JCacheLoaderLoadAllCallable<K, V> implements Callable<Map<K, ? extends V>> {
         private final JCache<K, V> cache;
         private final Collection<? extends K> keys;
-        private final CacheLoader<K, V> cacheLoader;
+        private final CacheLoader<K, ? extends V> cacheLoader;
 
         JCacheLoaderLoadAllCallable(JCache<K, V> cache, CacheLoader<K, V> cacheLoader, Collection<? extends K> keys) {
             this.cache = cache;
@@ -584,7 +607,7 @@ public class JCache<K, V> implements Cache<K, V> {
         }
 
         @Override
-        public Map<K, V> call() throws Exception {
+        public Map<K, ? extends V> call() throws Exception {
             ArrayList<K> keysNotInStore = new ArrayList<K>();
 
             // ehcache has an underlying loadAll method that could, potentially,
@@ -594,7 +617,7 @@ public class JCache<K, V> implements Cache<K, V> {
                     keysNotInStore.add(key);
                 }
             }
-            Map<K, V> value = cacheLoader.loadAll(keysNotInStore);
+            Map<K, ? extends V> value = cacheLoader.loadAll(keysNotInStore);
             cache.putAll(value);
             return value;
         }
@@ -615,10 +638,10 @@ public class JCache<K, V> implements Cache<K, V> {
         private ClassLoader classLoader;
 
         private JCacheConfiguration cacheConfiguration;
-        private CacheLoader<K, V> cacheLoader;
-        private CacheWriter<K, V> cacheWriter;
+        private CacheLoader<K, ? extends V> cacheLoader;
+        private CacheWriter<? super K, ? super V> cacheWriter;
 
-        private final CopyOnWriteArraySet<ListenerRegistration<K, V>> listeners = new CopyOnWriteArraySet<ListenerRegistration<K, V>>();
+        private final CopyOnWriteArraySet<CacheEntryListener<K, V>> listeners = new CopyOnWriteArraySet<CacheEntryListener<K, V>>();
         private final JCacheConfiguration.Builder configurationBuilder = new JCacheConfiguration.Builder();
         private JCacheManager cacheManager;
 
@@ -702,11 +725,9 @@ public class JCache<K, V> implements Cache<K, V> {
                 // needed for the writeAll
                 jcache.ehcache.registerCacheWriter(jcache.cacheWriterAdapter);
             }
-            for (ListenerRegistration listenerRegistration : listeners) {
+            for (CacheEntryListener listener : listeners) {
                 jcache.registerCacheEntryListener(
-                        listenerRegistration.cacheEntryListener,
-                        listenerRegistration.scope,
-                        listenerRegistration.synchronous
+                        listener
                 );
             }
 
@@ -720,7 +741,7 @@ public class JCache<K, V> implements Cache<K, V> {
          * @return the builder
          */
         @Override
-        public Builder<K, V> setCacheLoader(CacheLoader<K, V> cacheLoader) {
+        public Builder<K, V> setCacheLoader(CacheLoader<K, ? extends V> cacheLoader) {
             if (cacheLoader == null) {
                 throw new NullPointerException("cacheLoader");
             }
@@ -729,7 +750,7 @@ public class JCache<K, V> implements Cache<K, V> {
         }
 
         @Override
-        public CacheBuilder<K, V> setCacheWriter(CacheWriter<K, V> cacheWriter) {
+        public CacheBuilder<K, V> setCacheWriter(CacheWriter<? super K, ? super V> cacheWriter) {
             if (cacheWriter == null) {
                 throw new NullPointerException("cacheWriter");
             }
@@ -738,8 +759,8 @@ public class JCache<K, V> implements Cache<K, V> {
         }
 
         @Override
-        public CacheBuilder<K, V> registerCacheEntryListener(CacheEntryListener<K, V> listener, NotificationScope scope, boolean synchronous) {
-            listeners.add(new ListenerRegistration<K, V>(listener, scope, synchronous));
+        public CacheBuilder<K, V> registerCacheEntryListener(CacheEntryListener<K, V> listener) {
+            listeners.add(listener);
             return this;
         }
 
@@ -786,92 +807,6 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /**
-     * Combine a Listener and its NotificationScope.  Equality and hashcode are based purely on the listener.
-     * This implies that the same listener cannot be added to the set of registered listeners more than
-     * once with different notification scopes.
-     *
-     * @author Greg Luck
-     */
-    private static final class ScopedListener<K, V> {
-        private final JCacheListenerAdapter<K, V> listener;
-        private final NotificationScope scope;
-        private final boolean synchronous;
-
-        private ScopedListener(JCacheListenerAdapter<K, V> listener, NotificationScope scope, boolean synchronous) {
-            this.listener = listener;
-            this.scope = scope;
-            this.synchronous = synchronous;
-        }
-
-        private JCacheListenerAdapter<K, V> getListener() {
-            return listener;
-        }
-
-        private NotificationScope getScope() {
-            return scope;
-        }
-
-        /**
-         * Hash code based on listener
-         *
-         * @see Object#hashCode()
-         */
-        @Override
-        public int hashCode() {
-            return listener.hashCode();
-        }
-
-        /**
-         * Equals based on listener (NOT based on scope) - can't have same listener with two different scopes
-         *
-         * @see java.lang.Object#equals(java.lang.Object)
-         */
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            ScopedListener<?, ?> other = (ScopedListener<?, ?>) obj;
-            if (listener == null) {
-                if (other.listener != null) {
-                    return false;
-                }
-            } else if (!listener.equals(other.listener)) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public String toString() {
-            return listener.toString();
-        }
-    }
-
-    /**
-     * A struct :)
-     *
-     * @param <K>
-     * @param <V>
-     */
-    private static final class ListenerRegistration<K, V> {
-        private final CacheEntryListener<K, V> cacheEntryListener;
-        private final NotificationScope scope;
-        private final boolean synchronous;
-
-        private ListenerRegistration(CacheEntryListener<K, V> cacheEntryListener, NotificationScope scope, boolean synchronous) {
-            this.cacheEntryListener = cacheEntryListener;
-            this.scope = scope;
-            this.synchronous = synchronous;
-        }
-    }
 
 
 }
