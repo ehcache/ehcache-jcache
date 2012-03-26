@@ -25,7 +25,6 @@ import javax.cache.event.CacheEntryExpiredListener;
 import javax.cache.event.CacheEntryListener;
 import javax.cache.event.CacheEntryRemovedListener;
 import javax.cache.event.CacheEntryUpdatedListener;
-import javax.cache.event.NotificationScope;
 
 
 /**
@@ -217,8 +216,8 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
      */
     @Override
     public void notifyRemoveAll(Ehcache cache) {
-
-        //does ehCache have the ability to pass this up natively? If not, decorating over the native events might not work
+        // TODO:
+        // does ehCache have the ability to pass this up natively? If not, decorating over the native events might not work
         // and we might need to have our JCache adapter layer handle talking to CacheEntryListeners directly (which wouldn't be
         // ideal because then only things happening through the JCache wrapper would be sent out through the event system)
     }
@@ -291,23 +290,6 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     @Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
-    }
-
-    /**
-     * Adapt a JSR107 {@link NotificationScope} to a corresponding {@link net.sf.ehcache.event.NotificationScope}
-     *
-     * @param scope a native JSR107 NotificationScope
-     * @return an ehcache NotificationScope that matches the scope of the JSR107 scope
-     */
-    public static net.sf.ehcache.event.NotificationScope adaptScope(NotificationScope scope) {
-        switch (scope) {
-            case LOCAL:
-                return net.sf.ehcache.event.NotificationScope.LOCAL;
-            case REMOTE:
-                return net.sf.ehcache.event.NotificationScope.REMOTE;
-            default:
-                return net.sf.ehcache.event.NotificationScope.LOCAL;
-        }
     }
     
     /**
