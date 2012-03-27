@@ -78,6 +78,7 @@ public class JCache<K, V> implements Cache<K, V> {
     private JCacheCacheLoaderAdapter cacheLoaderAdapter;
     private JCacheCacheWriterAdapter cacheWriterAdapter;
     private ClassLoader classLoader;
+    private CacheMXBean mbean;
 
     private JCacheConfiguration configuration;
 
@@ -99,6 +100,7 @@ public class JCache<K, V> implements Cache<K, V> {
         this.ehcache = ehcache;
         this.classLoader = classLoader;
         this.configuration = new JCacheConfiguration(ehcache.getCacheConfiguration());
+        this.mbean = new DelegatingJCacheMXBean<K, V>(this);
     }
 
     /**
@@ -549,7 +551,7 @@ public class JCache<K, V> implements Cache<K, V> {
      */
     @Override
     public CacheMXBean getMBean() {
-        throw new UnsupportedOperationException("getMBean is not implemented in net.sf.ehcache.jcache.JCache");
+        return mbean;
     }
 
     /**
@@ -836,6 +838,13 @@ public class JCache<K, V> implements Cache<K, V> {
 
         @Override
         public CacheBuilder<K, V> setTransactionEnabled(IsolationLevel isolationLevel, Mode mode) {
+            if (IsolationLevel.NONE.equals(isolationLevel)) {
+                throw new IllegalArgumentException("The none isolation level is not permitted.");
+            }
+            if (Mode.NONE.equals(mode)) {
+                throw new IllegalArgumentException("The none Mode is not permitted.");
+            }
+
             configurationBuilder.setTransactionEnabled(isolationLevel, mode);
             return this;
         }
@@ -909,6 +918,8 @@ public class JCache<K, V> implements Cache<K, V> {
         @Override
         public void remove() {
             remove = true;
+            exists = false;
+            value = null;
         }
 
         /**
