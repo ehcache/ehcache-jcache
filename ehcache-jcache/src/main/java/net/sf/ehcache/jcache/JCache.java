@@ -117,7 +117,9 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public V get(K key) throws CacheException {
         checkStatusStarted();
@@ -168,7 +170,9 @@ public class JCache<K, V> implements Cache<K, V> {
         return ehcache.isKeyInCache(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Future<V> load(K key) throws CacheException {
         checkStatusStarted();
@@ -215,7 +219,9 @@ public class JCache<K, V> implements Cache<K, V> {
         return task;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public CacheStatistics getStatistics() {
         checkStatusStarted();
@@ -226,7 +232,9 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void put(K key, V value) throws CacheException {
         checkStatusStarted();
@@ -235,7 +243,9 @@ public class JCache<K, V> implements Cache<K, V> {
         ehcache.put(new Element(key, value));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public V getAndPut(K key, V value) throws CacheException, NullPointerException, IllegalStateException {
         checkStatusStarted();
@@ -251,7 +261,9 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void putAll(Map<? extends K, ? extends V> map) throws CacheException {
         checkStatusStarted();
@@ -263,7 +275,9 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean putIfAbsent(K key, V value) throws CacheException {
         checkStatusStarted();
@@ -277,7 +291,9 @@ public class JCache<K, V> implements Cache<K, V> {
         return containsKey(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean remove(K key) throws CacheException {
         checkStatusStarted();
@@ -285,7 +301,9 @@ public class JCache<K, V> implements Cache<K, V> {
         return ehcache.remove(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean remove(K key, V oldValue) throws CacheException {
         checkStatusStarted();
@@ -299,7 +317,9 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public V getAndRemove(K key) throws CacheException {
         checkStatusStarted();
@@ -314,14 +334,16 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean replace(K key, V oldValue, V newValue) throws CacheException {
         checkStatusStarted();
         checkKey(key);
         checkValue(oldValue);
         checkValue(newValue);
-        
+
         // This is a workaround for https://jira.terracotta.org/jira/browse/EHC-894
         Element e = ehcache.get(key);
         if (e != null && e.getValue().equals(oldValue)) {
@@ -329,11 +351,13 @@ public class JCache<K, V> implements Cache<K, V> {
             return true;
         }
         return false;
-        
+
         //return ehcache.replace(new Element(key, oldValue), new Element(key, newValue));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean replace(K key, V value) throws CacheException {
         checkStatusStarted();
@@ -342,7 +366,9 @@ public class JCache<K, V> implements Cache<K, V> {
         return (ehcache.replace(new Element(key, value)) != null);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public V getAndReplace(K key, V value) throws CacheException {
         checkStatusStarted();
@@ -352,7 +378,9 @@ public class JCache<K, V> implements Cache<K, V> {
         return replaced != null ? (V) replaced.getValue() : null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void removeAll(Set<? extends K> keys) throws CacheException {
         checkStatusStarted();
@@ -361,20 +389,26 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void removeAll() throws CacheException {
         checkStatusStarted();
         ehcache.removeAll();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public JCacheConfiguration getConfiguration() {
         return configuration;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean registerCacheEntryListener(CacheEntryListener<? super K, ? super V> cacheEntryListener) {
         checkValue(cacheEntryListener);
@@ -386,7 +420,9 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean unregisterCacheEntryListener(CacheEntryListener<?, ?> cacheEntryListener) {
         if (cacheEntryListener == null) {
@@ -404,7 +440,7 @@ public class JCache<K, V> implements Cache<K, V> {
      * processor. All operations performed by the processor will be done atomically
      * i.e. all The processor will perform the operations against
      *
-     * @param key            the key to the entry
+     * @param key              the key to the entry
      * @param kvEntryProcessor the processor which will process the entry
      * @return an object
      * @throws NullPointerException  if key or entryProcessor are null
@@ -413,22 +449,44 @@ public class JCache<K, V> implements Cache<K, V> {
      */
     @Override
     public Object invokeEntryProcessor(K key, EntryProcessor<K, V> kvEntryProcessor) {
-        throw new UnsupportedOperationException("invokeEntryProcessor is not implemented in net.sf.ehcache.jcache.JCache");
+        checkStatusStarted();
+        if (key == null) {
+            throw new NullPointerException();
+        }
+        if (key == kvEntryProcessor) {
+            throw new NullPointerException();
+        }
+        ehcache.acquireWriteLockOnKey(key);
+        Object result = null;
+        try {
+            JCacheMutableEntry<K, V> entry = new JCacheMutableEntry<K, V>(key, this.ehcache);
+            result = kvEntryProcessor.process(entry);
+            entry.commit();
+        } finally {
+            ehcache.releaseWriteLockOnKey(key);
+        }
+        return result;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getName() {
         return this.ehcache.getName();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public CacheManager getCacheManager() {
         return cacheManager;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <T> T unwrap(Class<T> cls) {
         if (this.getClass().isAssignableFrom(cls)) {
@@ -440,13 +498,17 @@ public class JCache<K, V> implements Cache<K, V> {
         throw new IllegalArgumentException("Can't cast the the specified class");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void start() throws CacheException {
         //
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void stop() throws CacheException {
         executorService.shutdown();
@@ -460,7 +522,9 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Status getStatus() {
         return JCacheStatusAdapter.adaptStatus(ehcache.getStatus());
@@ -468,7 +532,7 @@ public class JCache<K, V> implements Cache<K, V> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Returns an iterator over a set of elements of type T.
      */
     @Override
@@ -683,22 +747,22 @@ public class JCache<K, V> implements Cache<K, V> {
                         cacheConfiguration.getCacheConfiguration().getCopyStrategyConfiguration();
                 copyStrategyConfiguration.setCopyStrategyInstance(new JCacheCopyOnWriteStrategy(this.classLoader));
             }
-            
+
             // in ehcache 2.5 caches if the cacheManager doesn't specify a maxBytesLocalHeap then a cache must specify 
             // either a size in bytes or in elements
             if (cacheManager.getEhcacheManager().getConfiguration().getMaxBytesLocalHeap() == 0) {
-                if (cacheConfiguration.getCacheConfiguration().getMaxBytesLocalHeap() == 0 
+                if (cacheConfiguration.getCacheConfiguration().getMaxBytesLocalHeap() == 0
                         && cacheConfiguration.getCacheConfiguration().getMaxEntriesLocalHeap() == 0) {
-                        LOG.warn("There is no maxBytesLocalHeap set for the cacheManager '{}'. ", 
-                                cacheManager.getEhcacheManager().getName() );
-                        LOG.warn("Ehcache requires either maxBytesLocalHeap be set at the cacheManager Level or " +
-                                "requires maxEntriesLocalHeap or maxBytesLocalHeap to be set at the Cache level" );
-                        LOG.warn("The default value of 10000 maxElementsLocalHeap is being used for now. To fix this in " +
-                                "the future create an ehcache{}.xml file in the classpath that configures maxBytesLocalHeap", 
-                                (cacheManager.getName() == Caching.DEFAULT_CACHE_MANAGER_NAME )? "" : "-" + cacheName );
-                       cacheConfiguration.getCacheConfiguration().maxEntriesLocalHeap(10000);
+                    LOG.warn("There is no maxBytesLocalHeap set for the cacheManager '{}'. ",
+                            cacheManager.getEhcacheManager().getName());
+                    LOG.warn("Ehcache requires either maxBytesLocalHeap be set at the cacheManager Level or " +
+                            "requires maxEntriesLocalHeap or maxBytesLocalHeap to be set at the Cache level");
+                    LOG.warn("The default value of 10000 maxElementsLocalHeap is being used for now. To fix this in " +
+                            "the future create an ehcache{}.xml file in the classpath that configures maxBytesLocalHeap",
+                            (cacheManager.getName() == Caching.DEFAULT_CACHE_MANAGER_NAME) ? "" : "-" + cacheName);
+                    cacheConfiguration.getCacheConfiguration().maxEntriesLocalHeap(10000);
                 }
-                
+
             }
 
 
@@ -807,6 +871,86 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
+    public static class JCacheMutableEntry<K, V> implements MutableEntry<K, V> {
+        private Ehcache store;
+        private final K key;
+        private V value;
+        private boolean exists;
+        private boolean remove;
+
+        public JCacheMutableEntry(K key, Ehcache store) {
+            this.store = store;
+            this.key = key;
+            exists = store.isKeyInCache(key);
+        }
+
+        private void commit() {
+            if (remove) {
+                store.remove(key);
+            } else if (value != null) {
+                store.put(new Element(key, value));
+            }
+        }
+
+        /**
+         * Checks for the existence of the entry in the cache
+         *
+         * @return
+         */
+        @Override
+        public boolean exists() {
+            return exists;
+        }
+
+        /**
+         * Removes the entry from the Cache
+         * <p/>
+         */
+        @Override
+        public void remove() {
+            remove = true;
+        }
+
+        /**
+         * Sets or replaces the value associated with the key
+         * If {@link #exists} is false and setValue is called
+         * then a mapping is added to the cache visible once the EntryProcessor
+         * completes. Moreover a second invocation of {@link #exists()}
+         * will return true.
+         * <p/>
+         *
+         * @param value the value to update the entry with
+         */
+        @Override
+        public void setValue(V value) {
+            if (value == null) {
+                throw new NullPointerException();
+            }
+            exists = true;
+            remove = false;
+            this.value = value;
+        }
+
+        /**
+         * Returns the key corresponding to this entry.
+         *
+         * @return the key corresponding to this entry
+         */
+        @Override
+        public K getKey() {
+            return key;
+        }
+
+        /**
+         * Returns the value stored in the cache when this entry was created.
+         *
+         * @return the value corresponding to this entry
+         */
+        @Override
+        public V getValue() {
+            return value != null ? value : (V) store.get(key).getValue();
+        }
+    }
 
 
 }
