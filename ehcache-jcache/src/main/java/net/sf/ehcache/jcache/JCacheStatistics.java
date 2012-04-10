@@ -17,7 +17,6 @@ package net.sf.ehcache.jcache;
 
 import net.sf.ehcache.statistics.LiveCacheStatistics;
 
-import javax.cache.Status;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -35,7 +34,7 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
     /**
      * Create a JCacheStatistics adapter
      *
-     * @param cache the jsr107 ehcache cache
+     * @param cache      the jsr107 ehcache cache
      * @param statistics a {@link net.sf.ehcache.statistics.LiveCacheStatistics} object.
      */
     public JCacheStatistics(final JCache cache, final LiveCacheStatistics statistics) {
@@ -61,7 +60,7 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
 
     /**
      * {@inheritDoc}
-     *
+     * 
      * Clears the statistics counters to 0 for the associated Cache.
      */
     @Override
@@ -83,7 +82,7 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
 
     /**
      * {@inheritDoc}
-     *
+     * 
      * The number of get requests that were satisfied by the cache.
      */
     @Override
@@ -93,28 +92,31 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
 
     /**
      * {@inheritDoc}
-     *
+     * 
      * {@link #getCacheHits} divided by the total number of gets.
      * This is a measure of cache efficiency.
      */
     @Override
     public float getCacheHitPercentage() {
+        if (statistics.getCacheHitCount() == 0 && statistics.getCacheMissCount() == 0) {
+            return Float.POSITIVE_INFINITY;
+        }
         return (statistics.getCacheHitCount() / (statistics.getCacheHitCount() + statistics.getCacheMissCount()));
     }
 
     /**
      * {@inheritDoc}
-     *
+     * 
      * A miss is a get request which is not satisfied.
-     * <p/>
+     * 
      * In a simple cache a miss occurs when the cache does not satisfy the request.
-     * <p/>
+     * 
      * In a caches with multiple tiered storage, a miss may be implemented as a miss
      * to the cache or to the first tier.
-     * <p/>
+     * 
      * In a read-through cache a miss is an absence of the key in teh cache which will trigger a call to a CacheLoader. So it is
      * still a miss even though the cache will load and return the value.
-     * <p/>
+     * 
      * Refer to the implementation for precise semantics.
      */
     @Override
@@ -124,19 +126,22 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
 
     /**
      * {@inheritDoc}
-     *
+     * 
      * Returns the percentage of cache accesses that did not find a requested entry in the cache.
      */
     @Override
     public float getCacheMissPercentage() {
+        if (statistics.getCacheHitCount() == 0 && statistics.getCacheMissCount() == 0) {
+            return Float.POSITIVE_INFINITY;
+        }
         return (statistics.getCacheMissCount() / (statistics.getCacheHitCount() + statistics.getCacheMissCount()));
     }
 
     /**
      * {@inheritDoc}
-     *
+     * 
      * The total number of requests to the cache. This will be equal to the sum of the hits and misses.
-     * <p/>
+     * 
      * A "get" is an operation that returns the current or previous value. It does not include checking for the existence
      * of a key.
      */
@@ -147,9 +152,9 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
 
     /**
      * {@inheritDoc}
-     *
+     * 
      * The total number of puts to the cache.
-     * <p/>
+     * 
      * A put is counted even if it is immediately evicted. A replace includes a put and remove.
      */
     @Override
@@ -159,20 +164,20 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
 
     /**
      * {@inheritDoc}
-     *
+     * 
      * The total number of removals from the cache. This does not include evictions, where the cache itself
      * initiates the removal to make space.
-     * <p/>
+     * 
      * A replace is a put that overwrites a mapping and is not considered a remove.
      */
     @Override
-    public long getCacheRemovals() {        
+    public long getCacheRemovals() {
         return statistics.getRemovedCount();
     }
 
     /**
      * {@inheritDoc}
-     *
+     * 
      * The total number of evictions from the cache. An eviction is a removal initiated by the cache itself to free
      * up space. An eviction is not treated as a removal and does not appear in the removal counts.
      */
@@ -183,9 +188,9 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
 
     /**
      * {@inheritDoc}
-     *
+     * 
      * The mean time to execute gets.
-     * <p/>
+     * 
      * In a read-through cache the time taken to load an entry on miss is not included in get time.
      */
     @Override
@@ -195,7 +200,7 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
 
     /**
      * {@inheritDoc}
-     *
+     * 
      * The mean time to execute puts.
      */
     @Override
@@ -205,7 +210,7 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
 
     /**
      * {@inheritDoc}
-     *
+     * 
      * The mean time to execute removes.
      */
     @Override
