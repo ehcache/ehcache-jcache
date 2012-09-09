@@ -15,10 +15,12 @@
  */
 package net.sf.ehcache.jcache;
 
-import net.sf.ehcache.statistics.LiveCacheStatistics;
-
 import java.io.Serializable;
 import java.util.Date;
+
+import javax.cache.Status;
+
+import net.sf.ehcache.statistics.LiveCacheStatistics;
 
 /**
  * Adapt the EHCache statistics to be accessible via the {@link javax.cache.CacheStatistics}
