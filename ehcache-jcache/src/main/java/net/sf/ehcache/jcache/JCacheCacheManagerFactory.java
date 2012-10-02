@@ -64,7 +64,9 @@ public final class JCacheCacheManagerFactory extends AbstractCacheManagerFactory
         config.setName(name + classLoader.toString());
         LOG.debug("CacheName was set to {} used with classLoader {}", name, classLoader.toString());
 
-        cacheManager = net.sf.ehcache.CacheManager.create(config);
+        // in ehcache 2.6, it needs to use .newInstance. in 2.5 it needs to use "create" - we could use reflection for this
+        // if we want to support both we will have to use reflection
+        cacheManager = net.sf.ehcache.CacheManager.newInstance(config);
 
         return cacheManager;
     }
