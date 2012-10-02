@@ -7,6 +7,8 @@ About
 *ehcache-jcache* is a full implementation of the API and SPI from from JSR107 (aka JCache). It provides a wrapper around an Ehcache cache
 that allows allows you to use Ehcache as the caching provider using only JSR107 APIs.
 
+More detailed information about how to use this is found under the [ehcache-jcache](https://github.com/jsr107/ehcache-jcache/tree/master/ehcache-jcache) 
+module
 
 Modules
 --------------------
