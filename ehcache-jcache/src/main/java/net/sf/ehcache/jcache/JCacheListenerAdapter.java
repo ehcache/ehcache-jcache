@@ -72,7 +72,7 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     }
 
     private boolean implementsMethods(Class cls) {
-        return cacheListener.getClass().isAssignableFrom(cls);
+        return cls.isAssignableFrom(cacheListener.getClass());
     }
 
     /**
