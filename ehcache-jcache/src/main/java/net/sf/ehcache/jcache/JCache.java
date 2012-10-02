@@ -455,7 +455,7 @@ public class JCache<K, V> implements Cache<K, V> {
         if (key == null) {
             throw new NullPointerException();
         }
-        if (key == kvEntryProcessor) {
+        if (kvEntryProcessor == null) {
             throw new NullPointerException();
         }
         ehcache.acquireWriteLockOnKey(key);
