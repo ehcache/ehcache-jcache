@@ -432,9 +432,9 @@ public class JCacheConfiguration implements javax.cache.CacheConfiguration {
         }
 
         /**
-         * Create a new RICacheConfiguration instance.
+         * Create a new JCacheConfiguration instance.
          *
-         * @return a new RICacheConfiguration instance
+         * @return a new JCacheConfiguration instance
          */
         public JCacheConfiguration build() {
             return new JCacheConfiguration(readThrough, writeThrough, storeByValue, statisticsEnabled,

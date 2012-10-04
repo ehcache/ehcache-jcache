@@ -33,7 +33,7 @@ import javax.cache.Caching;
 import javax.cache.InvalidConfigurationException;
 import javax.cache.Status;
 import javax.cache.event.CacheEntryListener;
-import javax.cache.event.NotificationScope;
+import javax.cache.mbeans.CacheMXBean;
 import javax.cache.transaction.IsolationLevel;
 import javax.cache.transaction.Mode;
 import java.util.ArrayList;
@@ -68,7 +68,7 @@ public class JCache<K, V> implements Cache<K, V> {
     private final ExecutorService executorService = Executors.newFixedThreadPool(CACHE_LOADER_THREADS);
 
 
-    private final Set<ScopedListener<K, V>> cacheEntryListeners = new CopyOnWriteArraySet<ScopedListener<K, V>>();
+    private final Set<JCacheListenerAdapter<K, ? extends V>> cacheEntryListeners = new CopyOnWriteArraySet<JCacheListenerAdapter<K, ? extends V>>();
 
     /**
      * An Ehcache backing instance
@@ -78,6 +78,7 @@ public class JCache<K, V> implements Cache<K, V> {
     private JCacheCacheLoaderAdapter cacheLoaderAdapter;
     private JCacheCacheWriterAdapter cacheWriterAdapter;
     private ClassLoader classLoader;
+    private CacheMXBean mbean;
 
     private JCacheConfiguration configuration;
 
@@ -99,6 +100,7 @@ public class JCache<K, V> implements Cache<K, V> {
         this.ehcache = ehcache;
         this.classLoader = classLoader;
         this.configuration = new JCacheConfiguration(ehcache.getCacheConfiguration());
+        this.mbean = new DelegatingJCacheMXBean<K, V>(this);
     }
 
     /**
@@ -117,7 +119,9 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public V get(K key) throws CacheException {
         checkStatusStarted();
@@ -144,9 +148,8 @@ public class JCache<K, V> implements Cache<K, V> {
 
     }
 
-
     @Override
-    public Map<K, V> getAll(Collection<? extends K> keys) throws CacheException {
+    public Map<K, V> getAll(Set<? extends K> keys) throws CacheException {
         checkStatusStarted();
         if (keys == null || keys.contains(null)) {
             throw new NullPointerException("key cannot be null");
@@ -169,7 +172,9 @@ public class JCache<K, V> implements Cache<K, V> {
         return ehcache.isKeyInCache(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Future<V> load(K key) throws CacheException {
         checkStatusStarted();
@@ -195,7 +200,7 @@ public class JCache<K, V> implements Cache<K, V> {
     }
 
     @Override
-    public Future<Map<K, V>> loadAll(Collection<? extends K> keys) throws CacheException {
+    public Future<Map<K, ? extends V>> loadAll(Set<? extends K> keys) throws CacheException {
         checkStatusStarted();
         if (keys == null) {
             throw new NullPointerException("keys");
@@ -206,8 +211,8 @@ public class JCache<K, V> implements Cache<K, V> {
         if (cacheLoaderAdapter == null) {
             return null;
         }
-        FutureTask<Map<K, V>> task =
-                new FutureTask<Map<K, V>>(
+        FutureTask<Map<K, ? extends V>> task =
+                new FutureTask<Map<K, ? extends V>>(
                         new JCacheLoaderLoadAllCallable<K, V>(
                                 this, cacheLoaderAdapter.getJCacheCacheLoader(), keys
                         )
@@ -216,7 +221,9 @@ public class JCache<K, V> implements Cache<K, V> {
         return task;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public CacheStatistics getStatistics() {
         checkStatusStarted();
@@ -227,7 +234,9 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void put(K key, V value) throws CacheException {
         checkStatusStarted();
@@ -236,7 +245,9 @@ public class JCache<K, V> implements Cache<K, V> {
         ehcache.put(new Element(key, value));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public V getAndPut(K key, V value) throws CacheException, NullPointerException, IllegalStateException {
         checkStatusStarted();
@@ -252,7 +263,9 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void putAll(Map<? extends K, ? extends V> map) throws CacheException {
         checkStatusStarted();
@@ -264,7 +277,9 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean putIfAbsent(K key, V value) throws CacheException {
         checkStatusStarted();
@@ -278,7 +293,9 @@ public class JCache<K, V> implements Cache<K, V> {
         return containsKey(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean remove(K key) throws CacheException {
         checkStatusStarted();
@@ -286,7 +303,9 @@ public class JCache<K, V> implements Cache<K, V> {
         return ehcache.remove(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean remove(K key, V oldValue) throws CacheException {
         checkStatusStarted();
@@ -300,7 +319,9 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public V getAndRemove(K key) throws CacheException {
         checkStatusStarted();
@@ -315,14 +336,16 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean replace(K key, V oldValue, V newValue) throws CacheException {
         checkStatusStarted();
         checkKey(key);
         checkValue(oldValue);
         checkValue(newValue);
-        
+
         // This is a workaround for https://jira.terracotta.org/jira/browse/EHC-894
         Element e = ehcache.get(key);
         if (e != null && e.getValue().equals(oldValue)) {
@@ -330,11 +353,13 @@ public class JCache<K, V> implements Cache<K, V> {
             return true;
         }
         return false;
-        
+
         //return ehcache.replace(new Element(key, oldValue), new Element(key, newValue));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean replace(K key, V value) throws CacheException {
         checkStatusStarted();
@@ -343,7 +368,9 @@ public class JCache<K, V> implements Cache<K, V> {
         return (ehcache.replace(new Element(key, value)) != null);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public V getAndReplace(K key, V value) throws CacheException {
         checkStatusStarted();
@@ -353,44 +380,51 @@ public class JCache<K, V> implements Cache<K, V> {
         return replaced != null ? (V) replaced.getValue() : null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void removeAll(Collection<? extends K> keys) throws CacheException {
+    public void removeAll(Set<? extends K> keys) throws CacheException {
         checkStatusStarted();
         for (K key : keys) {
             remove(key);
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void removeAll() throws CacheException {
         checkStatusStarted();
         ehcache.removeAll();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public JCacheConfiguration getConfiguration() {
         return configuration;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public boolean registerCacheEntryListener(CacheEntryListener<? super K, ? super V> cacheEntryListener, NotificationScope scope, boolean synchronous) {
+    public boolean registerCacheEntryListener(CacheEntryListener<? super K, ? super V> cacheEntryListener) {
         checkValue(cacheEntryListener);
-        checkValue(scope);
 
         JCacheListenerAdapter listener = new JCacheListenerAdapter(cacheEntryListener);
-        ScopedListener<K, V> scopedListener = new ScopedListener<K, V>(listener, scope, synchronous);
-
-        ehcache.getCacheEventNotificationService().registerListener(listener, JCacheListenerAdapter.adaptScope(scope));
-        return cacheEntryListeners.add(scopedListener);
+        ehcache.getCacheEventNotificationService().registerListener(listener);
+        return cacheEntryListeners.add(listener);
 
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean unregisterCacheEntryListener(CacheEntryListener<?, ?> cacheEntryListener) {
         if (cacheEntryListener == null) {
@@ -399,24 +433,62 @@ public class JCache<K, V> implements Cache<K, V> {
 
         //Only cacheEntryListener is checked for equality
         JCacheListenerAdapter<K, V> listenerAdapter = new JCacheListenerAdapter<K, V>((CacheEntryListener<K, V>) cacheEntryListener);
-        ScopedListener<K, V> scopedListener = new ScopedListener<K, V>(listenerAdapter, null, true);
         ehcache.getCacheEventNotificationService().unregisterListener(listenerAdapter);
-        return cacheEntryListeners.remove(scopedListener);
+        return cacheEntryListeners.remove(listenerAdapter);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Passes the cache entry associated with K to be passed to the entry
+     * processor. All operations performed by the processor will be done atomically
+     * i.e. all The processor will perform the operations against
+     *
+     * @param key              the key to the entry
+     * @param kvEntryProcessor the processor which will process the entry
+     * @return an object
+     * @throws NullPointerException  if key or entryProcessor are null
+     * @throws IllegalStateException if the cache is not {@link javax.cache.Status#STARTED}
+     * @see javax.cache.Cache.EntryProcessor
+     */
+    @Override
+    public Object invokeEntryProcessor(K key, EntryProcessor<K, V> kvEntryProcessor) {
+        checkStatusStarted();
+        if (key == null) {
+            throw new NullPointerException();
+        }
+        if (kvEntryProcessor == null) {
+            throw new NullPointerException();
+        }
+        ehcache.acquireWriteLockOnKey(key);
+        Object result = null;
+        try {
+            JCacheMutableEntry<K, V> entry = new JCacheMutableEntry<K, V>(key, this.ehcache);
+            result = kvEntryProcessor.process(entry);
+            entry.commit();
+        } finally {
+            ehcache.releaseWriteLockOnKey(key);
+        }
+        return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getName() {
         return this.ehcache.getName();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public CacheManager getCacheManager() {
         return cacheManager;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <T> T unwrap(Class<T> cls) {
         if (this.getClass().isAssignableFrom(cls)) {
@@ -428,13 +500,17 @@ public class JCache<K, V> implements Cache<K, V> {
         throw new IllegalArgumentException("Can't cast the the specified class");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void start() throws CacheException {
         //
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void stop() throws CacheException {
         executorService.shutdown();
@@ -448,7 +524,9 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Status getStatus() {
         return JCacheStatusAdapter.adaptStatus(ehcache.getStatus());
@@ -456,13 +534,24 @@ public class JCache<K, V> implements Cache<K, V> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Returns an iterator over a set of elements of type T.
      */
     @Override
     public Iterator<Entry<K, V>> iterator() {
         checkStatusStarted();
         return new EhcacheIterator(ehcache.getKeys().iterator());
+    }
+
+    /**
+     * Get the MBean for this cache.
+     *
+     * @return the MBean
+     *         TODO: not sure this belongs here
+     */
+    @Override
+    public CacheMXBean getMBean() {
+        return mbean;
     }
 
     /**
@@ -572,10 +661,10 @@ public class JCache<K, V> implements Cache<K, V> {
      * @author Yannis Cosmadopoulos
      * @link javax.cache.implementation.RICache.RICacheLoaderLoadAllCallable
      */
-    private static class JCacheLoaderLoadAllCallable<K, V> implements Callable<Map<K, V>> {
+    private static class JCacheLoaderLoadAllCallable<K, V> implements Callable<Map<K, ? extends V>> {
         private final JCache<K, V> cache;
         private final Collection<? extends K> keys;
-        private final CacheLoader<K, V> cacheLoader;
+        private final CacheLoader<K, ? extends V> cacheLoader;
 
         JCacheLoaderLoadAllCallable(JCache<K, V> cache, CacheLoader<K, V> cacheLoader, Collection<? extends K> keys) {
             this.cache = cache;
@@ -584,7 +673,7 @@ public class JCache<K, V> implements Cache<K, V> {
         }
 
         @Override
-        public Map<K, V> call() throws Exception {
+        public Map<K, ? extends V> call() throws Exception {
             ArrayList<K> keysNotInStore = new ArrayList<K>();
 
             // ehcache has an underlying loadAll method that could, potentially,
@@ -594,7 +683,7 @@ public class JCache<K, V> implements Cache<K, V> {
                     keysNotInStore.add(key);
                 }
             }
-            Map<K, V> value = cacheLoader.loadAll(keysNotInStore);
+            Map<K, ? extends V> value = cacheLoader.loadAll(keysNotInStore);
             cache.putAll(value);
             return value;
         }
@@ -615,10 +704,10 @@ public class JCache<K, V> implements Cache<K, V> {
         private ClassLoader classLoader;
 
         private JCacheConfiguration cacheConfiguration;
-        private CacheLoader<K, V> cacheLoader;
-        private CacheWriter<K, V> cacheWriter;
+        private CacheLoader<K, ? extends V> cacheLoader;
+        private CacheWriter<? super K, ? super V> cacheWriter;
 
-        private final CopyOnWriteArraySet<ListenerRegistration<K, V>> listeners = new CopyOnWriteArraySet<ListenerRegistration<K, V>>();
+        private final CopyOnWriteArraySet<CacheEntryListener<K, V>> listeners = new CopyOnWriteArraySet<CacheEntryListener<K, V>>();
         private final JCacheConfiguration.Builder configurationBuilder = new JCacheConfiguration.Builder();
         private JCacheManager cacheManager;
 
@@ -660,22 +749,22 @@ public class JCache<K, V> implements Cache<K, V> {
                         cacheConfiguration.getCacheConfiguration().getCopyStrategyConfiguration();
                 copyStrategyConfiguration.setCopyStrategyInstance(new JCacheCopyOnWriteStrategy(this.classLoader));
             }
-            
+
             // in ehcache 2.5 caches if the cacheManager doesn't specify a maxBytesLocalHeap then a cache must specify 
             // either a size in bytes or in elements
             if (cacheManager.getEhcacheManager().getConfiguration().getMaxBytesLocalHeap() == 0) {
-                if (cacheConfiguration.getCacheConfiguration().getMaxBytesLocalHeap() == 0 
+                if (cacheConfiguration.getCacheConfiguration().getMaxBytesLocalHeap() == 0
                         && cacheConfiguration.getCacheConfiguration().getMaxEntriesLocalHeap() == 0) {
-                        LOG.warn("There is no maxBytesLocalHeap set for the cacheManager '{}'. ", 
-                                cacheManager.getEhcacheManager().getName() );
-                        LOG.warn("Ehcache requires either maxBytesLocalHeap be set at the cacheManager Level or " +
-                                "requires maxEntriesLocalHeap or maxBytesLocalHeap to be set at the Cache level" );
-                        LOG.warn("The default value of 10000 maxElementsLocalHeap is being used for now. To fix this in " +
-                                "the future create an ehcache{}.xml file in the classpath that configures maxBytesLocalHeap", 
-                                (cacheManager.getName() == Caching.DEFAULT_CACHE_MANAGER_NAME )? "" : "-" + cacheName );
-                       cacheConfiguration.getCacheConfiguration().maxEntriesLocalHeap(10000);
+                    LOG.warn("There is no maxBytesLocalHeap set for the cacheManager '{}'. ",
+                            cacheManager.getEhcacheManager().getName());
+                    LOG.warn("Ehcache requires either maxBytesLocalHeap be set at the cacheManager Level or " +
+                            "requires maxEntriesLocalHeap or maxBytesLocalHeap to be set at the Cache level");
+                    LOG.warn("The default value of 10000 maxElementsLocalHeap is being used for now. To fix this in " +
+                            "the future create an ehcache{}.xml file in the classpath that configures maxBytesLocalHeap",
+                            (cacheManager.getName() == Caching.DEFAULT_CACHE_MANAGER_NAME) ? "" : "-" + cacheName);
+                    cacheConfiguration.getCacheConfiguration().maxEntriesLocalHeap(10000);
                 }
-                
+
             }
 
 
@@ -702,11 +791,9 @@ public class JCache<K, V> implements Cache<K, V> {
                 // needed for the writeAll
                 jcache.ehcache.registerCacheWriter(jcache.cacheWriterAdapter);
             }
-            for (ListenerRegistration listenerRegistration : listeners) {
+            for (CacheEntryListener listener : listeners) {
                 jcache.registerCacheEntryListener(
-                        listenerRegistration.cacheEntryListener,
-                        listenerRegistration.scope,
-                        listenerRegistration.synchronous
+                        listener
                 );
             }
 
@@ -720,7 +807,7 @@ public class JCache<K, V> implements Cache<K, V> {
          * @return the builder
          */
         @Override
-        public Builder<K, V> setCacheLoader(CacheLoader<K, V> cacheLoader) {
+        public Builder<K, V> setCacheLoader(CacheLoader<K, ? extends V> cacheLoader) {
             if (cacheLoader == null) {
                 throw new NullPointerException("cacheLoader");
             }
@@ -729,7 +816,7 @@ public class JCache<K, V> implements Cache<K, V> {
         }
 
         @Override
-        public CacheBuilder<K, V> setCacheWriter(CacheWriter<K, V> cacheWriter) {
+        public CacheBuilder<K, V> setCacheWriter(CacheWriter<? super K, ? super V> cacheWriter) {
             if (cacheWriter == null) {
                 throw new NullPointerException("cacheWriter");
             }
@@ -738,8 +825,8 @@ public class JCache<K, V> implements Cache<K, V> {
         }
 
         @Override
-        public CacheBuilder<K, V> registerCacheEntryListener(CacheEntryListener<K, V> listener, NotificationScope scope, boolean synchronous) {
-            listeners.add(new ListenerRegistration<K, V>(listener, scope, synchronous));
+        public CacheBuilder<K, V> registerCacheEntryListener(CacheEntryListener<K, V> listener) {
+            listeners.add(listener);
             return this;
         }
 
@@ -751,6 +838,13 @@ public class JCache<K, V> implements Cache<K, V> {
 
         @Override
         public CacheBuilder<K, V> setTransactionEnabled(IsolationLevel isolationLevel, Mode mode) {
+            if (IsolationLevel.NONE.equals(isolationLevel)) {
+                throw new IllegalArgumentException("The none isolation level is not permitted.");
+            }
+            if (Mode.NONE.equals(mode)) {
+                throw new IllegalArgumentException("The none Mode is not permitted.");
+            }
+
             configurationBuilder.setTransactionEnabled(isolationLevel, mode);
             return this;
         }
@@ -786,90 +880,86 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    /**
-     * Combine a Listener and its NotificationScope.  Equality and hashcode are based purely on the listener.
-     * This implies that the same listener cannot be added to the set of registered listeners more than
-     * once with different notification scopes.
-     *
-     * @author Greg Luck
-     */
-    private static final class ScopedListener<K, V> {
-        private final JCacheListenerAdapter<K, V> listener;
-        private final NotificationScope scope;
-        private final boolean synchronous;
+    public static class JCacheMutableEntry<K, V> implements MutableEntry<K, V> {
+        private Ehcache store;
+        private final K key;
+        private V value;
+        private boolean exists;
+        private boolean remove;
 
-        private ScopedListener(JCacheListenerAdapter<K, V> listener, NotificationScope scope, boolean synchronous) {
-            this.listener = listener;
-            this.scope = scope;
-            this.synchronous = synchronous;
+        public JCacheMutableEntry(K key, Ehcache store) {
+            this.store = store;
+            this.key = key;
+            exists = store.isKeyInCache(key);
         }
 
-        private JCacheListenerAdapter<K, V> getListener() {
-            return listener;
-        }
-
-        private NotificationScope getScope() {
-            return scope;
+        private void commit() {
+            if (remove) {
+                store.remove(key);
+            } else if (value != null) {
+                store.put(new Element(key, value));
+            }
         }
 
         /**
-         * Hash code based on listener
+         * Checks for the existence of the entry in the cache
          *
-         * @see Object#hashCode()
+         * @return
          */
         @Override
-        public int hashCode() {
-            return listener.hashCode();
+        public boolean exists() {
+            return exists;
         }
 
         /**
-         * Equals based on listener (NOT based on scope) - can't have same listener with two different scopes
-         *
-         * @see java.lang.Object#equals(java.lang.Object)
+         * Removes the entry from the Cache
+         * <p/>
          */
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            ScopedListener<?, ?> other = (ScopedListener<?, ?>) obj;
-            if (listener == null) {
-                if (other.listener != null) {
-                    return false;
-                }
-            } else if (!listener.equals(other.listener)) {
-                return false;
-            }
-            return true;
+        public void remove() {
+            remove = true;
+            exists = false;
+            value = null;
         }
 
+        /**
+         * Sets or replaces the value associated with the key
+         * If {@link #exists} is false and setValue is called
+         * then a mapping is added to the cache visible once the EntryProcessor
+         * completes. Moreover a second invocation of {@link #exists()}
+         * will return true.
+         * <p/>
+         *
+         * @param value the value to update the entry with
+         */
         @Override
-        public String toString() {
-            return listener.toString();
+        public void setValue(V value) {
+            if (value == null) {
+                throw new NullPointerException();
+            }
+            exists = true;
+            remove = false;
+            this.value = value;
         }
-    }
 
-    /**
-     * A struct :)
-     *
-     * @param <K>
-     * @param <V>
-     */
-    private static final class ListenerRegistration<K, V> {
-        private final CacheEntryListener<K, V> cacheEntryListener;
-        private final NotificationScope scope;
-        private final boolean synchronous;
+        /**
+         * Returns the key corresponding to this entry.
+         *
+         * @return the key corresponding to this entry
+         */
+        @Override
+        public K getKey() {
+            return key;
+        }
 
-        private ListenerRegistration(CacheEntryListener<K, V> cacheEntryListener, NotificationScope scope, boolean synchronous) {
-            this.cacheEntryListener = cacheEntryListener;
-            this.scope = scope;
-            this.synchronous = synchronous;
+        /**
+         * Returns the value stored in the cache when this entry was created.
+         *
+         * @return the value corresponding to this entry
+         */
+        @Override
+        public V getValue() {
+            return value != null ? value : (V) store.get(key).getValue();
         }
     }
 

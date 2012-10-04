@@ -29,7 +29,6 @@ import javax.cache.Caching;
 import javax.cache.OptionalFeature;
 import javax.cache.Status;
 import javax.cache.event.CacheEntryListener;
-import javax.cache.event.NotificationScope;
 import javax.cache.transaction.IsolationLevel;
 import javax.cache.transaction.Mode;
 import java.util.Collections;
@@ -182,15 +181,6 @@ public class JCacheManager implements javax.cache.CacheManager {
 
     /** {@inheritDoc} */
     @Override
-    public void registerImmutableClass(Class<?> immutableClass) {
-        if (immutableClass == null) {
-            throw new NullPointerException();
-        }
-        immutableClasses.add(immutableClass);
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public void shutdown() {
         if (getStatus() != Status.STARTED) {
             throw new IllegalStateException();
@@ -245,20 +235,20 @@ public class JCacheManager implements javax.cache.CacheManager {
 
 
         @Override
-        public CacheBuilder<K, V> setCacheLoader(CacheLoader<K, V> cacheLoader) {
+        public CacheBuilder<K, V> setCacheLoader(CacheLoader<K, ? extends  V> cacheLoader) {
             cacheBuilder.setCacheLoader(cacheLoader);
             return this;
         }
 
         @Override
-        public CacheBuilder<K, V> setCacheWriter(CacheWriter<K, V> cacheWriter) {
+        public CacheBuilder<K, V> setCacheWriter(CacheWriter<? super K, ? super V> cacheWriter) {
             cacheBuilder.setCacheWriter(cacheWriter);
             return this;
         }
 
         @Override
-        public CacheBuilder<K, V> registerCacheEntryListener(CacheEntryListener<K, V> listener, NotificationScope scope, boolean synchronous) {
-            cacheBuilder.registerCacheEntryListener(listener, scope, synchronous);
+        public CacheBuilder<K, V> registerCacheEntryListener(CacheEntryListener<K, V> listener) {
+            cacheBuilder.registerCacheEntryListener(listener);
             return this;
         }
 

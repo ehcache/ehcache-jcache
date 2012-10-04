@@ -42,21 +42,6 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
         this.cache = cache;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public String getName() {
-        return cache.getName();
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * Gets the {@link javax.cache.Status} attribute of the Cache expressed as a String.
-     */
-    @Override
-    public Status getStatus() {
-        return cache.getStatus();
-    }
 
     /**
      * {@inheritDoc}
@@ -70,15 +55,16 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
     }
 
     /**
-     * {@inheritDoc}
-     *
      * The date from which statistics have been accumulated. Because statistics can be cleared, this is not necessarily
      * since the cache was started.
+     *
+     * @return the date statistics started being accumulated
      */
     @Override
-    public Date statsAccumulatingFrom() {
+    public Date getStartAccumulationDate() {
         return this.dateFrom;
     }
+
 
     /**
      * {@inheritDoc}
