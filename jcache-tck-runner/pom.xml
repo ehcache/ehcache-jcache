@@ -4,7 +4,7 @@
 
     <groupId>net.sf.ehcache</groupId>
     <artifactId>jcache-tck-runner</artifactId>
-    <version>${project.parent.version}</version>
+    <version>1.5.0-0.5</version>
     <packaging>jar</packaging>
     <parent>
         <groupId>net.sf.ehcache</groupId>
