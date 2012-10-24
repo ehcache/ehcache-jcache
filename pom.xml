@@ -85,4 +85,18 @@
         </snapshotRepository>
     </distributionManagement>
 
+    <!--Required for CloudBees CI. Local builds will still work if you mvn install jsr107api first-->
+    <repositories>
+        <repository>
+            <id>cloudbees-snapshots</id>
+            <url>https://repository-jsr107.forge.cloudbees.com/snapshot</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
 </project>
