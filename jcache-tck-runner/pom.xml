@@ -4,12 +4,12 @@
 
     <groupId>net.sf.ehcache</groupId>
     <artifactId>jcache-tck-runner</artifactId>
-    <version>1.5.0-0.5</version>
+    <version>1.5.0-0.6-SNAPSHOT</version>
     <packaging>jar</packaging>
     <parent>
         <groupId>net.sf.ehcache</groupId>
         <artifactId>ehcache-jcache-parent</artifactId>
-        <version>1.5.0-0.5</version>
+        <version>1.5.0-0.6-SNAPSHOT</version>
     </parent>
 
     <name>Implementation Tester</name>

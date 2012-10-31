@@ -1,6 +1,6 @@
 package net.sf.ehcache.jcache;
 
-import javax.cache.implementation.DelegatingCacheMXBean;
+import org.jsr107.ri.DelegatingCacheMXBean;
 import javax.cache.mbeans.CacheMXBean;
 
 

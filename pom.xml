@@ -13,13 +13,13 @@
     </parent>
     <artifactId>ehcache-jcache-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.5.0-0.5</version>
+    <version>1.5.0-0.6-SNAPSHOT</version>
     <description><![CDATA[Parent project for Ehcache's implementation of JSR107 - JCACHE.]]> </description>
     <properties>
         <net.sf.ehcache.speedAdjustmentFactor>2</net.sf.ehcache.speedAdjustmentFactor>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <javax.cache.version>0.5</javax.cache.version>
+        <javax.cache.version>0.6-SNAPSHOT</javax.cache.version>
     </properties>
 
     <modules>

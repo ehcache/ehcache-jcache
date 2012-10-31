@@ -49,7 +49,7 @@ public class JCacheStatistics implements javax.cache.CacheStatistics, Serializab
      * Clears the statistics counters to 0 for the associated Cache.
      */
     @Override
-    public void clearStatistics() {
+    public void clear() {
         this.statistics.clearStatistics();
         this.dateFrom = new Date();
     }

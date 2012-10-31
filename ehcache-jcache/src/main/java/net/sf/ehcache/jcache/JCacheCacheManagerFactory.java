@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.cache.CacheManager;
 import javax.cache.Caching;
-import javax.cache.implementation.AbstractCacheManagerFactory;
+import org.jsr107.ri.AbstractCacheManagerFactory;
 import java.net.URL;
 
 /**
