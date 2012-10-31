@@ -50,4 +50,29 @@ public class JCacheEntryEventAdapter<K, V> extends CacheEntryEvent<K, V> {
     public V getValue() {
         return (V) element.getValue();
     }
+
+    /**
+     * Returns the value of the cache entry with the event
+     *
+     * @return the value
+     */
+    @Override
+    public V getOldValue() {
+        if (isOldValueAvailable()) {
+            //todo not available in this version of Ehcache return oldValue;
+            return null;
+        } else {
+            throw new UnsupportedOperationException(new StringBuffer("The old value is not available for key ").append(getKey()).toString());
+        }
+    }
+
+    /**
+     * Whether the old value is available
+     *
+     * @return true if the old value is populated
+     */
+    @Override
+    public boolean isOldValueAvailable() {
+        return false; //todo not available in this version of Ehcache
+    }
 }
