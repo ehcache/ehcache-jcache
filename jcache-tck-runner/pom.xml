@@ -25,7 +25,7 @@
         <domain-lib-dir>${project.build.directory}/domainlib</domain-lib-dir>
         <domain-jar>domain.jar</domain-jar>
         <!--Change the following properties on the command line to override with the coordinates for your implementation-->
-        <!--e.g. mvn clean test -Dimplementation-groupId=javax.cache.implementation
+        <!--e.g. mvn clean test -Dimplementation-groupId=org.jsr107.ri
                                 -Dimplementation-artifactId=cache-ri
                                 -Dimplementation-version=0.2-->
         <implementation-groupId>net.sf.ehcache</implementation-groupId>

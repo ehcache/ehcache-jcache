@@ -619,7 +619,7 @@ public class JCache<K, V> implements Cache<K, V> {
     /**
      * Callable used for cache loader.
      * <p/>
-     * (Based on the CacheLoader pattern used in {@link javax.cache.implementation.RICache.RICacheLoaderLoadCallable})
+     * (Based on the CacheLoader pattern used in {@link org.jsr107.ri.RICache.RICacheLoaderLoadCallable})
      *
      * @param <K> the type of the key
      * @param <V> the type of the value
@@ -659,7 +659,7 @@ public class JCache<K, V> implements Cache<K, V> {
      * @param <K> the type of the key
      * @param <V> the type of the value
      * @author Yannis Cosmadopoulos
-     * @link javax.cache.implementation.RICache.RICacheLoaderLoadAllCallable
+     * @link org.jsr107.ri.RICache.RICacheLoaderLoadAllCallable
      */
     private static class JCacheLoaderLoadAllCallable<K, V> implements Callable<Map<K, ? extends V>> {
         private final JCache<K, V> cache;
