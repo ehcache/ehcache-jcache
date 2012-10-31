@@ -26,7 +26,7 @@
             <artifactId>cache-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.cache.implementation</groupId>
+            <groupId>org.jsr107.ri</groupId>
             <artifactId>cache-ri-common</artifactId>
         </dependency>
         <dependency>

@@ -82,7 +82,7 @@ If you want to use annotations with this (or any other JSR107 provider) you need
 
 ```xml
 <dependency>
-   <groupId>javax.cache.implementation</groupId>
+   <groupId>org.jsr107.ri</groupId>
    <artifactId>cache-annotations-ri-spring</artifactId>
    <version>0.4</version>
 </dependency>
@@ -92,7 +92,7 @@ If you want to use annotations with this (or any other JSR107 provider) you need
 
 ```xml
 <dependency>
-   <groupId>javax.cache.implementation</groupId>
+   <groupId>org.jsr107.ri</groupId>
    <artifactId>cache-annotations-ri-cdi</artifactId>
    <version>0.4</version>
 </dependency>
