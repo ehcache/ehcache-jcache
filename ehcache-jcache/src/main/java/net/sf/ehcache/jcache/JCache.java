@@ -32,6 +32,7 @@ import javax.cache.CacheWriter;
 import javax.cache.Caching;
 import javax.cache.InvalidConfigurationException;
 import javax.cache.Status;
+import javax.cache.event.CacheEntryFilter;
 import javax.cache.event.CacheEntryListener;
 import javax.cache.mbeans.CacheMXBean;
 import javax.cache.transaction.IsolationLevel;
@@ -412,15 +413,14 @@ public class JCache<K, V> implements Cache<K, V> {
      * {@inheritDoc}
      */
     @Override
-    public boolean registerCacheEntryListener(CacheEntryListener<? super K, ? super V> cacheEntryListener) {
+    public boolean registerCacheEntryListener(CacheEntryListener<? super K, ? super V> cacheEntryListener, boolean requireOldValue, CacheEntryFilter<K, V> cacheEntryFilter, boolean synchronous) {
         checkValue(cacheEntryListener);
 
         JCacheListenerAdapter listener = new JCacheListenerAdapter(cacheEntryListener);
         ehcache.getCacheEventNotificationService().registerListener(listener);
+        //todo implement new listener style
         return cacheEntryListeners.add(listener);
-
     }
-
 
     /**
      * {@inheritDoc}
@@ -792,9 +792,7 @@ public class JCache<K, V> implements Cache<K, V> {
                 jcache.ehcache.registerCacheWriter(jcache.cacheWriterAdapter);
             }
             for (CacheEntryListener listener : listeners) {
-                jcache.registerCacheEntryListener(
-                        listener
-                );
+                jcache.registerCacheEntryListener(listener, false, null, true);
             }
 
             return jcache;
