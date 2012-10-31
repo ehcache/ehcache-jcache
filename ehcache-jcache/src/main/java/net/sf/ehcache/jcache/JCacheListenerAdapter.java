@@ -25,6 +25,7 @@ import javax.cache.event.CacheEntryExpiredListener;
 import javax.cache.event.CacheEntryListener;
 import javax.cache.event.CacheEntryRemovedListener;
 import javax.cache.event.CacheEntryUpdatedListener;
+import java.util.ArrayList;
 
 
 /**
@@ -94,11 +95,13 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     @Override
     public void notifyElementRemoved(Ehcache cache, Element element) throws CacheException {
         if (removedListener) {
+            ArrayList arrayList = new ArrayList();
+            arrayList.add(new JCacheEntryEventAdapter<K, V>(fromEhcache(cache), element));
             if (element != null) {
                 ((CacheEntryRemovedListener<? super K, ? super V>) cacheListener)
-                        .entryRemoved(
-                            new JCacheEntryEventAdapter<K, V>(fromEhcache(cache), element)
-                            );
+                        .onRemoved(
+                                arrayList
+                        );
             }
         }
     }
@@ -117,10 +120,12 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     @Override
     public void notifyElementPut(Ehcache cache, Element element) throws CacheException {
         if (createdListener) {
+            ArrayList arrayList = new ArrayList();
+            arrayList.add(new JCacheEntryEventAdapter<K, V>(fromEhcache(cache), element));
             if (element != null) {
                 ((CacheEntryCreatedListener<K, V>) cacheListener)
-                        .entryCreated(
-                                new JCacheEntryEventAdapter<K, V>(fromEhcache(cache), element)
+                        .onCreated(
+                                arrayList
                         );
             }
         }
@@ -142,10 +147,12 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     @Override
     public void notifyElementUpdated(Ehcache cache, Element element) throws CacheException {
         if (updatedListener) {
+            ArrayList arrayList = new ArrayList();
+            arrayList.add(new JCacheEntryEventAdapter<K, V>(fromEhcache(cache), element));
             if (element != null) {
                 ((CacheEntryCreatedListener<K, V>) cacheListener)
-                        .entryCreated(
-                            new JCacheEntryEventAdapter<K, V>(fromEhcache(cache), element)
+                        .onCreated(
+                            arrayList
                             );
             }
         }
@@ -172,10 +179,12 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     @Override
     public void notifyElementExpired(Ehcache cache, Element element) {
         if (expiredListener) {
+            ArrayList arrayList = new ArrayList();
+            arrayList.add(new JCacheEntryEventAdapter<K, V>(fromEhcache(cache), element));
             if (element != null) {
                 ((CacheEntryExpiredListener<K, V>) cacheListener)
-                        .entryExpired(
-                                new JCacheEntryEventAdapter<K, V>(fromEhcache(cache), element)
+                        .onExpired(
+                                arrayList
                         );
             }
         }
@@ -194,10 +203,11 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
     @Override
     public void notifyElementEvicted(Ehcache cache, Element element) {
         if (expiredListener) {
+            ArrayList arrayList = new ArrayList();
+            arrayList.add(new JCacheEntryEventAdapter<K, V>(fromEhcache(cache), element));
             if (element != null) {
-                ((CacheEntryExpiredListener<K, V>) cacheListener).entryExpired(
-                        new JCacheEntryEventAdapter<K, V>(fromEhcache(cache), element)
-                );
+                ((CacheEntryExpiredListener<K, V>) cacheListener).onExpired(
+                        arrayList);
             }
         }
     }
