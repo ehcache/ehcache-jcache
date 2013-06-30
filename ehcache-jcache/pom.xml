@@ -18,17 +18,17 @@
     <dependencies>
         <dependency>
             <groupId>net.sf.ehcache</groupId>
-            <artifactId>ehcache-core</artifactId>
-            <version>2.6.0</version>
+            <artifactId>ehcache</artifactId>
+            <version>2.7.1</version>
         </dependency>
         <dependency>
             <groupId>javax.cache</groupId>
             <artifactId>cache-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.jsr107.ri</groupId>
-            <artifactId>cache-ri-common</artifactId>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.jsr107.ri</groupId>-->
+            <!--<artifactId>cache-ri-common</artifactId>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>

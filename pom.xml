@@ -19,7 +19,7 @@
         <net.sf.ehcache.speedAdjustmentFactor>2</net.sf.ehcache.speedAdjustmentFactor>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <javax.cache.version>0.6-SNAPSHOT</javax.cache.version>
+        <javax.cache.version>0.8</javax.cache.version>
     </properties>
 
     <modules>
@@ -32,11 +32,6 @@
             <dependency>
                 <groupId>javax.cache</groupId>
                 <artifactId>cache-api</artifactId>
-                <version>${javax.cache.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jsr107.ri</groupId>
-                <artifactId>cache-ri-common</artifactId>
                 <version>${javax.cache.version}</version>
             </dependency>
         </dependencies>
