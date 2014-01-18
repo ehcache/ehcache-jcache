@@ -30,55 +30,44 @@ import javax.cache.Cache;
  * @since 1.4.0-beta1
  */
 public class JCacheEntry<K, V> implements Cache.Entry<K, V> {
-    private Element element;
 
-    /**
-     * Constructor
-     *
-     * Create a new JCacheEntry for this key / value pair
-     *
-     * @param key a K object.
-     * @param value a V object.
-     */
-    public JCacheEntry(K key, V value) {
-        this.element = new Element(key, value);
-    }
-    
-    /**
-     * Constructor
-     *
-     * @param element an element from Ehcache
-     */
-    public JCacheEntry(Element element) {
-        this.element = element;
+    private final Element element;
+    private final Class<K> keyType;
+    private final Class<V> valueType;
+
+    public JCacheEntry(final Element e, final Class<K> keyType, final Class<V> valueType) {
+        this.element = e;
+        this.keyType = keyType;
+        this.valueType = valueType;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * Returns the key corresponding to this entry.
-     */
     @Override
     public K getKey() {
         if (element != null) {
-            return (K) element.getObjectKey();
+            return keyType.cast(element.getObjectKey());
         } else {
             return null;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * Returns the value stored in the cache when this entry was created.
-     */
     @Override
     public V getValue() {
         if (element != null) {
-            return (V) element.getValue();
+            return valueType.cast(element.getObjectValue());
         } else {
             return null;
         }
+    }
+
+    @Override
+    public <T> T unwrap(final Class<T> clazz) {
+        if(clazz.isAssignableFrom(getClass())) {
+            return clazz.cast(this);
+        }
+        if(clazz.isAssignableFrom(Element.class)) {
+            return clazz.cast(element);
+        }
+        throw new IllegalArgumentException();
     }
 }
 

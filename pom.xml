@@ -19,12 +19,12 @@
         <net.sf.ehcache.speedAdjustmentFactor>2</net.sf.ehcache.speedAdjustmentFactor>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <javax.cache.version>0.8</javax.cache.version>
+        <javax.cache.version>1.0.0-RC1</javax.cache.version>
     </properties>
 
     <modules>
         <module>ehcache-jcache</module>
-        <module>jcache-tck-runner</module>
+        <!--<module>jcache-tck-runner</module>-->
     </modules>
 
     <dependencyManagement>

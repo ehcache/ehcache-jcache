@@ -18,23 +18,32 @@ package net.sf.ehcache.jcache;
 
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.sf.ehcache.Status;
+import net.sf.ehcache.config.CacheConfiguration;
+import net.sf.ehcache.config.CacheWriterConfiguration;
+import net.sf.ehcache.config.CopyStrategyConfiguration;
+
+import java.net.URI;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.cache.Cache;
-import javax.cache.CacheBuilder;
-import javax.cache.CacheLoader;
-import javax.cache.CacheWriter;
-import javax.cache.Caching;
-import javax.cache.OptionalFeature;
-import javax.cache.Status;
-import javax.cache.event.CacheEntryListener;
-import javax.cache.transaction.IsolationLevel;
-import javax.cache.transaction.Mode;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.regex.Pattern;
+import javax.cache.CacheException;
+import javax.cache.configuration.CompleteConfiguration;
+import javax.cache.configuration.Configuration;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 
 /**
  * The CacheManager that allows EHCache caches to be retrieved and accessed via JSR107 APIs
@@ -43,305 +52,320 @@ import java.util.regex.Pattern;
  * @since 1.4.0-beta1
  */
 public class JCacheManager implements javax.cache.CacheManager {
-    private static final Logger LOG = LoggerFactory.getLogger(JCacheManager.class);
 
-    private final HashMap<String, Cache<?, ?>> caches = new HashMap<String, Cache<?, ?>>();
-    private final HashSet<Class<?>> immutableClasses = new HashSet<Class<?>>();
+    private static MBeanServer mBeanServer = MBeanServerFactory.createMBeanServer();
+    private static final int DEFAULT_SIZE = 1000;
 
-    private final ClassLoader classLoader;
-    private final CacheManager ehcacheManager;
+    private final JCacheCachingProvider jCacheCachingProvider;
+    private final CacheManager cacheManager;
+    private final URI uri;
+    private final Properties props;
+    private final ConcurrentHashMap<String, JCache> allCaches = new ConcurrentHashMap<String, JCache>();
+    private final ClassLoader classloader;
+    private volatile boolean closed = false;
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final ConcurrentMap<JCache, JCacheManagementMXBean> cfgMXBeans = new ConcurrentHashMap<JCache, JCacheManagementMXBean>();
+    private final ConcurrentMap<JCache, JCacheStatMXBean> statMXBeans = new ConcurrentHashMap<JCache, JCacheStatMXBean>();
 
-
-    /**
-     * Creates a JCacheManager that uses the name of the cache to configure the underlying EhCache CacheManager
-     * via an ehcache-name.xml config file
-     *
-     * @param name a {@link java.lang.String} object.
-     * @param ehcacheManager a {@link net.sf.ehcache.CacheManager} object.
-     * @param classLoader a {@link java.lang.ClassLoader} object.
-     */
-    public JCacheManager(String name, CacheManager ehcacheManager, ClassLoader classLoader) {
-        if (classLoader == null) {
-            throw new NullPointerException("No classLoader specified");
-        }
-        if (name == null) {
-            throw new NullPointerException("No name specified");
-        }
-        this.classLoader = classLoader;
-
-        this.ehcacheManager = ehcacheManager;
-        this.ehcacheManager.setName(name);
+    public JCacheManager(final JCacheCachingProvider jCacheCachingProvider, final CacheManager cacheManager, final ClassLoader classloader, final URI uri, final Properties props) {
+        this.jCacheCachingProvider = jCacheCachingProvider;
+        this.cacheManager = cacheManager;
+        this.uri = uri;
+        this.props = props;
+        this.classloader = classloader;
+        refreshAllCaches();
     }
 
-    /**
-     * Retrieve the underlying ehcache manager that this JCacheManager uses
-     *
-     * @return the underlying ehcache manager
-     */
-    public CacheManager getEhcacheManager() {
-        return ehcacheManager;
-    }
-
-
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * The name returned will be that passed in to the constructor {@link #JCacheManager(String, net.sf.ehcache.CacheManager, ClassLoader)}
-     */
     @Override
-    public String getName() {
-        return ehcacheManager.getName();
+    public JCacheCachingProvider getCachingProvider() {
+        return jCacheCachingProvider;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * Returns the status of this CacheManager.
-     * <p/>
-     */
     @Override
-    public Status getStatus() {
-        return JCacheStatusAdapter.adaptStatus(ehcacheManager.getStatus());
+    public URI getURI() {
+        return uri;
     }
 
-    /** {@inheritDoc} */
     @Override
-    public <K, V> CacheBuilder<K, V> createCacheBuilder(String cacheName) {
-        return new JCacheBuilder<K, V>(cacheName, this, classLoader);
+    public ClassLoader getClassLoader() {
+        return classloader;
     }
 
-    /** {@inheritDoc} */
     @Override
-    public <K, V> Cache<K, V> getCache(String cacheName) {
-        if (getStatus() != Status.STARTED) {
-            throw new IllegalStateException("CacheManager must be started before retrieving a cache");
-        }
-        synchronized (caches) {
-            if (caches.containsKey(cacheName)) {
-                return (Cache<K, V>) caches.get(cacheName);
-            } else {
-                Ehcache ehcache = ehcacheManager.getEhcache(cacheName);
-                if (ehcache == null) {
-                    return null;
-                }
-                JCacheEhcacheDecorator decoratedCache = new JCacheEhcacheDecorator<K,V>(ehcache);
-                final JCache<K, V> cache = new JCache<K, V>(decoratedCache, this, this.classLoader);
-                decoratedCache.setJcache(cache);
-
-                caches.put(cacheName, cache);
-                return cache;
-            }
-        }
+    public Properties getProperties() {
+        return props;
     }
 
-    /** {@inheritDoc} */
     @Override
-    public Iterable<Cache<?, ?>> getCaches() {
-        synchronized (caches) {
-            HashSet<Cache<?, ?>> cacheSet = new HashSet<Cache<?, ?>>(caches.size(), 1.0f);
-            for (Cache<?, ?> cache : caches.values()) {
-                cacheSet.add(cache);
-            }
-            return Collections.unmodifiableSet(cacheSet);
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean removeCache(String cacheName) {
-        if (getStatus() != Status.STARTED) {
-            throw new IllegalStateException();
-        }
-        if (cacheName == null) {
+    public <K, V, C extends Configuration<K, V>> Cache<K, V> createCache(final String cacheName, final C configuration) throws IllegalArgumentException {
+        checkNotClosed();
+        if(configuration == null) {
             throw new NullPointerException();
         }
-        Cache<?, ?> oldCache;
-        synchronized (caches) {
-            oldCache = caches.remove(cacheName);
-        }
-        if (oldCache != null) {
-            oldCache.stop();
-        }
 
-        return oldCache != null;
+        JCache<K, V> jCache = allCaches.get(cacheName);
+        if (jCache != null) {
+            throw new CacheException();
+        }
+        cacheManager.addCacheIfAbsent(new net.sf.ehcache.Cache(toEhcacheConfig(cacheName, configuration)));
+        Ehcache ehcache = cacheManager.getEhcache(cacheName);
+        final JCacheConfiguration<K, V> cfg = new JCacheConfiguration<K, V>(configuration);
+        jCache = new JCache<K, V>(this, cfg, ehcache);
+        JCache<K, V> previous = allCaches.putIfAbsent(cacheName, jCache);
+        if(previous != null) {
+            // todo validate config
+            return previous;
+        }
+        if(cfg.isStatisticsEnabled()) {
+            enableStatistics(cacheName, true);
+        }
+        if(cfg.isManagementEnabled()) {
+            enableManagement(cacheName, true);
+        }
+        return jCache;
     }
 
-
-    /** {@inheritDoc} */
     @Override
-    public javax.transaction.UserTransaction getUserTransaction() {
-        throw new UnsupportedOperationException();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean isSupported(OptionalFeature optionalFeature) {
-        return Caching.isSupported(optionalFeature);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void shutdown() {
-        if (getStatus() != Status.STARTED) {
-            throw new IllegalStateException();
+    public <K, V> Cache<K, V> getCache(final String cacheName, final Class<K> keyType, final Class<V> valueType) {
+        checkNotClosed();
+        if(valueType == null) {
+            throw new NullPointerException();
         }
-        synchronized (immutableClasses) {
-            immutableClasses.clear();
-        }
-        synchronized (caches) {
-            ehcacheManager.shutdown();
-            caches.clear();
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T> T unwrap(java.lang.Class<T> cls) {
-        if (cls.isAssignableFrom(this.getClass())) {
-            return cls.cast(this);
-        }
-
-        throw new IllegalArgumentException("Unwapping to " + cls + " is not a supported by this implementation");
-    }
-
-    /**
-     * Construct a CacheBuilder
-     *
-     * @param <K> the type of keys used by the Cache built by this CacheBuilder
-     * @param <V> the type of values that are loaded by the Cache built by this CacheBuilder
-     * @author Ryan Gardner
-     */
-    private class JCacheBuilder<K, V> implements CacheBuilder<K, V> {
-        private final JCache.Builder<K, V> cacheBuilder;
-        private Pattern namePattern = Pattern.compile("\\S+");
-        
-        public JCacheBuilder(String cacheName, JCacheManager jCacheManager, ClassLoader cl) {
-            if (cacheName == null) {
-                throw new NullPointerException("Cache name cannot be null");
+        JCache<K, V> jCache = allCaches.get(cacheName);
+        if(jCache != null) {
+            if(!keyType.isAssignableFrom(jCache.getConfiguration(CompleteConfiguration.class).getKeyType())) {
+                throw new ClassCastException();
             }
-            if (!(namePattern.matcher(cacheName).find())) {
-                throw new IllegalArgumentException("Cache name must contain one or more non-whitespace characters");
+            if(!valueType.isAssignableFrom(jCache.getConfiguration(CompleteConfiguration.class).getValueType())) {
+                throw new ClassCastException();
             }
-
-            cacheBuilder = new JCache.Builder<K, V>(cacheName, jCacheManager, cl);
+            return jCache;
         }
-
-        @Override
-        public JCache<K, V> build() {
-            JCache<K, V> cache = cacheBuilder.build();
-            addInternal(cache);
-            return cache;
+        final net.sf.ehcache.Cache cache = cacheManager.getCache(cacheName);
+        if (cache == null) {
+            return null;
         }
-
-
-        @Override
-        public CacheBuilder<K, V> setCacheLoader(CacheLoader<K, ? extends  V> cacheLoader) {
-            cacheBuilder.setCacheLoader(cacheLoader);
-            return this;
+        jCache = new JCache<K, V>(this, new JCacheConfiguration<K, V>(null, null, keyType, valueType), cache);
+        final JCache<K, V> previous = allCaches.putIfAbsent(cacheName, jCache);
+        if(previous != null) {
+            jCache = previous;
         }
-
-        @Override
-        public CacheBuilder<K, V> setCacheWriter(CacheWriter<? super K, ? super V> cacheWriter) {
-            cacheBuilder.setCacheWriter(cacheWriter);
-            return this;
+        if(!keyType.isAssignableFrom(jCache.getConfiguration(CompleteConfiguration.class).getKeyType())) {
+            throw new ClassCastException();
         }
-
-        @Override
-        public CacheBuilder<K, V> registerCacheEntryListener(CacheEntryListener<K, V> listener) {
-            cacheBuilder.registerCacheEntryListener(listener);
-            return this;
+        if(!valueType.isAssignableFrom(jCache.getConfiguration(CompleteConfiguration.class).getValueType())) {
+            throw new ClassCastException();
         }
-
-        @Override
-        public CacheBuilder<K, V> setStoreByValue(boolean storeByValue) {
-            cacheBuilder.setStoreByValue(storeByValue);
-            return this;
-        }
-
-        @Override
-        public CacheBuilder<K, V> setTransactionEnabled(IsolationLevel isolationLevel, Mode mode) {
-            cacheBuilder.setTransactionEnabled(isolationLevel, mode);
-            return this;
-        }
-
-        @Override
-        public CacheBuilder<K, V> setStatisticsEnabled(boolean enableStatistics) {
-            cacheBuilder.setStatisticsEnabled(enableStatistics);
-            return this;
-        }
-
-        @Override
-        public CacheBuilder<K, V> setReadThrough(boolean readThrough) {
-            cacheBuilder.setReadThrough(readThrough);
-            return this;
-        }
-
-        @Override
-        public CacheBuilder<K, V> setWriteThrough(boolean writeThrough) {
-            cacheBuilder.setWriteThrough(writeThrough);
-            return this;
-        }
-
-        @Override
-        public CacheBuilder<K, V> setExpiry(javax.cache.CacheConfiguration.ExpiryType type, javax.cache.CacheConfiguration.Duration timeToLive) {
-            cacheBuilder.setExpiry(type, timeToLive);
-            return this;
-        }
+        return jCache;
     }
 
-    private void addInternal(JCache cache) {
-
-        synchronized (caches) {
-            if (caches.containsKey(cache.getName())) {
-                ehcacheManager.removeCache(cache.getName());
-            }
-            // remove the cache if it already exists
-            if (ehcacheManager.getEhcache(cache.getName()) != null) {
-                ehcacheManager.removeCache(cache.getName());
-            }
-            caches.remove(cache.getName());
-            caches.put(cache.getName(), cache);
-            // decorate the cache with a reference to the JCache
-            ehcacheManager.addCache(new JCacheEhcacheDecorator(cache.getEhcache(),cache));
-
-        }
-    }
-
-    /** {@inheritDoc} */
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+    public <K, V> Cache<K, V> getCache(final String cacheName) {
+        final JCache<K, V> jCache = allCaches.get(cacheName);
+        if(jCache == null) {
+            refreshAllCaches();
+            return allCaches.get(cacheName);
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        if(jCache.getConfiguration(CompleteConfiguration.class).getKeyType() != Object.class ||
+           jCache.getConfiguration(CompleteConfiguration.class).getValueType() != Object.class) {
+            throw new IllegalArgumentException();
         }
-
-        JCacheManager that = (JCacheManager) o;
-
-        if (caches != null ? !caches.equals(that.caches) : that.caches != null) {
-            return false;
-        }
-        if (classLoader != null ? !classLoader.equals(that.classLoader) : that.classLoader != null) {
-            return false;
-        }
-        if (ehcacheManager != null ? !ehcacheManager.equals(that.ehcacheManager) : that.ehcacheManager != null) {
-            return false;
-        }
-        if (immutableClasses != null ? !immutableClasses.equals(that.immutableClasses) : that.immutableClasses != null) {
-            return false;
-        }
-
-        return true;
+        return jCache;
     }
 
-    /** {@inheritDoc} */
     @Override
-    public int hashCode() {
-        int result = caches != null ? caches.hashCode() : 0;
-        result = 31 * result + (immutableClasses != null ? immutableClasses.hashCode() : 0);
-        result = 31 * result + (classLoader != null ? classLoader.hashCode() : 0);
-        result = 31 * result + (ehcacheManager != null ? ehcacheManager.hashCode() : 0);
-        return result;
+    public Iterable<String> getCacheNames() {
+        return Collections.unmodifiableSet(new HashSet<String>(allCaches.keySet()));
     }
+
+    @Override
+    public void destroyCache(final String cacheName) {
+        checkNotClosed();
+        final JCache jCache = allCaches.get(cacheName);
+        if (jCache != null) {
+            jCache.close();
+        }
+    }
+
+    @Override
+    public void enableManagement(final String cacheName, final boolean enabled) {
+        checkNotClosed();
+        if(cacheName == null) throw new NullPointerException();
+        final JCache jCache = allCaches.get(cacheName);
+        if(jCache == null) {
+            throw new NullPointerException();
+        }
+        enableManagement(enabled, jCache);
+    }
+
+    private void enableManagement(final boolean enabled, final JCache jCache) {
+        try {
+            if(enabled) {
+                registerObject(getOrCreateCfgObject(jCache));
+            } else {
+                unregisterObject(cfgMXBeans.remove(jCache));
+            }
+            ((JCacheConfiguration)jCache.getConfiguration(JCacheConfiguration.class)).setManagementEnabled(enabled);
+        } catch (NotCompliantMBeanException e) {
+            throw new CacheException(e);
+        } catch (InstanceAlreadyExistsException e) {
+            // throw new CacheException(e);
+        } catch (MBeanRegistrationException e) {
+            throw new CacheException(e);
+        } catch (InstanceNotFoundException e) {
+            // throw new CacheException(e);
+        } catch (MalformedObjectNameException e) {
+            throw new CacheException(e);
+        }
+    }
+
+    @Override
+    public void enableStatistics(final String cacheName, final boolean enabled) {
+        checkNotClosed();
+        if(cacheName == null) throw new NullPointerException();
+        final JCache jCache = allCaches.get(cacheName);
+        if(jCache == null) {
+            throw new NullPointerException();
+        }
+        enableStatistics(enabled, jCache);
+    }
+
+    private void enableStatistics(final boolean enabled, final JCache jCache) {
+        try {
+            if(enabled) {
+                registerObject(getOrCreateStatObject(jCache));
+            } else {
+                unregisterObject(statMXBeans.remove(jCache));
+            }
+            ((JCacheConfiguration)jCache.getConfiguration(JCacheConfiguration.class)).setStatisticsEnabled(enabled);
+        } catch (NotCompliantMBeanException e) {
+            throw new CacheException(e);
+        } catch (InstanceAlreadyExistsException e) {
+            // throw new CacheException(e);
+        } catch (MBeanRegistrationException e) {
+            throw new CacheException(e);
+        } catch (InstanceNotFoundException e) {
+            // throw new CacheException(e);
+        } catch (MalformedObjectNameException e) {
+            throw new CacheException("Illegal ObjectName for Management Bean. " +
+                                     "CacheManager=[" + getURI().toString() + "], Cache=[" + jCache.getName() + "]", e);
+        }
+    }
+
+    private void registerObject(final JCacheMXBean cacheMXBean) throws NotCompliantMBeanException,
+        InstanceAlreadyExistsException, MBeanRegistrationException, MalformedObjectNameException {
+        final ObjectName objectName = new ObjectName(cacheMXBean.getObjectName());
+        if(mBeanServer.queryNames(objectName, null).isEmpty()) {
+            mBeanServer.registerMBean(cacheMXBean, objectName);
+        }
+    }
+
+    private void unregisterObject(final JCacheMXBean cacheMXBean) throws MBeanRegistrationException, InstanceNotFoundException, MalformedObjectNameException {
+        if(cacheMXBean == null) return;
+        final String name = cacheMXBean.getObjectName();
+        final ObjectName objectName = new ObjectName(name);
+        for (ObjectName n : mBeanServer.queryNames(objectName, null)) {
+            mBeanServer.unregisterMBean(n);
+        }
+    }
+
+    private JCacheManagementMXBean getOrCreateCfgObject(final JCache jCache) {
+        JCacheManagementMXBean cacheMXBean = cfgMXBeans.get(jCache);
+        if(cacheMXBean == null) {
+            cacheMXBean = new JCacheManagementMXBean(jCache);
+            final JCacheManagementMXBean previous = cfgMXBeans.putIfAbsent(jCache, cacheMXBean);
+            if(previous != null) {
+                cacheMXBean = previous;
+            }
+        }
+        return cacheMXBean;
+    }
+
+    private JCacheStatMXBean getOrCreateStatObject(final JCache jCache) {
+        JCacheStatMXBean cacheMXBean = statMXBeans.get(jCache);
+        if(cacheMXBean == null) {
+            cacheMXBean = new JCacheStatMXBean(jCache);
+            final JCacheStatMXBean previous = statMXBeans.putIfAbsent(jCache, cacheMXBean);
+            if(previous != null) {
+                cacheMXBean = previous;
+            }
+        }
+        return cacheMXBean;
+    }
+
+    @Override
+    public void close() {
+        jCacheCachingProvider.shutdown(this);
+    }
+
+    void shutdown() {
+        closed = true;
+        for (JCache jCache : allCaches.values()) {
+            jCache.close();
+        }
+        cacheManager.shutdown();
+        allCaches.clear();
+    }
+
+    @Override
+    public boolean isClosed() {
+        return cacheManager.getStatus() == Status.STATUS_SHUTDOWN;
+    }
+
+    @Override
+    public <T> T unwrap(final Class<T> clazz) {
+        if(clazz.isAssignableFrom(getClass())) {
+            return clazz.cast(this);
+        }
+        if(clazz.isAssignableFrom(cacheManager.getClass())) {
+            clazz.cast(cacheManager);
+        }
+        throw new IllegalArgumentException();
+    }
+
+    private void refreshAllCaches() {
+        for (String s : cacheManager.getCacheNames()) {
+            final net.sf.ehcache.Cache cache = cacheManager.getCache(s);
+            if(cache != null) {
+                allCaches.put(s, new JCache(this, new JCacheConfiguration(cache.getCacheConfiguration()), cache));
+            }
+        }
+    }
+
+    private CacheConfiguration toEhcacheConfig(final String name, final Configuration configuration) {
+        final int maxSize = cacheManager.getConfiguration().isMaxBytesLocalHeapSet() ? 0 : DEFAULT_SIZE;
+        CacheConfiguration cfg = new CacheConfiguration(name, maxSize);
+        if(configuration.isStoreByValue()) {
+            final CopyStrategyConfiguration copyStrategyConfiguration = new CopyStrategyConfiguration();
+            copyStrategyConfiguration.setCopyStrategyInstance(new JCacheCopyOnWriteStrategy(classloader));
+            cfg.copyOnRead(true).copyOnWrite(true)
+                .addCopyStrategy(copyStrategyConfiguration);
+        }
+        if(configuration instanceof CompleteConfiguration) {
+            final CompleteConfiguration completeConfiguration = (CompleteConfiguration)configuration;
+            if(((CompleteConfiguration)configuration).isWriteThrough()) {
+                cfg.addCacheWriter(new CacheWriterConfiguration().writeMode(CacheWriterConfiguration.WriteMode.WRITE_THROUGH));
+            }
+        }
+        return cfg;
+    }
+
+    private void checkNotClosed() {
+        if(closed) throw new IllegalStateException();
+    }
+
+    void shutdown(final JCache jCache) {
+        final JCache r = allCaches.remove(jCache.getName());
+        if (r == jCache) {
+            enableStatistics(false, jCache);
+            enableManagement(false, jCache);
+            cacheManager.removeCache(jCache.getName());
+            jCache.shutdown();
+        }
+    }
+
+    public ExecutorService getExecutorService() {
+        return executorService;
+    }
+
 }

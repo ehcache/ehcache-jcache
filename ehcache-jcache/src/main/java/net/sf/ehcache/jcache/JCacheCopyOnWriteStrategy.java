@@ -45,7 +45,7 @@ import java.io.ObjectStreamClass;
  * @author Ryan Gardner
  * @since 0.4
  */
-public class JCacheCopyOnWriteStrategy implements ReadWriteCopyStrategy<Element> {
+class JCacheCopyOnWriteStrategy implements ReadWriteCopyStrategy<Element> {
     private ClassLoader deserializationClassLoader;
 
     /**
@@ -69,15 +69,16 @@ public class JCacheCopyOnWriteStrategy implements ReadWriteCopyStrategy<Element>
             return null;
         } else {
             Object elementValue = value.getObjectValue();
-            Object elementKey = value.getKey();
+            Object elementKey = value.getObjectKey();
 
-            byte[] serializedValue = cloneObjectToByteArray(elementValue);
+            Object newKey = toObject(toByteArray(elementKey));
+            Object serializedValue = toObject(toByteArray(elementValue));
 
-            return duplicateElementWithNewValue(value, serializedValue);
+            return duplicateElementWithNewValue(value, newKey, serializedValue);
         }
     }
 
-    byte[] cloneObjectToByteArray(Object elementValue) {
+    byte[] toByteArray(Object elementValue) {
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         ObjectOutputStream oos = null;
 
@@ -109,13 +110,13 @@ public class JCacheCopyOnWriteStrategy implements ReadWriteCopyStrategy<Element>
         if (storedValue == null) {
             return null;
         } else {
-            Object deserializedElement = deserializeByteArrayToObject((byte[]) storedValue.getValue());
-
-            return duplicateElementWithNewValue(storedValue, deserializedElement);
+            Object newKey = toObject(toByteArray(storedValue.getObjectKey()));
+            Object deserializedValue = toObject(toByteArray(storedValue.getObjectValue()));
+            return duplicateElementWithNewValue(storedValue, newKey, deserializedValue);
         }
     }
 
-    Object deserializeByteArrayToObject(byte[] bytes) {
+    Object toObject(byte[] bytes) {
         if (bytes == null) {
             return null;
         }
@@ -148,8 +149,8 @@ public class JCacheCopyOnWriteStrategy implements ReadWriteCopyStrategy<Element>
      * @see net.sf.ehcache.store.compound.ReadWriteSerializationCopyStrategy#duplicateElementWithNewValue(net.sf.ehcache.Element, Object)
      * @since 1.4.0-beta1
      */
-    protected Element duplicateElementWithNewValue(final Element element, final Object newValue) {
-        return new Element(element.getKey(), newValue, element.getVersion(),
+    Element duplicateElementWithNewValue(final Element element, final Object newKey, final Object newValue) {
+        return new Element(newKey, newValue, element.getVersion(),
                 element.getCreationTime(), element.getLastAccessTime(), element.getHitCount(), element.usesCacheDefaultLifespan(),
                 element.getTimeToLive(), element.getTimeToIdle(), element.getLastUpdateTime());
     }

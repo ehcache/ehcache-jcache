@@ -28,15 +28,17 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Adapt a {@link javax.cache.CacheWriter} to the interface of {@link net.sf.ehcache.writer.CacheWriter}
+ * Adapt a {@link javax.cache.integration.CacheWriter} to the interface of {@link net.sf.ehcache.writer.CacheWriter}
  *
  * @param <K> the type of keys used by this JCacheCacheLoaderAdapter
  * @param <V> the type of values that are loaded by this JCacheCacheLoaderAdapter
  * @author Ryan Gardner
  * @since 1.4.0-beta1
  */
-public class JCacheCacheWriterAdapter<K, V> implements CacheWriter {
-    private final javax.cache.CacheWriter<K, V> jsr107CacheWriter;
+class JCacheCacheWriterAdapter<K, V> implements CacheWriter {
+    private final javax.cache.integration.CacheWriter<K, V> jsr107CacheWriter;
+    private final Class<K> keyType;
+    private final Class<V> valueType;
 
     /**
      * Construct a JCacheCacheWriterAdapter to adapt the {@code jsr107CacheWriter} to the
@@ -44,17 +46,10 @@ public class JCacheCacheWriterAdapter<K, V> implements CacheWriter {
      *
      * @param jsr107CacheWriter the {@link CacheWriter to adapt}
      */
-    public JCacheCacheWriterAdapter(javax.cache.CacheWriter<K, V> jsr107CacheWriter) {
+    public JCacheCacheWriterAdapter(javax.cache.integration.CacheWriter<K, V> jsr107CacheWriter, Class<K> keyType, Class<V> valueType) {
         this.jsr107CacheWriter = jsr107CacheWriter;
-    }
-
-    /**
-     * Retrieve the {@link javax.cache.CacheWriter} that this adapter wraps
-     *
-     * @return the CacheWriter that this adapter wraps
-     */
-    public javax.cache.CacheWriter<K, V> getJCacheCacheWriter() {
-        return jsr107CacheWriter;
+        this.keyType = keyType;
+        this.valueType = valueType;
     }
 
     /**
@@ -67,8 +62,7 @@ public class JCacheCacheWriterAdapter<K, V> implements CacheWriter {
      * but that will stop them from being used with defaultCache.
      */
     public CacheWriter clone(Ehcache cache) throws CloneNotSupportedException {
-        JCacheCacheWriterAdapter clone = (JCacheCacheWriterAdapter) super.clone();
-        return clone;
+        return (JCacheCacheWriterAdapter) super.clone();
     }
 
     /**
@@ -111,7 +105,7 @@ public class JCacheCacheWriterAdapter<K, V> implements CacheWriter {
      * This method is intended to support both key/value creation and value update for a specific key.
      */
     public void write(Element element) throws CacheException {
-        jsr107CacheWriter.write(new JCacheEntry(element));
+        jsr107CacheWriter.write(new JCacheEntry<K, V>(element, keyType, valueType));
     }
 
     /**
@@ -125,7 +119,7 @@ public class JCacheCacheWriterAdapter<K, V> implements CacheWriter {
     public void writeAll(Collection<Element> elements) throws CacheException {
         Collection<Cache.Entry<? extends K,? extends V>> javaxCacheEntries = new HashSet<Cache.Entry<? extends K, ? extends V>>();
         for (Element e : elements) {
-            javaxCacheEntries.add(new JCacheEntry(e));
+            javaxCacheEntries.add(new JCacheEntry<K, V>(e, keyType, valueType));
         }
         jsr107CacheWriter.writeAll(javaxCacheEntries);
     }
@@ -148,9 +142,9 @@ public class JCacheCacheWriterAdapter<K, V> implements CacheWriter {
      * has failed or has not been attempted.
      */
     public void deleteAll(Collection<CacheEntry> entries) throws CacheException {
-        Set<javax.cache.Cache.Entry> javaxCacheEntries = new HashSet<javax.cache.Cache.Entry>();
+        Set<javax.cache.Cache.Entry<K, V>> javaxCacheEntries = new HashSet<javax.cache.Cache.Entry<K, V>>();
         for (CacheEntry e : entries) {
-            javaxCacheEntries.add(new JCacheEntry(e.getElement()));
+            javaxCacheEntries.add(new JCacheEntry<K, V>(e.getElement(), keyType, valueType));
         }
         jsr107CacheWriter.deleteAll(javaxCacheEntries);
     }

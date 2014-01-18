@@ -1,6 +1,6 @@
 <ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="../../main/config/ehcache.xsd"
-         maxBytesLocalHeap="100M">
+         maxBytesLocalHeap="50%">
 
     <!-- Disable for test ehcache.xml. Should go to the same place. -->
     <!--<diskStore path="java.io.tmpdir"/>-->
