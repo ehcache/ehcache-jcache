@@ -1,4 +1,4 @@
-package net.sf.ehcache.jcache;
+package org.ehcache.jcache;
 
 import javax.cache.configuration.CompleteConfiguration;
 import javax.cache.management.CacheMXBean;

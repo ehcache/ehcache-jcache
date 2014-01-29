@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package net.sf.ehcache.jcache;
+package org.ehcache.jcache;
 
 import net.sf.ehcache.CacheEntry;
 import net.sf.ehcache.CacheException;

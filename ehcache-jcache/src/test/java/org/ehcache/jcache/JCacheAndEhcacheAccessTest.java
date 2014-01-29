@@ -1,6 +1,8 @@
-package net.sf.ehcache.jcache;
+package org.ehcache.jcache;
 
 import net.sf.ehcache.Ehcache;
+import org.ehcache.jcache.JCache;
+import org.ehcache.jcache.JCacheConfiguration;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;

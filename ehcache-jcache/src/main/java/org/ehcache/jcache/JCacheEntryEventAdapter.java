@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package net.sf.ehcache.jcache;
+package org.ehcache.jcache;
 
 import net.sf.ehcache.Element;
 
@@ -35,7 +35,7 @@ class JCacheEntryEventAdapter<K, V> extends CacheEntryEvent<K, V> {
     /**
      * <p>Constructor for JCacheEntryEventAdapter.</p>
      *
-     * @param source a {@link net.sf.ehcache.jcache.JCache} object.
+     * @param source a {@link JCache} object.
      * @param element a {@link net.sf.ehcache.Element} object.
      * @param eventType type
      */

@@ -1,4 +1,4 @@
-package net.sf.ehcache.jcache.tck;
+package org.ehcache.jcache.tck;
 
 import com.sun.jmx.mbeanserver.JmxMBeanServer;
 

@@ -1,4 +1,4 @@
-package net.sf.ehcache.jcache;
+package org.ehcache.jcache;
 
 import net.sf.ehcache.Ehcache;
 

@@ -1,1 +1,1 @@
-net.sf.ehcache.jcache.JCacheCachingProvider
+org.ehcache.jcache.JCacheCachingProvider

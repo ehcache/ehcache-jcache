@@ -20,4 +20,4 @@
  *
  * @author Ryan Gardner
  */
-package net.sf.ehcache.jcache;
+package org.ehcache.jcache;

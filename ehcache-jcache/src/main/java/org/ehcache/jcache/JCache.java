@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package net.sf.ehcache.jcache;
+package org.ehcache.jcache;
 
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
@@ -197,9 +197,9 @@ public class JCache<K, V> implements Cache<K, V> {
                     try {
                         ehcache.acquireWriteLockOnKey(key);
                         try {
-                            if(!ehcache.isKeyInCache(key) || replaceExistingValues) {
+                            if (!ehcache.isKeyInCache(key) || replaceExistingValues) {
                                 final V value = cacheLoader.load(key);
-                                if(value != null) {
+                                if (value != null) {
                                     JCache.this.putWithoutWriter(key, value);
                                 }
                             }
@@ -207,7 +207,7 @@ public class JCache<K, V> implements Cache<K, V> {
                             ehcache.releaseWriteLockOnKey(key);
                         }
                     } catch (Exception e) {
-                        if(completionListener != null) {
+                        if (completionListener != null) {
                             completionListener.onException(new CacheLoaderException(e));
                         }
                         return null;
