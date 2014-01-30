@@ -24,7 +24,7 @@
 
     <modules>
         <module>ehcache-jcache</module>
-        <!--<module>jcache-tck-runner</module>-->
+        <module>jcache-tck-runner</module>
     </modules>
 
     <dependencyManagement>
