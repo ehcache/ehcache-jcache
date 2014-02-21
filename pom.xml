@@ -24,7 +24,6 @@
 
     <modules>
         <module>ehcache-jcache</module>
-        <module>jcache-tck-runner</module>
     </modules>
 
     <dependencyManagement>
@@ -60,6 +59,16 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <!--You can disable this profile on the command line using -P -run-tck -->
+            <id>run-tck</id>
+                <activation>
+                    <activeByDefault>true</activeByDefault>
+                </activation>
+                <modules>
+                    <module>jcache-tck-runner</module>
+                </modules>
         </profile>
     </profiles>
 
