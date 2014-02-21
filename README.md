@@ -17,6 +17,19 @@ Modules
 * [jcache-tck-runner](https://github.com/jsr107/ehcache-jcache/tree/master/ehcache-jcache/jcache-tck-runner/)
   This runs the JSR107 TCK suite against the ehcache-jcache implementation to verify compliance with the spec.
 
+
+Build
+--------------------
+* Just run the following command line (provided you have maven 3 already installed) :
+
+    mvn clean install
+
+
+* You may want to disable the run-tck profile (if you don't have it in your local maven repository) since it's not published to a maven repository :
+
+    mvn clean install -P -run-tck
+
+
 IRC
 ---
 
