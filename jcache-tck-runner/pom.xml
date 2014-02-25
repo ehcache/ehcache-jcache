@@ -3,54 +3,49 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>javax.cache</groupId>
-        <artifactId>implementation-tester</artifactId>
+        <groupId>org.ehcache</groupId>
+        <artifactId>ehcache-jcache-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>specific-implementation-tester</artifactId>
+    <artifactId>jcache-tck-runner</artifactId>
     <packaging>jar</packaging>
-    <name>Implementation Tester - Specific Implementation</name>
-    <url>https://github.com/jsr107/jsr107tck</url>
-    <description>Wires together cache-tests with the RI implementation and runs
-        JUnit against them. Create
-        a similar module for each new implementation you wish to test. See
-        README.md for details.
+
+    <name>Implementation Tester - Ehcache JCache Implementation</name>
+    <description>
+        Wires together TCK cache-tests with the Ehcache JCache implementation and runs them using JUnit.
     </description>
 
     <properties>
-
-    <CacheManagerImpl>org.ehcache.jcache.JCacheManager</CacheManagerImpl>
-    <CacheImpl>org.ehcache.jcache.JCache</CacheImpl>
-    <CacheEntryImpl>org.ehcache.jcache.JCacheEntry</CacheEntryImpl>
-    <javax.management.builder.initial>org.ehcache.jcache.tck.TCKMBeanServerBuilder</javax.management.builder.initial>
-    <org.jsr107.tck.management.agentId>org.ehcache.JCache-MBeanServer</org.jsr107.tck.management.agentId>
+        <domain-lib-dir>${project.build.directory}/domainlib</domain-lib-dir>
+        <domain-jar>domain.jar</domain-jar>
+        <CacheManagerImpl>org.ehcache.jcache.JCacheManager</CacheManagerImpl>
+        <CacheImpl>org.ehcache.jcache.JCache</CacheImpl>
+        <CacheEntryImpl>org.ehcache.jcache.JCacheEntry</CacheEntryImpl>
+        <javax.management.builder.initial>org.ehcache.jcache.tck.TCKMBeanServerBuilder</javax.management.builder.initial>
+        <org.jsr107.tck.management.agentId>org.ehcache.JCache-MBeanServer</org.jsr107.tck.management.agentId>
+        <CacheInvocationContextImpl>javax.cache.annotation.impl.cdi.CdiCacheKeyInvocationContextImpl</CacheInvocationContextImpl>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.ehcache</groupId>
             <artifactId>jcache</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>${implementation-groupId}</groupId>
-            <artifactId>${implementation-artifactId}</artifactId>
-            <version>${implementation-version}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>javax.cache</groupId>
             <artifactId>cache-tests</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${javax.cache.tck.version}</version>
         </dependency>
 
         <dependency>
             <groupId>javax.cache</groupId>
             <artifactId>cache-tests</artifactId>
             <classifier>tests</classifier>
+            <version>${javax.cache.tck.version}</version>
             <scope>test</scope>
-            <version>${project.parent.version}</version>
         </dependency>
 
 
@@ -107,7 +102,7 @@
                                 <artifactItem>
                                     <groupId>javax.cache</groupId>
                                     <artifactId>app-domain</artifactId>
-                                    <version>${project.parent.version}</version>
+                                    <version>${javax.cache.tck.version}</version>
                                     <outputDirectory>${domain-lib-dir}
                                     </outputDirectory>
                                     <destFileName>${domain-jar}</destFileName>
@@ -120,8 +115,10 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.0.3</version>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
 
             <plugin>
@@ -165,8 +162,7 @@
                                 <include>**/interceptor/*Test.java</include>
                             </excludes>
                             <systemPropertyVariables>
-                                <domainJar>${domain-lib-dir}/${domain-jar}
-                                </domainJar>
+                                <domainJar>${domain-lib-dir}/${domain-jar}</domainJar>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
