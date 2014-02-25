@@ -15,9 +15,9 @@ To include this in your project, you need to include:
 
 ```xml
 <dependency>
-   <groupId>net.sf.ehcache</groupId>
-   <artifactId>ehcache-jcache</artifactId>
-   <version>1.4.0-beta1</version>
+   <groupId>org.ehcache</groupId>
+   <artifactId>jcache</artifactId>
+   <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -97,66 +97,6 @@ If you want to use annotations with this (or any other JSR107 provider) you need
    <version>0.4</version>
 </dependency>
 ```
-
-
-Documentation
--------------
-
-See See the <http://ehcache.org/documentation/jsr107.html> for full documentation.
-
-Development
---------
-Active development of the jcache-ehcache module follows changes to the spec. There will be no attempt to maintain backwards
-compatibility between release versions; the focus of each release will be compliance with the latest JSR107 spec.
-
-Release
---------
-
-Following releases of the JSR107 spec APIs, an updated release milestone will be released and the latest stable release code will sit on the master
-branch of the jcache-ehcache github repository.
-
-
-
-Building From Source
---------------------
-
-`mvn clean install`
-
-
-Mailing list
-------------
-
-Please join the Ehcache mailing list if you're interested in using or developing the software: <http://ehcache.org/mail-lists.html>
-
-IRC
----
-
-We will be using the `#jsr107` channel on Freenode for chat.
-
-
-Issue tracker
--------------
-
-Please log issues to: <https://github.com/jsr107/ehcache-jcache/issues>
-
-
-Contributing
-------------
-
-Right now contribution is limited to the Expert Group, but as we go along we will open it up.
-
-
-License
--------
-
-This software is provided under an Apache 2 open source license, read the `LICENSE.txt` file for details.
-
-
-Contributors
-------------
-
-This free, open source software was made possible by Terracotta, Inc.. See the `CONTRIBUTORS.markdown` file for details.
-
 
 Copyright
 ---------
