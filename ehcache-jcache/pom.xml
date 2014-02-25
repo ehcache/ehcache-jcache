@@ -2,17 +2,18 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <name>Ehcache JCache Implementation</name>
-    <artifactId>jcache</artifactId>
-    <packaging>jar</packaging>
     <parent>
         <groupId>org.ehcache</groupId>
         <artifactId>ehcache-jcache-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <description><![CDATA[Ehcache's wrapper implementation of JSR107 - JCACHE.]]> </description>
+    <artifactId>jcache</artifactId>
+    <packaging>jar</packaging>
 
+    <name>Ehcache JCache Implementation</name>
+
+    <description><![CDATA[Ehcache's wrapper implementation of JSR107 - JCACHE.]]> </description>
 
     <dependencies>
         <dependency>
@@ -24,10 +25,6 @@
             <groupId>javax.cache</groupId>
             <artifactId>cache-api</artifactId>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.jsr107.ri</groupId>-->
-            <!--<artifactId>cache-ri-common</artifactId>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -48,17 +45,16 @@
 
         <!--With slf4j, users choose a concrete logging implementation at deploy time-->
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
-            <version>1.6.1</version>
-            <optional>true</optional>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.16</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
 
     <build>
         <plugins>
-
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.2</version>
@@ -67,7 +63,6 @@
                     <target>1.6</target>
                 </configuration>
             </plugin>
-
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -137,7 +132,6 @@
                     <childDelegation>false</childDelegation>
                     <disableXmlReport>false</disableXmlReport>
                     <printSummary>true</printSummary>
-                    <!--<reportFormat>plain</reportFormat>-->
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <systemProperties>
                         <property>
@@ -173,79 +167,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <!--<repositories>-->
-    <!--<repository>-->
-    <!--<id>sourceforge-releases</id>-->
-    <!--<url>http://oss.sonatype.org/content/repositories/sourceforge-snapshots</url>-->
-    <!--<layout>legacy</layout>-->
-    <!--<releases>-->
-    <!--<enabled>false</enabled>-->
-    <!--<updatePolicy>daily</updatePolicy>-->
-    <!--</releases>-->
-    <!--<snapshots>-->
-    <!--<enabled>true</enabled>-->
-    <!--<updatePolicy>daily</updatePolicy>-->
-    <!--</snapshots>-->
-    <!--</repository>-->
-    <!--</repositories>-->
-
-
-    <profiles>
-        <profile>
-            <!--Only releases need to be signed. Use mvn -Prelease clean deploy to deploy releases -->
-            <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.1</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
-    <!-- Note: site URL repeated here to ensure correct deployment path -->
-    <distributionManagement>
-        <!--
-          The server id here defined must also appear in ~/.m2/settings.xml with username
-        -->
-        <repository>
-            <id>sourceforge-releases</id>
-            <name>Sourceforge Release Repository</name>
-            <url>http://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-        </repository>
-        <snapshotRepository>
-            <id>sourceforge-snapshots</id>
-            <name>Sourceforge Snapshot Repository</name>
-            <url>http://oss.sonatype.org/content/repositories/sourceforge-snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
-
-    <!--Required for CloudBees CI. Local builds will still work if you mvn install jsr107api first-->
-    <repositories>
-        <repository>
-            <id>cloudbees-snapshots</id>
-            <url>https://repository-jsr107.forge.cloudbees.com/snapshot</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
 </project>

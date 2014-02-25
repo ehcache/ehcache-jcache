@@ -2,24 +2,44 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.ehcache</groupId>
-    <name>Ehcache JCache Parent Pom</name>
+
     <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>7</version>
-        <!--Fixes broken Maven 3 warning-->
-        <relativePath/>
+      <groupId>org.sonatype.oss</groupId>
+      <artifactId>oss-parent</artifactId>
+      <version>7</version>
+      <!--Fixes broken Maven 3 warning-->
+      <relativePath/>
     </parent>
+
+    <groupId>org.ehcache</groupId>
     <artifactId>ehcache-jcache-parent</artifactId>
-    <packaging>pom</packaging>
     <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Ehcache JCache Parent Pom</name>
     <description><![CDATA[Parent project for Ehcache's implementation of JSR107 - JCACHE.]]> </description>
+
+    <url>https://github.com/Terracotta-OSS/ehcache-jcache</url>
+
+    <organization>
+        <name>Terracotta</name>
+        <url>http://terracotta.org</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <properties>
         <net.sf.ehcache.speedAdjustmentFactor>2</net.sf.ehcache.speedAdjustmentFactor>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <javax.cache.version>1.0.0-RC1</javax.cache.version>
+        <javax.cache.tck.version>1.0.0-SNAPSHOT</javax.cache.tck.version>
     </properties>
 
     <modules>
@@ -36,17 +56,27 @@
         </dependencies>
     </dependencyManagement>
 
+    <build>
+        <pluginManagement>
+            <plugins>
+              <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-deploy-plugin</artifactId>
+                  <version>2.8.1</version>
+              </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
     <profiles>
         <profile>
-            <!--Only releases need to be signed. Use mvn -Prelease clean deploy to deploy releases -->
-            <id>release</id>
+            <id>sign</id>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.1</version>
+                        <version>1.5</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -72,23 +102,6 @@
         </profile>
     </profiles>
 
-    <!-- Note: site URL repeated here to ensure correct deployment path -->
-    <distributionManagement>
-        <!--
-          The server id here defined must also appear in ~/.m2/settings.xml with username
-        -->
-        <repository>
-            <id>sourceforge-releases</id>
-            <name>Sourceforge Release Repository</name>
-            <url>http://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-        </repository>
-        <snapshotRepository>
-            <id>sourceforge-snapshots</id>
-            <name>Sourceforge Snapshot Repository</name>
-            <url>http://oss.sonatype.org/content/repositories/sourceforge-snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <!--Required for CloudBees CI. Local builds will still work if you mvn install jsr107api first-->
     <repositories>
         <repository>
@@ -102,5 +115,11 @@
             </snapshots>
         </repository>
     </repositories>
+
+    <scm>
+        <url>https://github.com/Terracotta-OSS/ehcache-jcache</url>
+        <connection>scm:git:git@github.com:Terracotta-OSS/ehcache-jcache.git</connection>
+        <developerConnection>scm:git:git@github.com:Terracotta-OSS/ehcache-jcache.git</developerConnection>
+    </scm>
 
 </project>
