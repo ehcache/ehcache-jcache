@@ -318,7 +318,7 @@ public class JCacheManager implements javax.cache.CacheManager {
             return clazz.cast(this);
         }
         if(clazz.isAssignableFrom(cacheManager.getClass())) {
-            clazz.cast(cacheManager);
+            return clazz.cast(cacheManager);
         }
         throw new IllegalArgumentException();
     }
