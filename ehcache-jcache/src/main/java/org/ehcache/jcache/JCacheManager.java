@@ -61,18 +61,16 @@ public class JCacheManager implements javax.cache.CacheManager {
     private final URI uri;
     private final Properties props;
     private final ConcurrentHashMap<String, JCache> allCaches = new ConcurrentHashMap<String, JCache>();
-    private final ClassLoader classloader;
     private volatile boolean closed = false;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final ConcurrentMap<JCache, JCacheManagementMXBean> cfgMXBeans = new ConcurrentHashMap<JCache, JCacheManagementMXBean>();
     private final ConcurrentMap<JCache, JCacheStatMXBean> statMXBeans = new ConcurrentHashMap<JCache, JCacheStatMXBean>();
 
-    public JCacheManager(final JCacheCachingProvider jCacheCachingProvider, final CacheManager cacheManager, final ClassLoader classloader, final URI uri, final Properties props) {
+    public JCacheManager(final JCacheCachingProvider jCacheCachingProvider, final CacheManager cacheManager, final URI uri, final Properties props) {
         this.jCacheCachingProvider = jCacheCachingProvider;
         this.cacheManager = cacheManager;
         this.uri = uri;
         this.props = props;
-        this.classloader = classloader;
         refreshAllCaches();
     }
 
@@ -88,7 +86,7 @@ public class JCacheManager implements javax.cache.CacheManager {
 
     @Override
     public ClassLoader getClassLoader() {
-        return classloader;
+        return cacheManager.getConfiguration().getClassLoader();
     }
 
     @Override
@@ -335,14 +333,14 @@ public class JCacheManager implements javax.cache.CacheManager {
     private CacheConfiguration toEhcacheConfig(final String name, final Configuration configuration) {
         final int maxSize = cacheManager.getConfiguration().isMaxBytesLocalHeapSet() ? 0 : DEFAULT_SIZE;
         CacheConfiguration cfg = new CacheConfiguration(name, maxSize);
+        cfg.setClassLoader(cacheManager.getConfiguration().getClassLoader());
         if(configuration.isStoreByValue()) {
             final CopyStrategyConfiguration copyStrategyConfiguration = new CopyStrategyConfiguration();
-            copyStrategyConfiguration.setCopyStrategyInstance(new JCacheCopyOnWriteStrategy(classloader));
+            copyStrategyConfiguration.setCopyStrategyInstance(new JCacheCopyOnWriteStrategy());
             cfg.copyOnRead(true).copyOnWrite(true)
                 .addCopyStrategy(copyStrategyConfiguration);
         }
         if(configuration instanceof CompleteConfiguration) {
-            final CompleteConfiguration completeConfiguration = (CompleteConfiguration)configuration;
             if(((CompleteConfiguration)configuration).isWriteThrough()) {
                 cfg.addCacheWriter(new CacheWriterConfiguration().writeMode(CacheWriterConfiguration.WriteMode.WRITE_THROUGH));
             }

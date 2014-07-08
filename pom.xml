@@ -38,8 +38,8 @@
         <net.sf.ehcache.speedAdjustmentFactor>2</net.sf.ehcache.speedAdjustmentFactor>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <javax.cache.version>1.0.0-RC1</javax.cache.version>
-        <javax.cache.tck.version>1.0.0-SNAPSHOT</javax.cache.tck.version>
+        <javax.cache.version>1.0.0</javax.cache.version>
+        <javax.cache.tck.version>${javax.cache.version}</javax.cache.tck.version>
     </properties>
 
     <modules>

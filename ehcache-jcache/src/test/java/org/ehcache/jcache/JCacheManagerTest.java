@@ -13,7 +13,7 @@ public class JCacheManagerTest {
 
   @Test
   public void testUnwrapReturnsCacheManagerType() {
-    JCacheManager jCacheManager = new JCacheManager(null, CacheManager.getInstance(), null, null, null);
+    JCacheManager jCacheManager = new JCacheManager(null, CacheManager.getInstance(), null, null);
     final CacheManager unwrap = jCacheManager.unwrap(CacheManager.class);
     assertThat(unwrap, notNullValue());
     assertThat(unwrap, instanceOf(CacheManager.class));
@@ -21,7 +21,7 @@ public class JCacheManagerTest {
 
   @Test
   public void testUnwrapThrowsOnUnsupportedType() {
-    JCacheManager jCacheManager = new JCacheManager(null, CacheManager.getInstance(), null, null, null);
+    JCacheManager jCacheManager = new JCacheManager(null, CacheManager.getInstance(), null, null);
     try {
       jCacheManager.unwrap(Cache.class);
       fail();

@@ -98,8 +98,9 @@ public class JCacheCachingProvider implements CachingProvider {
                 if(configuration.getName() == null) {
                     configuration.setName(uri.toString() + "::" + classLoader.toString() + "::" + this.toString());
                 }
+                configuration.setClassLoader(classLoader);
                 final net.sf.ehcache.CacheManager ehcacheManager = new net.sf.ehcache.CacheManager(configuration);
-                cacheManager = new JCacheManager(this, ehcacheManager, classLoader, uri, properties);
+                cacheManager = new JCacheManager(this, ehcacheManager, uri, properties);
                 byURI.put(uri, cacheManager);
             }
         }
