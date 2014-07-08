@@ -23,6 +23,7 @@ import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.config.CacheWriterConfiguration;
 import net.sf.ehcache.config.CopyStrategyConfiguration;
 
+import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashSet;
@@ -40,7 +41,6 @@ import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
@@ -53,7 +53,7 @@ import javax.management.ObjectName;
  */
 public class JCacheManager implements javax.cache.CacheManager {
 
-    private static MBeanServer mBeanServer = MBeanServerFactory.createMBeanServer();
+    private static MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
     private static final int DEFAULT_SIZE = 1000;
 
     private final JCacheCachingProvider jCacheCachingProvider;
