@@ -13,7 +13,7 @@
 
     <groupId>org.ehcache</groupId>
     <artifactId>ehcache-jcache-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Ehcache JCache Parent Pom</name>
@@ -115,6 +115,27 @@
             </snapshots>
         </repository>
     </repositories>
+
+    <developers>
+        <developer>
+            <id>alexsnaps</id>
+            <name>Alex Snaps</name>
+            <roles>
+              <role>Project Lead</role>
+            </roles>
+            <organization>Terracotta Inc., a wholly-owned subsidiary of Software AG USA, Inc.</organization>
+            <organizationUrl>http://terracotta.org</organizationUrl>
+        </developer>
+        <developer>
+            <id>ljacomet</id>
+            <name>Louis Jacomet</name>
+            <roles>
+              <role>Developer</role>
+            </roles>
+            <organization>Terracotta Inc., a wholly-owned subsidiary of Software AG USA, Inc.</organization>
+            <organizationUrl>http://terracotta.org</organizationUrl>
+        </developer>
+    </developers>
 
     <scm>
         <url>https://github.com/Terracotta-OSS/ehcache-jcache</url>
