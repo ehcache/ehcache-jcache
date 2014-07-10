@@ -17,7 +17,7 @@ To include this in your project, you need to include:
 <dependency>
    <groupId>org.ehcache</groupId>
    <artifactId>jcache</artifactId>
-   <version>1.0.0-SNAPSHOT</version>
+   <version>[version]</version>
 </dependency>
 ```
 
