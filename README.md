@@ -29,6 +29,9 @@ Build
 
     mvn clean install -P -run-tck
 
+* Current build status: [![Build Status](https://ehcache.ci.cloudbees.com/buildStatus/icon?job=ehcache-jcache)](https://ehcache.ci.cloudbees.com/job/ehcache-jcache/)
+
+[![Build Status](http://www.cloudbees.com/sites/default/files/Button-Powered-by-CB.png)](http://www.cloudbees.com/)
 
 Development
 --------
