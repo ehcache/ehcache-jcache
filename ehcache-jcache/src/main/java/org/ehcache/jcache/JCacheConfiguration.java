@@ -23,11 +23,13 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 import javax.cache.configuration.CacheEntryListenerConfiguration;
 import javax.cache.configuration.CompleteConfiguration;
 import javax.cache.configuration.Configuration;
 import javax.cache.configuration.Factory;
+import javax.cache.expiry.Duration;
 import javax.cache.expiry.EternalExpiryPolicy;
 import javax.cache.expiry.ExpiryPolicy;
 import javax.cache.integration.CacheLoader;
@@ -77,14 +79,40 @@ public class JCacheConfiguration<K, V> implements javax.cache.configuration.Comp
             }
             initialCacheEntryListenerConfigurations = Collections.unmodifiableSet(set);
         } else {
-            expiryPolicyFactory = EternalExpiryPolicy.factoryOf();
-            expiryPolicy = expiryPolicyFactory.create();
-            storeByValue = cacheConfiguration == null;
-            readThrough = false;
-            writeThrough = false;
-            cacheLoaderFactory = null;
-            cacheWristerFactory = null;
-            initialCacheEntryListenerConfigurations = new HashSet<CacheEntryListenerConfiguration<K, V>>();
+            if (cacheConfiguration == null) {
+                expiryPolicyFactory = EternalExpiryPolicy.factoryOf();
+                expiryPolicy = expiryPolicyFactory.create();
+                storeByValue = true;
+                readThrough = false;
+                writeThrough = false;
+                cacheLoaderFactory = null;
+                cacheWristerFactory = null;
+                initialCacheEntryListenerConfigurations = new HashSet<CacheEntryListenerConfiguration<K, V>>();
+            } else {
+                expiryPolicyFactory = null;
+                expiryPolicy = new ExpiryPolicy() {
+                    @Override
+                    public Duration getExpiryForCreation() {
+                        return new Duration(TimeUnit.SECONDS, cacheConfiguration.getTimeToLiveSeconds());
+                    }
+
+                    @Override
+                    public Duration getExpiryForAccess() {
+                        return new Duration(TimeUnit.SECONDS, cacheConfiguration.getTimeToLiveSeconds());
+                    }
+
+                    @Override
+                    public Duration getExpiryForUpdate() {
+                        return getExpiryForCreation();
+                    }
+                };
+                storeByValue = false;
+                readThrough = false;
+                writeThrough = false;
+                cacheLoaderFactory = null;
+                cacheWristerFactory = null;
+                initialCacheEntryListenerConfigurations = new HashSet<CacheEntryListenerConfiguration<K, V>>();
+            }
         }
     }
 
@@ -173,5 +201,9 @@ public class JCacheConfiguration<K, V> implements javax.cache.configuration.Comp
 
     public Iterable<CacheEntryListenerConfiguration<K, V>> getInitialCacheEntryListenerConfigurations() {
         return initialCacheEntryListenerConfigurations;
+    }
+
+    public boolean overrideDefaultExpiry() {
+        return expiryPolicyFactory != null;
     }
 }
