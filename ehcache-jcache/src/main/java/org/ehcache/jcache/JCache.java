@@ -236,7 +236,7 @@ public class JCache<K, V> implements Cache<K, V> {
                 expiry = cfg.getExpiryPolicy().getExpiryForCreation();
             }
             final Element element = new Element(key, value);
-            if(setTimeTo(expiry, element)) {
+            if(setTimeTo(cfg.overrideDefaultExpiry(), expiry, element)) {
                 putAndWriteIfNeeded(element);
             } else if(inCache) {
                 removeAndWriteIfNeeded(key);
@@ -260,7 +260,7 @@ public class JCache<K, V> implements Cache<K, V> {
                 expiry = cfg.getExpiryPolicy().getExpiryForCreation();
             }
             final Element element = new Element(key, value);
-            if(setTimeTo(expiry, element)) {
+            if(setTimeTo(cfg.overrideDefaultExpiry(), expiry, element)) {
                 ehcache.put(element);
             } else if(inCache) {
                 ehcache.remove(key);
@@ -270,7 +270,11 @@ public class JCache<K, V> implements Cache<K, V> {
         }
     }
 
-    private boolean setTimeTo(final Duration duration, final Element element) {
+    private boolean setTimeTo(final boolean overrideDefaults, final Duration duration, final Element element) {
+
+        if(!overrideDefaults) {
+            return true;
+        }
 
         if (duration != null) {
             if (duration.isZero()) {
@@ -303,7 +307,7 @@ public class JCache<K, V> implements Cache<K, V> {
             } else {
                 expiry = cfg.getExpiryPolicy().getExpiryForCreation();
             }
-            if(setTimeTo(expiry, element)) {
+            if(setTimeTo(cfg.overrideDefaultExpiry(), expiry, element)) {
                 putAndWriteIfNeeded(element);
             } else if(inCache) {
                 removeAndWriteIfNeeded(key);
@@ -362,7 +366,7 @@ public class JCache<K, V> implements Cache<K, V> {
             } else {
                 expiry = cfg.getExpiryPolicy().getExpiryForCreation();
             }
-            if(setTimeTo(expiry, e)) {
+            if(setTimeTo(cfg.overrideDefaultExpiry(), expiry, e)) {
                 elements.add(e);
                 if (cfg.isWriteThrough()) {
                     entries.add(new JCacheEntry(e, cfg.getKeyType(), cfg.getValueType()));
@@ -401,7 +405,7 @@ public class JCache<K, V> implements Cache<K, V> {
                 final Element element = new Element(key, value);
                 final Duration expiryForCreation;
                 expiryForCreation = cfg.getExpiryPolicy().getExpiryForCreation();
-                if(setTimeTo(expiryForCreation, element)) {
+                if(setTimeTo(cfg.overrideDefaultExpiry(), expiryForCreation, element)) {
                     putAndWriteIfNeeded(element);
                 }
                 return true;
@@ -479,7 +483,7 @@ public class JCache<K, V> implements Cache<K, V> {
                     }
                 } else {
                     final Duration expiry = cfg.getExpiryPolicy().getExpiryForUpdate();
-                    if(setTimeTo(expiry, element)) {
+                    if(setTimeTo(cfg.overrideDefaultExpiry(), expiry, element)) {
                         ehcache.put(new Element(key, newValue));
                         return true;
                     } else {
@@ -506,7 +510,7 @@ public class JCache<K, V> implements Cache<K, V> {
             if(inCache) {
                 ehcache.get(key);
                 expiry = cfg.getExpiryPolicy().getExpiryForUpdate();
-                if (setTimeTo(expiry, element)) {
+                if (setTimeTo(cfg.overrideDefaultExpiry(), expiry, element)) {
                     putAndWriteIfNeeded(element);
                     return true;
                 } else {
@@ -533,7 +537,7 @@ public class JCache<K, V> implements Cache<K, V> {
             if(previous != null) {
                 expiry = cfg.getExpiryPolicy().getExpiryForUpdate();
                 final Element element = new Element(key, value);
-                if (setTimeTo(expiry, element)) {
+                if (setTimeTo(cfg.overrideDefaultExpiry(), expiry, element)) {
                     putAndWriteIfNeeded(element);
                     return (V)previous.getObjectValue();
                 }
