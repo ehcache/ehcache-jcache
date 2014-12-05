@@ -7,18 +7,30 @@ import javax.cache.management.CacheStatisticsMXBean;
  */
 public class JCacheStatMXBean extends JCacheMXBean implements CacheStatisticsMXBean {
 
+    private long pCacheHits;
+    private long pCacheMisses;
+    private long pCacheGets;
+    private long pCachePuts;
+    private long pCacheRemovals;
+    private long pCacheEvictions;
+
     public JCacheStatMXBean(final JCache jCache) {
         super(jCache, "Statistics");
     }
 
     @Override
     public void clear() {
-        jCache.clear();
+        pCacheHits = getEhcache().getStatistics().cacheHitCount();
+        pCacheMisses = getEhcache().getStatistics().cacheMissCount();
+        pCacheGets = getEhcache().getStatistics().cacheGetOperation().count().value();
+        pCachePuts = getEhcache().getStatistics().cachePutCount();
+        pCacheRemovals = getEhcache().getStatistics().cacheRemoveCount();
+        pCacheEvictions = getEhcache().getStatistics().cacheEvictedCount();
     }
 
     @Override
     public long getCacheHits() {
-        return getEhcache().getStatistics().cacheHitCount();
+        return getEhcache().getStatistics().cacheHitCount() - pCacheHits;
     }
 
     @Override
@@ -32,7 +44,7 @@ public class JCacheStatMXBean extends JCacheMXBean implements CacheStatisticsMXB
 
     @Override
     public long getCacheMisses() {
-        return getEhcache().getStatistics().cacheMissCount();
+        return getEhcache().getStatistics().cacheMissCount() - pCacheMisses;
     }
 
     @Override
@@ -46,22 +58,22 @@ public class JCacheStatMXBean extends JCacheMXBean implements CacheStatisticsMXB
 
     @Override
     public long getCacheGets() {
-        return getEhcache().getStatistics().cacheGetOperation().count().value();
+        return getEhcache().getStatistics().cacheGetOperation().count().value() - pCacheGets;
     }
 
     @Override
     public long getCachePuts() {
-        return getEhcache().getStatistics().cachePutCount();
+        return getEhcache().getStatistics().cachePutCount() - pCachePuts;
     }
 
     @Override
     public long getCacheRemovals() {
-        return getEhcache().getStatistics().cacheRemoveCount();
+        return getEhcache().getStatistics().cacheRemoveCount() - pCacheRemovals;
     }
 
     @Override
     public long getCacheEvictions() {
-        return getEhcache().getStatistics().cacheEvictedCount();
+        return getEhcache().getStatistics().cacheEvictedCount() - pCacheEvictions;
     }
 
     @Override
