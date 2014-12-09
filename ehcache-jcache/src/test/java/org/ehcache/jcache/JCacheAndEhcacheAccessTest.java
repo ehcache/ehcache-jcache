@@ -6,12 +6,17 @@ import org.ehcache.jcache.JCacheConfiguration;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.cache.Cache;
+import javax.cache.CacheManager;
 import javax.cache.Caching;
 import javax.cache.configuration.MutableConfiguration;
 import javax.cache.expiry.Duration;
 import javax.cache.expiry.ModifiedExpiryPolicy;
+import javax.cache.processor.EntryProcessor;
+import javax.cache.processor.EntryProcessorException;
+import javax.cache.processor.MutableEntry;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -60,6 +65,27 @@ public class JCacheAndEhcacheAccessTest {
     public void nullCacheWhenNoCacheExists() {
         JCache jcache = (JCache) Caching.getCachingProvider().getCacheManager().getCache("nonexistent-cache");
         assertThat(jcache, nullValue());
+    }
+
+    @Test
+    public void testUpdatesCacheWhenSettingMutableEntryValue() {
+        final CacheManager cacheManager = Caching.getCachingProvider().getCacheManager();
+        Cache<String, AtomicBoolean> cache = cacheManager.createCache("testUpdatesCacheWhenSettingMutableEntryValue", new MutableConfiguration<String, AtomicBoolean>());
+        try {
+            cache.put("key", new AtomicBoolean());
+            assertThat(cache.invoke("key", new EntryProcessor<String, AtomicBoolean, Boolean>() {
+                @Override
+                public Boolean process(final MutableEntry<String, AtomicBoolean> entry, final Object... arguments) throws EntryProcessorException {
+                    final AtomicBoolean value = entry.getValue();
+                    final boolean previous = value.getAndSet(true);
+                    entry.setValue(value);
+                    return previous;
+                }
+            }), is(false));
+            assertThat(cache.get("key").get(), is(true));
+        } finally {
+            cacheManager.destroyCache(cache.getName());
+        }
     }
 
 }

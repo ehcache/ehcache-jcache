@@ -827,6 +827,7 @@ public class JCache<K, V> implements Cache<K, V> {
         private final boolean fromLoader;
         private final V initialValue;
         private volatile V newValue;
+        private volatile boolean updated;
         private volatile boolean deleted;
         private volatile boolean skipDelete;
 
@@ -852,6 +853,7 @@ public class JCache<K, V> implements Cache<K, V> {
             skipDelete = initialValue == null && newValue != null;
             newValue = null;
             deleted = true;
+            updated = false;
         }
 
         @Override
@@ -860,6 +862,7 @@ public class JCache<K, V> implements Cache<K, V> {
                 throw new EntryProcessorException();
             }
             deleted = false;
+            updated = true;
             newValue = value;
         }
 
@@ -889,7 +892,7 @@ public class JCache<K, V> implements Cache<K, V> {
             if(deleted && !skipDelete) {
                 jCache.remove(key);
             }
-            if(newValue != initialValue && newValue != null) {
+            if(updated && newValue != null) {
                 jCache.put(key, newValue);
             }
         }
