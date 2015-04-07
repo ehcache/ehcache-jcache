@@ -36,7 +36,7 @@ import javax.cache.spi.CachingProvider;
 
 /**
  * A JSR107 adapter for EHCache.
- * <p/>
+ * <br />
  *
  * @author Ryan Gardner
  * @since 1.4.0-beta1

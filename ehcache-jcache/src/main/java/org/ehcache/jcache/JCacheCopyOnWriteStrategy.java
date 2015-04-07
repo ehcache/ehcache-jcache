@@ -31,12 +31,12 @@ import java.io.ObjectStreamClass;
 /**
  * This class provides a copy strategy that is compatible with JSR107's requirement that
  * storeByValue caches will store the keys by value as well as the values.
- * <p/>
+ * <br />
  * Once ehcache handles these concerns natively, this class will be either deleted or
  * deprecated.
- * <p/>
+ * <br />
  * (in other words, you should not use this class directly)
- * <p/>
+ * <br />
  * (some code was copied from  net.sf.ehcache.store.compound.ReadWriteSerializationCopyStrategy which was written by
  *
  * @author Alex Snaps
