@@ -167,9 +167,10 @@ public class JCacheCachingProvider implements CachingProvider {
     void shutdown(final JCacheManager jCacheManager) {
         synchronized (cacheManagers) {
             final ConcurrentMap<URI, JCacheManager> map = cacheManagers.get(jCacheManager.getClassLoader());
-            if(map.remove(jCacheManager.getURI()) != null) {
+            if(map != null && map.remove(jCacheManager.getURI()) != null) {
                 jCacheManager.shutdown();
             }
         }
     }
+    
 }
