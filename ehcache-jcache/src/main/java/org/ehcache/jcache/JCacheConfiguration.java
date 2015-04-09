@@ -29,6 +29,7 @@ import javax.cache.configuration.CacheEntryListenerConfiguration;
 import javax.cache.configuration.CompleteConfiguration;
 import javax.cache.configuration.Configuration;
 import javax.cache.configuration.Factory;
+import javax.cache.configuration.FactoryBuilder;
 import javax.cache.expiry.Duration;
 import javax.cache.expiry.EternalExpiryPolicy;
 import javax.cache.expiry.ExpiryPolicy;
@@ -89,7 +90,6 @@ public class JCacheConfiguration<K, V> implements javax.cache.configuration.Comp
                 cacheWristerFactory = null;
                 initialCacheEntryListenerConfigurations = new HashSet<CacheEntryListenerConfiguration<K, V>>();
             } else {
-                expiryPolicyFactory = null;
                 expiryPolicy = new ExpiryPolicy() {
                     @Override
                     public Duration getExpiryForCreation() {
@@ -106,6 +106,7 @@ public class JCacheConfiguration<K, V> implements javax.cache.configuration.Comp
                         return getExpiryForCreation();
                     }
                 };
+                expiryPolicyFactory = new FactoryBuilder.SingletonFactory<ExpiryPolicy>(expiryPolicy);
                 storeByValue = false;
                 readThrough = false;
                 writeThrough = false;
