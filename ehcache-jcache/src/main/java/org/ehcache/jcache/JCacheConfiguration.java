@@ -54,6 +54,7 @@ public class JCacheConfiguration<K, V> implements javax.cache.configuration.Comp
     private final Factory<CacheLoader<K,V>> cacheLoaderFactory;
     private final Factory<CacheWriter<? super K,? super V>> cacheWristerFactory;
     private final Factory<ExpiryPolicy> expiryPolicyFactory;
+    private final boolean useJCacheExpiry;
     private final Set<CacheEntryListenerConfiguration<K, V>> initialCacheEntryListenerConfigurations;
 
     private boolean statisticsEnabled;
@@ -74,6 +75,7 @@ public class JCacheConfiguration<K, V> implements javax.cache.configuration.Comp
             cacheLoaderFactory = cConfiguration.getCacheLoaderFactory();
             cacheWristerFactory = cConfiguration.getCacheWriterFactory();
             this.expiryPolicyFactory = cConfiguration.getExpiryPolicyFactory();
+            useJCacheExpiry = this.expiryPolicyFactory != null;
             final HashSet<CacheEntryListenerConfiguration<K, V>> set = new HashSet<CacheEntryListenerConfiguration<K, V>>();
             for (CacheEntryListenerConfiguration<K, V> kvCacheEntryListenerConfiguration : cConfiguration.getCacheEntryListenerConfigurations()) {
                 set.add(kvCacheEntryListenerConfiguration);
@@ -82,6 +84,7 @@ public class JCacheConfiguration<K, V> implements javax.cache.configuration.Comp
         } else {
             if (cacheConfiguration == null) {
                 expiryPolicyFactory = EternalExpiryPolicy.factoryOf();
+                useJCacheExpiry = true;
                 expiryPolicy = expiryPolicyFactory.create();
                 storeByValue = true;
                 readThrough = false;
@@ -107,6 +110,7 @@ public class JCacheConfiguration<K, V> implements javax.cache.configuration.Comp
                     }
                 };
                 expiryPolicyFactory = new FactoryBuilder.SingletonFactory<ExpiryPolicy>(expiryPolicy);
+                useJCacheExpiry = false;
                 storeByValue = false;
                 readThrough = false;
                 writeThrough = false;
@@ -205,6 +209,6 @@ public class JCacheConfiguration<K, V> implements javax.cache.configuration.Comp
     }
 
     public boolean overrideDefaultExpiry() {
-        return expiryPolicyFactory != null;
+        return useJCacheExpiry;
     }
 }
