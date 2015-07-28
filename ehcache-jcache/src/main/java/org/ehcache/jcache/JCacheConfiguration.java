@@ -16,8 +16,6 @@
 package org.ehcache.jcache;
 
 
-import net.sf.ehcache.config.CacheConfiguration;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -35,6 +33,8 @@ import javax.cache.expiry.EternalExpiryPolicy;
 import javax.cache.expiry.ExpiryPolicy;
 import javax.cache.integration.CacheLoader;
 import javax.cache.integration.CacheWriter;
+
+import net.sf.ehcache.config.CacheConfiguration;
 
 /**
  * Configuration for a JSR107 Cache
@@ -93,22 +93,28 @@ public class JCacheConfiguration<K, V> implements javax.cache.configuration.Comp
                 cacheWristerFactory = null;
                 initialCacheEntryListenerConfigurations = new HashSet<CacheEntryListenerConfiguration<K, V>>();
             } else {
-                expiryPolicy = new ExpiryPolicy() {
-                    @Override
-                    public Duration getExpiryForCreation() {
-                        return new Duration(TimeUnit.SECONDS, cacheConfiguration.getTimeToLiveSeconds());
-                    }
+                if (cacheConfiguration.isEternal()) {
+                    expiryPolicy = EternalExpiryPolicy.factoryOf().create();
+                }
+                else {
+                    expiryPolicy = new ExpiryPolicy() {
+                        @Override
+                        public Duration getExpiryForCreation() {
+                            return new Duration(TimeUnit.SECONDS, cacheConfiguration.getTimeToLiveSeconds());
+                        }
 
-                    @Override
-                    public Duration getExpiryForAccess() {
-                        return new Duration(TimeUnit.SECONDS, cacheConfiguration.getTimeToLiveSeconds());
-                    }
+                        @Override
+                        public Duration getExpiryForAccess() {
+                            return new Duration(TimeUnit.SECONDS, cacheConfiguration.getTimeToLiveSeconds());
+                        }
 
-                    @Override
-                    public Duration getExpiryForUpdate() {
-                        return getExpiryForCreation();
-                    }
-                };
+                        @Override
+                        public Duration getExpiryForUpdate() {
+                            return getExpiryForCreation();
+                        }
+                    };
+                }
+
                 expiryPolicyFactory = new FactoryBuilder.SingletonFactory<ExpiryPolicy>(expiryPolicy);
                 useJCacheExpiry = false;
                 storeByValue = false;
