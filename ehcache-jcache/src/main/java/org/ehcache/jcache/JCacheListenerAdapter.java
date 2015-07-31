@@ -53,7 +53,7 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
 
     /**
      * Construct an adapter that wraps the {@code cacheListener} to be used by Ehcache
-     * <p/>
+     * <br />
      * The interfaces of {@link CacheEntryListener} are more fine-grained than the
      * CacheEntryListener interface - and may only implement one or more of the following
      * sub-interfaces:
@@ -61,11 +61,11 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
      * {@link CacheEntryCreatedListener}
      * {@link CacheEntryUpdatedListener}
      * {@link CacheEntryExpiredListener}
-     * <p/>
+     * <br />
      * When this constructor is called, the {@code cacheListener} will be inspected
      * and based upon which sub-interfaces of CacheEntryListener the {@code cacheListener}
      * implements, listeners on the corresponding EHCache events will be adapted to it.
-     * <p/>
+     * <br />
      * It is expected that the EventListener model of JSR107 will change, so this class
      * will likely be refactored several times before the final release of JSR107.
      *
@@ -99,11 +99,11 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
      *
      * Called immediately after an attempt to remove an element. The remove method will block until
      * this method returns.
-     * <p/>
+     * <br />
      * This notification is received regardless of whether the cache had an element matching
      * the removal key or not. If an element was removed, the element is passed to this method,
      * otherwise a synthetic element, with only the key set is passed in.
-     * <p/>
+     * <br />
      * This notification is not called for the following special cases:
      * <ol>
      * <li>removeAll was called. See {@link #notifyRemoveAll(net.sf.ehcache.Ehcache)}
@@ -134,7 +134,7 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
      * Called immediately after an element has been put into the cache. The
      * {@link net.sf.ehcache.Cache#put(net.sf.ehcache.Element)} method
      * will block until this method returns.
-     * <p/>
+     * <br />
      * Implementers may wish to have access to the Element's fields, including value, so the
      * element is provided. Implementers should be careful not to modify the element. The
      * effect of any modifications is undefined.
@@ -161,10 +161,10 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
      *
      * Called immediately after an element has been put into the cache and the element already
      * existed in the cache. This is thus an update.
-     * <p/>
+     * <br />
      * The {@link net.sf.ehcache.Cache#put(net.sf.ehcache.Element)} method
      * will block until this method returns.
-     * <p/>
+     * <br />
      * Implementers may wish to have access to the Element's fields, including value, so the
      * element is provided. Implementers should be careful not to modify the element. The
      * effect of any modifications is undefined.
@@ -191,9 +191,9 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
      *
      * Called immediately after an element is <i>found</i> to be expired. The
      * {@link net.sf.ehcache.Cache#remove(Object)} method will block until this method returns.
-     * <p/>
+     * <br />
      * As the {@link net.sf.ehcache.Element} has been expired, only what was the key of the element is known.
-     * <p/>
+     * <br />
      * Elements are checked for expiry in ehcache at the following times:
      * <ul>
      * <li>When a get request is made
@@ -227,7 +227,7 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
      * Called immediately after an element is evicted from the cache. Evicted in this sense
      * means evicted from one store and not moved to another, so that it exists nowhere in the
      * local cache.
-     * <p/>
+     * <br />
      * In a sense the Element has been <i>removed</i> from the cache, but it is different,
      * thus the separate notification.
      */
@@ -253,7 +253,7 @@ public class JCacheListenerAdapter<K, V> implements CacheEventListener {
      * elements have been removed from the cache in a bulk operation. The usual
      * {@link #notifyElementRemoved(net.sf.ehcache.Ehcache, net.sf.ehcache.Element)}
      * is not called.
-     * <p/>
+     * <br />
      * This notification exists because clearing a cache is a special case. It is often
      * not practical to serially process notifications where potentially millions of elements
      * have been bulk deleted.

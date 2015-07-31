@@ -57,7 +57,7 @@ class JCacheCacheWriterAdapter<K, V> implements CacheWriter {
      *
      * Creates a clone of this writer. This method will only be called by ehcache before a
      * cache is initialized.
-     * <p/>
+     * <br />
      * Implementations should throw CloneNotSupportedException if they do not support clone
      * but that will stop them from being used with defaultCache.
      */
@@ -67,12 +67,12 @@ class JCacheCacheWriterAdapter<K, V> implements CacheWriter {
 
     /**
      * Notifies writer to initialise themselves.
-     * <p/>
+     * <br />
      * This method is called during the Cache's initialise method after it has changed it's
      * status to alive. Cache operations are legal in this method. If you register a cache writer
      * manually after a cache has been initialised already, this method will be called on the
      * cache writer as soon as it has been registered.
-     * <p/>
+     * <br />
      * Note that if you reuse cache writer instances or create a factory that returns the
      * same cache writer instance as a singleton, your {@code init} method should be able
      * to handle that situation. Unless you perform this multiple usage of a cache writer yourself,
@@ -88,7 +88,7 @@ class JCacheCacheWriterAdapter<K, V> implements CacheWriter {
     /**
      * Providers may be doing all sorts of exotic things and need to be able to clean up on
      * dispose.
-     * <p/>
+     * <br />
      * Cache operations are illegal when this method is called. The cache itself is partly
      * disposed when this method is called.
      *

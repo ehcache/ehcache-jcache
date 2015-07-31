@@ -21,7 +21,7 @@ import javax.cache.Cache;
 
 /**
  * An implementation of CacheEntry.
- * <p/>
+ * <br />
  * A CacheEntry is metadata about an entry in the cache. It does not include the value.
  *
  * @param <K> the type of keys used by this JCacheEntry
