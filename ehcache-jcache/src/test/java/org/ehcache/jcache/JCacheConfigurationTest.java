@@ -89,8 +89,7 @@ public class JCacheConfigurationTest {
             cache.remove(key);
             result = cache.get(key);
             assertThat(result, nullValue());
-        }
-        finally {
+        } finally {
             // NOTE: This will NPE due to configuration above allowing null provider, and expecting non-null in close
             //cacheManager.close();
             ehcache.shutdown();
