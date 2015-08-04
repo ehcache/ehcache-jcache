@@ -80,6 +80,11 @@
                                                replicateRemovals=true "/>
     </cache>
 
-
+    <!--
+    For verifying expiry-policy for pre-configured eternal=true cache.
+    @see JCacheConfigurationTest#preconfiguredEternalCache
+    -->
+    <cache name="simpleEternalCache"
+           eternal="true"/>
 
 </ehcache>
