@@ -1,5 +1,6 @@
-Ehcache-JCache
+Ehcache-JCache  For Ehcache 2.x.   
 ==============
+(JSR107 support is built directly into Ehcache 3.x)
 
 About
 -----
