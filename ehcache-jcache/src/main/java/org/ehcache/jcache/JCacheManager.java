@@ -101,6 +101,16 @@ public class JCacheManager implements javax.cache.CacheManager {
             throw new NullPointerException();
         }
 
+        if (configuration instanceof CompleteConfiguration<?, ?>) {
+            final CompleteConfiguration cfg = (CompleteConfiguration)configuration;
+            if (cfg.isReadThrough() && cfg.getCacheLoaderFactory() == null) {
+                throw new IllegalArgumentException("Configuration for " + cacheName + " is read-through but has no Factory<CacheLoader> defined");
+            }
+            if (cfg.isWriteThrough() && cfg.getCacheWriterFactory() == null) {
+                throw new IllegalArgumentException("Configuration for " + cacheName + " is read-through but has no Factory<CacheWriter> defined");
+            }
+        }
+
         JCache<K, V> jCache = allCaches.get(cacheName);
         if (jCache != null) {
             throw new CacheException();
