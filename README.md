@@ -1,6 +1,7 @@
 Ehcache-JCache  For Ehcache 2.x.   
 ==============
-(JSR107 support is built directly into Ehcache 3.x)
+
+**Important:** This project isn't maintained anymore as Ehcache 2.x will slowly retire. Please consider migrating to [Ehcache 3.x](https://github.com/ehcache/ehcache3) which has built-in JSR107 support.
 
 About
 -----
