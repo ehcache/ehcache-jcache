@@ -143,7 +143,7 @@ public class JCacheManager implements javax.cache.CacheManager {
         if (cache == null) {
             return null;
         }
-        jCache = new JCache<K, V>(this, new JCacheConfiguration<K, V>(null, null, keyType, valueType), cache);
+        jCache = new JCache<K, V>(this, new JCacheConfiguration<K, V>(cache.getCacheConfiguration(), null, keyType, valueType), cache);
         final JCache<K, V> previous = allCaches.putIfAbsent(cacheName, jCache);
         if(previous != null) {
             jCache = previous;
