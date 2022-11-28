@@ -98,17 +98,35 @@ public class JCacheConfiguration<K, V> implements javax.cache.configuration.Comp
                     expiryPolicy = new ExpiryPolicy() {
                         @Override
                         public Duration getExpiryForCreation() {
-                            return new Duration(TimeUnit.SECONDS, cacheConfiguration.getTimeToLiveSeconds());
+                            if (cacheConfiguration.getTimeToLiveSeconds() > 0) {
+                                return new Duration(TimeUnit.SECONDS, cacheConfiguration.getTimeToLiveSeconds());
+                            } else if (cacheConfiguration.getTimeToIdleSeconds() > 0) {
+                                return new Duration(TimeUnit.SECONDS, cacheConfiguration.getTimeToIdleSeconds());
+                            } else {
+                                return Duration.ETERNAL;
+                            }
                         }
 
                         @Override
                         public Duration getExpiryForAccess() {
-                            return new Duration(TimeUnit.SECONDS, cacheConfiguration.getTimeToLiveSeconds());
+                            if (cacheConfiguration.getTimeToLiveSeconds() > 0) {
+                            	return null;
+                            } else if (cacheConfiguration.getTimeToIdleSeconds() > 0) {
+                                return new Duration(TimeUnit.SECONDS, cacheConfiguration.getTimeToIdleSeconds());
+                            } else {
+                                return null;
+                            }
                         }
 
                         @Override
                         public Duration getExpiryForUpdate() {
-                            return getExpiryForCreation();
+                            if (cacheConfiguration.getTimeToLiveSeconds() > 0) {
+                                return new Duration(TimeUnit.SECONDS, cacheConfiguration.getTimeToLiveSeconds());
+                            } else if (cacheConfiguration.getTimeToIdleSeconds() > 0) {
+                                return new Duration(TimeUnit.SECONDS, cacheConfiguration.getTimeToIdleSeconds());
+                            } else {
+                                return null;
+                            }
                         }
                     };
                 }

@@ -71,7 +71,7 @@ public class JCacheManager implements javax.cache.CacheManager {
         this.cacheManager = cacheManager;
         this.uri = uri;
         this.props = props;
-        refreshAllCaches();
+        //refreshAllCaches();
     }
 
     @Override
@@ -143,7 +143,7 @@ public class JCacheManager implements javax.cache.CacheManager {
         if (cache == null) {
             return null;
         }
-        jCache = new JCache<K, V>(this, new JCacheConfiguration<K, V>(null, null, keyType, valueType), cache);
+        jCache = new JCache<K, V>(this, new JCacheConfiguration<K, V>(cache.getCacheConfiguration(), null, keyType, valueType), cache);
         final JCache<K, V> previous = allCaches.putIfAbsent(cacheName, jCache);
         if(previous != null) {
             jCache = previous;
@@ -161,7 +161,11 @@ public class JCacheManager implements javax.cache.CacheManager {
     public <K, V> Cache<K, V> getCache(final String cacheName) {
         final JCache<K, V> jCache = allCaches.get(cacheName);
         if(jCache == null) {
-            refreshAllCaches();
+            //refreshAllCaches();
+            final net.sf.ehcache.Cache cache = cacheManager.getCache(cacheName);
+            if (cache != null) {
+                allCaches.put(cacheName, new JCache(this, new JCacheConfiguration(cache.getCacheConfiguration()), cache));
+            }
             return allCaches.get(cacheName);
         }
         if(jCache.getConfiguration(CompleteConfiguration.class).getKeyType() != Object.class ||
